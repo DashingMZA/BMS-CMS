@@ -15,9 +15,9 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
-    "@blocknote/core": "^0.30.0",
-    "@blocknote/mantine": "^0.30.0",
-    "@blocknote/react": "^0.30.0",
+    "@blocknote/core": "^0.55.0",
+    "@blocknote/mantine": "^0.55.0",
+    "@blocknote/react": "^0.55.0",
     "@mantine/core": "^7.17.4",
     "@mantine/hooks": "^7.17.4",
     "@neondatabase/serverless": "^0.10.4",
