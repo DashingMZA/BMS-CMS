@@ -30,6 +30,7 @@ import {
   MessageSquare,
   MessageCircle,
   Gauge,
+  Megaphone,
 } from "lucide-react";
 
 type NavItem = {
@@ -62,6 +63,7 @@ const navGroups: { label: string; items: NavItem[] }[] = [
       // Everything about how the site looks lives in the Customizer.
       { label: "Customize", href: "/admin/customize", icon: Paintbrush },
       { label: "SEO", href: "/admin/seo", icon: Search },
+      { label: "Ads", href: "/admin/ads", icon: Megaphone },
       { label: "Speed", href: "/admin/speed", icon: Gauge },
       { label: "Link Checker", href: "/admin/links", icon: Link2 },
       { label: "Navigation", href: "/admin/navigation", icon: Navigation },
@@ -104,6 +106,7 @@ const AUTHOR_HREFS = new Set(["/admin", "/admin/posts", "/admin/posts/stale", "/
  */
 const ADMIN_ONLY_HREFS = new Set([
   "/admin/seo",
+  "/admin/ads",
   "/admin/speed",
   "/admin/settings",
   "/admin/navigation",

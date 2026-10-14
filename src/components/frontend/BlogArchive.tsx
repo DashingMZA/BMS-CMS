@@ -12,6 +12,7 @@ import { jsonLd } from "@/lib/seo";
 import ContentImage from "@/components/frontend/ContentImage";
 import BlockStyle from "@/components/shared/BlockStyle";
 import Pagination from "@/components/frontend/Pagination";
+import AdSlot from "@/components/frontend/AdSlot";
 import { getSiteSettings } from "@/lib/settings";
 import { absoluteUrlFor, authorPath, categoryPath, postPath, postUrl } from "@/lib/permalinks";
 import { postsPagePath } from "@/lib/postsPage";
@@ -747,6 +748,8 @@ export default async function BlogArchive({
         )}
 
         <Pagination base={base} page={page} totalPages={totalPages} style={paginationStyle(settings)} label={moreLabel} language={archiveLang} rtl={dir === "rtl"} />
+        {/* Ad: below the post list on archive pages. */}
+        <AdSlot position="after_posts" />
         {paginationStyle(settings) !== "numbers" && page < totalPages && (
           <LoadMore
             // As Pagination builds it: on the front page `base` is "/", and

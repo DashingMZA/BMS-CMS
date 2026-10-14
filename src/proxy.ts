@@ -119,7 +119,7 @@ const LEGACY_FILE = /\.(?:html?|php|aspx?|jsp|cfm|shtml|pdf)$/i;
  * with "forbidden" and looked like a broken site.
  */
 const ADMIN_ONLY_PREFIXES = [
-  "/admin/seo", "/admin/speed", "/admin/settings", "/admin/navigation", "/admin/elements",
+  "/admin/seo", "/admin/ads", "/admin/speed", "/admin/settings", "/admin/navigation", "/admin/elements",
   "/admin/links", "/admin/plugins", "/admin/users", "/admin/health", "/admin/errors",
   "/admin/updates", "/admin/customize", "/admin/homepages",
 ];

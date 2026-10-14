@@ -43,6 +43,8 @@ import type { Block } from "@blocknote/core";
 import { siteUrl } from "@/lib/siteUrl";
 import { absoluteUrl, autoOgImage, deriveDescription, lookupImageSize, ogImageDescriptor, ogLocale, publisherSchema, robotsDirectives, schemaId, schemaUrl, twitterImage } from "@/lib/seoMeta";
 import OgProperties from "@/components/frontend/OgProperties";
+import AdSlot from "@/components/frontend/AdSlot";
+import { injectContentAds, parsePlacements } from "@/lib/ads";
 import { isLive, isLiveNow } from "@/lib/publishState";
 import { breadcrumbId, breadcrumbIsVisible, breadcrumbSchema, pageCrumbs, postCrumbs } from "@/lib/breadcrumbSchema";
 import { firstBlockEntityId } from "@/lib/blockSchema";
@@ -634,9 +636,11 @@ export default async function ContentRoute({ params }: Params) {
             className="w-full aspect-video object-cover rounded-xl mb-10"
           />
         )}
+        <AdSlot position="after_title" />
         <div className="max-w-none" data-page-body>
-          <BlockRenderer blocks={(page.content as Block[]) ?? []} language={page.language} direction={page.direction} title={page.title} pageUrl={pageUrl} column={col} />
+          <BlockRenderer blocks={injectContentAds((page.content as Block[]) ?? [], parsePlacements(settings.ads_placements))} language={page.language} direction={page.direction} title={page.title} pageUrl={pageUrl} column={col} />
         </div>
+        <AdSlot position="after_content" />
 
         {/* Same precedence as a post: the page's own setting wins, and the
             Customizer default decides only when the page has not chosen.
@@ -819,6 +823,7 @@ export default async function ContentRoute({ params }: Params) {
         // heading, it does not delete it from the document.
         !contentHasH1(post.content) && <h1 className="sr-only">{post.title}</h1>
       )}
+      <AdSlot position="after_title" />
 
       {!hideFeaturedImg && post.featuredImage && (
         <ContentImage
@@ -832,8 +837,9 @@ export default async function ContentRoute({ params }: Params) {
       )}
 
       <div className="max-w-none">
-        <BlockRenderer blocks={(post.content as Block[]) ?? []} language={post.language} direction={post.direction} title={post.title} pageUrl={postUrl} column={postCol} />
+        <BlockRenderer blocks={injectContentAds((post.content as Block[]) ?? [], parsePlacements(settings.ads_placements))} language={post.language} direction={post.direction} title={post.title} pageUrl={postUrl} column={postCol} />
       </div>
+      <AdSlot position="after_content" />
 
       <PostAfterContent post={post} settings={settings} />
       {/* Resolved on the server rather than hidden with CSS. The site-wide

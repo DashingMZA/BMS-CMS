@@ -61,6 +61,7 @@ import { documentDir, siteLang } from "@/lib/locale";
 import { expandShortcodes, loadPlugin, pluginContainerHtml, soleShortcode } from "@/lib/plugins";
 import ContentImage from "@/components/frontend/ContentImage";
 import Icon from "@/components/shared/Icon";
+import { getPlacement, parsePlacements, type AdPlacement } from "@/lib/ads";
 
 // The interactive (client) blocks come through a client module so each gets
 // a chunk of its own — see blocks/lazy.tsx for why `dynamic()` here did not.
@@ -149,6 +150,12 @@ let videoFacade = true;
 let preconnects: string[] = [];
 /** Site settings, for the blocks that print them (Business Info). */
 let businessSettings: Record<string, string> | null = null;
+
+/** The ad placement for one position, from the current render's settings. */
+function getAdPlacement(position: string): AdPlacement | null {
+  if (!businessSettings || !position) return null;
+  return getPlacement(parsePlacements(businessSettings.ads_placements), position);
+}
 /** The account whose page this is, for the Author Bio block. Null off an author page. */
 let authorContext: AuthorLike | null = null;
 /** The language of the document being rendered, for blocks that list content. */
@@ -462,6 +469,13 @@ function renderBlockInner(block: AnyBlock, t: UiText): React.ReactNode {
 
   switch (block.type) {
     // ── Built-in blocks ────────────────────────────────────────────────────────
+    // An ad marker inserted by injectContentAds (lib/ads). Renders the code
+    // saved for that position, or nothing when it is disabled/empty.
+    case "adSlot": {
+      const placement = getAdPlacement(String(p?.position ?? ""));
+      if (!placement) return null;
+      return <div className="bms-adslot my-6" data-ad-position={p.position} data-bms-html={htmlSig(placement.code)} dangerouslySetInnerHTML={{ __html: placement.code }} />;
+    }
     case "paragraph": {
       // A paragraph that is exactly `[slug]` is a plugin, not a sentence.
       const plugin = pluginHtml.get(String(block.id ?? ""));

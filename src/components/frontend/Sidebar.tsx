@@ -6,6 +6,7 @@ import { posts, tags, postTags, categories } from "@/lib/db/schema";
 import { parseSidebarWidgets, SIDEBAR_WIDGET_IDS, type SidebarWidget } from "@/lib/appearanceSettings";
 import { categoryPath, postPath, searchPath, tagPath } from "@/lib/permalinks";
 import { isLive } from "@/lib/publishState";
+import AdSlot from "./AdSlot";
 
 /**
  * The real sidebar, replacing the placeholder box.
@@ -152,6 +153,8 @@ async function renderSidebar({
           )}
         </section>
       ))}
+      {/* Ad: below the sidebar widgets. */}
+      <AdSlot position="sidebar" />
     </div>
   );
 }
