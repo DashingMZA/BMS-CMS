@@ -929,6 +929,12 @@ async function renderSiteLayout({ children, hideHeader, hideFooter, transparentH
             always gets both sets: its preview edits each one separately. */}
         {!headerHidden && (() => {
           const { sets, same } = hdrPlan;
+          const kind = adPageKind(pageType);
+
+          // Ad blocks with the "Before menu" position — above the site header.
+          const beforeMenu = !customizerMode && kind ? (
+            <AdBlocks position="before_menu" pageKind={kind} />
+          ) : null;
 
           const zone = (s: (typeof sets)[number], items: string[], slot: string) => (
             <HeaderZone
@@ -977,10 +983,17 @@ async function renderSiteLayout({ children, hideHeader, hideFooter, transparentH
             );
           };
 
-          return HEADER_ROWS.map((row) =>
-            !customizerMode && same(row)
-              ? renderRow(sets[0], row, "hdr-both")
-              : sets.map((s) => renderRow(s, row, s.cls))
+          return (
+            <>
+              {beforeMenu}
+              {HEADER_ROWS.map((row) =>
+                !customizerMode && same(row)
+                  ? renderRow(sets[0], row, "hdr-both")
+                  : sets.map((s) => renderRow(s, row, s.cls))
+              )}
+              {/* Ad blocks with the "After menu" position — below the header navigation. */}
+              {!customizerMode && kind ? <AdBlocks position="after_menu" pageKind={kind} /> : null}
+            </>
           );
         })()}
 
@@ -1058,6 +1071,13 @@ async function renderSiteLayout({ children, hideHeader, hideFooter, transparentH
         )}
 
         <ElementSlot hook="after_footer" pageType={pageType} language={langOverride || docLanguage} contentLanguage={docLanguage} direction={direction} />
+
+        {/* Ad blocks with the "After footer" position. Skipped in the customizer
+            preview, like the footer position. */}
+        {!customizerMode && (() => {
+          const kind = adPageKind(pageType);
+          return kind ? <AdBlocks position="after_footer" pageKind={kind} /> : null;
+        })()}
       </div>
 
       {settings.script_body_end && <div dangerouslySetInnerHTML={{ __html: delay ? delayScriptsIn(settings.script_body_end, delayExclude) : settings.script_body_end }} />}

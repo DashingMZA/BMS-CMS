@@ -27,6 +27,10 @@ export interface AdBlockPositionDef {
  */
 export const AD_BLOCK_POSITIONS: AdBlockPositionDef[] = [
   { id: "disabled",         label: "Disabled" },
+  { id: "before_menu",      label: "Before menu" },
+  { id: "after_menu",       label: "After menu" },
+  { id: "before_title",     label: "Before title" },
+  { id: "after_title",      label: "After title" },
   { id: "before_post",      label: "Before post" },
   { id: "before_content",   label: "Before content" },
   { id: "before_paragraph", label: "Before paragraph", needsCount: true },
@@ -42,6 +46,7 @@ export const AD_BLOCK_POSITIONS: AdBlockPositionDef[] = [
   { id: "between_comments", label: "Between comments" },
   { id: "after_comments",   label: "After comments" },
   { id: "footer",           label: "Footer" },
+  { id: "after_footer",     label: "After footer" },
   { id: "sidebar",          label: "Sidebar" },
 ];
 

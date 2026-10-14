@@ -60,7 +60,18 @@ export default function AdsPage() {
     setBlocks((bs) => bs.map((b) => (b.id === id ? { ...b, pages: { ...b.pages, [kind]: v } } : b)));
 
   const addBlock = () => setBlocks((bs) => [...bs, newAdBlock(bs.length)]);
-  const removeBlock = (id: string) => setBlocks((bs) => bs.filter((b) => b.id !== id));
+  /**
+   * Deleting renumbers the blocks that still carry their automatic
+   * "Block N" name, so the list reads Block 1, Block 2, … again and the
+   * `[adinserter block="N"]` shortcodes keep matching. A block the user
+   * renamed themselves keeps its name.
+   */
+  const removeBlock = (id: string) =>
+    setBlocks((bs) =>
+      bs
+        .filter((b) => b.id !== id)
+        .map((b, i) => (/^Block \d+$/.test(b.name) ? { ...b, name: `Block ${i + 1}` } : b))
+    );
 
   async function save(e?: React.FormEvent) {
     e?.preventDefault();

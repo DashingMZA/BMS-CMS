@@ -603,6 +603,7 @@ export default async function ContentRoute({ params }: Params) {
             attributes, so the Customizer's page-title toggle generated a rule
             that matched nothing and the whole Page Layout title area — order,
             alignment, breadcrumb, meta — had nothing to act on. */}
+        <AdBlocks position="before_title" pageKind="static" />
         {!hideTitle ? (
           <PostTitleBlock
             kind="page"
@@ -627,6 +628,7 @@ export default async function ContentRoute({ params }: Params) {
           // about the design, so it is honoured in the design and nowhere else.
           !contentHasH1(page.content) && <h1 className="sr-only">{page.title}</h1>
         )}
+        <AdBlocks position="after_title" pageKind="static" />
         {!hideFeaturedImg && page.featuredImage && (
           <ContentImage
             priority
@@ -819,6 +821,7 @@ export default async function ContentRoute({ params }: Params) {
       {/* One copy only. Rendering both and hiding one with CSS put two <h1>s in
           the document, and the Customizer previews site chrome rather than a
           real post, so the second copy bought nothing. */}
+      <AdBlocks position="before_title" pageKind="posts" />
       {!hideTitle ? (
         <div className={titleAbove ? "post-title-above mb-10" : "post-title-in"}>
           <PostTitleBlock {...titleProps} />
@@ -828,6 +831,7 @@ export default async function ContentRoute({ params }: Params) {
         // heading, it does not delete it from the document.
         !contentHasH1(post.content) && <h1 className="sr-only">{post.title}</h1>
       )}
+      <AdBlocks position="after_title" pageKind="posts" />
       <AdBlocks position="before_post" pageKind="posts" />
 
       {!hideFeaturedImg && post.featuredImage && (
