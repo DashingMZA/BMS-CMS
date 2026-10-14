@@ -44,7 +44,9 @@ export function useLocalBackup<T>(
   const rowTime = rowUpdatedAt ? new Date(rowUpdatedAt).getTime() : NaN;
   const [pending, setPending] = useState<Backup<T> | null>(null);
   const keyRef = useRef(key);
-  keyRef.current = key;
+  useEffect(() => {
+    keyRef.current = key;
+  });
 
   // Read once on mount. Anything unparsable is treated as absent.
   useEffect(() => {
@@ -55,6 +57,7 @@ export function useLocalBackup<T>(
         const parsed = JSON.parse(raw) as Backup<T>;
         if (parsed && typeof parsed.at === "number" && parsed.data) {
           if (!parsed.conflict && Number.isFinite(rowTime) && parsed.at <= rowTime) localStorage.removeItem(key);
+          // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional read-on-mount: localStorage does not exist during SSR, so this cannot move into render
           else setPending(parsed);
         }
       }

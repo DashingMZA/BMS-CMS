@@ -43,7 +43,7 @@ export function useDialogFocus(open: boolean, panel: RefObject<HTMLElement | nul
     const first = focusable()[0];
     if (first) first.focus();
     else {
-      root.tabIndex = -1;
+      root.setAttribute("tabindex", "-1");
       root.focus();
     }
 

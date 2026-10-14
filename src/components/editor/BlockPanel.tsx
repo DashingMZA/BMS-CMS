@@ -5049,7 +5049,13 @@ const NAMED_COLORS: { name: string; hex: string }[] = [
 function ColorSwatches({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const isHex = /^#[0-9a-f]{3,8}$/i.test(value);
   const [draft, setDraft] = useState(isHex ? value : "");
-  useEffect(() => setDraft(/^#[0-9a-f]{3,8}$/i.test(value) ? value : ""), [value]);
+  // Keep the draft in sync when the value changes externally — adjusted during
+  // render rather than in an effect (the documented pattern).
+  const [prevValue, setPrevValue] = useState(value);
+  if (prevValue !== value) {
+    setPrevValue(value);
+    setDraft(/^#[0-9a-f]{3,8}$/i.test(value) ? value : "");
+  }
   const commit = (raw: string) => {
     let v = raw.trim();
     if (v && !v.startsWith("#")) v = `#${v}`;

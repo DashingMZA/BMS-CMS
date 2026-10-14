@@ -40,6 +40,11 @@ export default async function PreviewDocLayout({
   children: ReactNode;
   params: Promise<{ type: string; id: string }>;
 }) {
+  // Resolve first, render after: JSX must not be constructed inside try/catch
+  // (an exception here skips error.tsx and lands on global-error.tsx, so the
+  // fallback is a plain English shell rather than a crash).
+  let lang = "en";
+  let dir: string | undefined;
   try {
     const { type, id } = await params;
     const numId = parseInt(id);
@@ -59,19 +64,15 @@ export default async function PreviewDocLayout({
       }
     }
 
-    const lang = language ?? defaultContentLanguage(settings);
-    const dir = documentDir(lang, settings, direction);
-
-    return (
-      <html lang={lang} dir={dir}>
-        <body>{children}</body>
-      </html>
-    );
+    lang = language ?? defaultContentLanguage(settings);
+    dir = documentDir(lang, settings, direction);
   } catch {
-    return (
-      <html lang="en">
-        <body>{children}</body>
-      </html>
-    );
+    // Keep the English fallback shell.
   }
+
+  return (
+    <html lang={lang} dir={dir}>
+      <body>{children}</body>
+    </html>
+  );
 }

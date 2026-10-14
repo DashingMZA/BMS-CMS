@@ -33,6 +33,7 @@ export default function ErrorPage({
   // English until the effect runs — one frame, on a page that already failed.
   const [t, setT] = useState(() => errorText("en"));
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional read-on-mount: the document language is only available in the browser (avoids a hydration mismatch)
     setT(errorText(document.documentElement.lang || "en"));
   }, []);
 

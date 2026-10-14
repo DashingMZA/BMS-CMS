@@ -27,6 +27,7 @@ export default function ElementsPage() {
     setRows(data.elements ?? []);
   };
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional fetch-on-mount: this screen loads its rows once when opened
   useEffect(() => { void load(); }, []);
 
   const create = async () => {
@@ -40,7 +41,7 @@ export default function ElementsPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Could not create the element");
-      window.location.href = `/admin/elements/${data.element.id}`;
+      window.location.href = `${window.location.origin}/admin/elements/${data.element.id}`;
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not create the element");
       setCreating(false);

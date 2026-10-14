@@ -141,6 +141,7 @@ export function ConditionalHeaderPanel({ s, set }: { s: CustomizerSettings; set:
   const add = () =>
     save([
       ...rules,
+      // eslint-disable-next-line react-hooks/purity -- event handler: the id is generated on click, not during render
       { id: `r${Date.now()}`, name: "New rule", when: "front", overrides: {} },
     ]);
 

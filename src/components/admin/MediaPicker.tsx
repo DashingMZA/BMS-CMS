@@ -49,6 +49,7 @@ export default function MediaPicker({ onSelect, onClose }: MediaPickerProps) {
     setLoadingMore(false);
   }
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional fetch-on-mount: the picker loads its items once when opened
   useEffect(() => { load(); }, []);
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {

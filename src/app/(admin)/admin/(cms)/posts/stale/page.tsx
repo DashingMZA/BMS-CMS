@@ -46,6 +46,7 @@ export default async function StalePostsPage({ searchParams }: { searchParams: P
 
   const age = (d: Date | null) => {
     if (!d) return "—";
+    // eslint-disable-next-line react-hooks/purity -- server component: renders once per request, so Date.now() here is fine
     const days = Math.floor((Date.now() - d.getTime()) / 86_400_000);
     if (days < 60) return `${days} days`;
     const m = Math.floor(days / 30);

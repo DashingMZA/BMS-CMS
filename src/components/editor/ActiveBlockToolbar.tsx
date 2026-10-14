@@ -45,17 +45,31 @@ const BUILT_IN = new Set(["paragraph", "heading", "bulletListItem", "numberedLis
 export default function ActiveBlockToolbar({ host }: { host: React.RefObject<HTMLDivElement | null> }) {
   const [active, setActive] = useState<{ id: string; type: string } | null>(null);
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<{ text: string; n: number } | null>(null);
+  // Auto-dismiss the notice after 1.2s; flashing again restarts the timer.
+  // (A plain ref timer here trips the refs rule when the flash callback is
+  // passed around during render; the effect is the idiomatic shape.)
+  useEffect(() => {
+    if (!notice) return;
+    const t = setTimeout(() => setNotice(null), 1200);
+    return () => clearTimeout(t);
+  }, [notice]);
+  const flash = (text: string) => setNotice((p) => ({ text, n: (p?.n ?? 0) + 1 }));
   /** Hidden while the author types; back on the next mouse movement. */
   const [typing, setTyping] = useState(false);
   const [styleMenu, setStyleMenu] = useState(false);
-  const noticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const barRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => subscribeActiveBlock((b) => setActive(b ? { id: b.id, type: b.type } : null)), []);
-  // Another element selected: the menu belonged to the previous one.
-  useEffect(() => setStyleMenu(false), [active?.id]);
+  // Another element selected: the menu belonged to the previous one. Adjusted
+  // during render rather than in an effect (the documented pattern).
+  const [prevActiveId, setPrevActiveId] = useState<string | undefined>(active?.id);
+  if (prevActiveId !== active?.id) {
+    setPrevActiveId(active?.id);
+    setStyleMenu(false);
+  }
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization -- intentional: `place` is a useLayoutEffect dependency, so it must keep a stable identity
   const place = useCallback(() => {
     const root = host.current;
     if (!root || !active) {
@@ -89,6 +103,7 @@ export default function ActiveBlockToolbar({ host }: { host: React.RefObject<HTM
   }, [active, host]);
 
   // Follow the block as the document, the scroll position or the window change.
+  /* eslint-disable react-hooks/set-state-in-effect -- intentional: this layout effect measures the DOM and positions the toolbar; it cannot run during render */
   useLayoutEffect(() => {
     place();
     if (!active) return;
@@ -109,6 +124,7 @@ export default function ActiveBlockToolbar({ host }: { host: React.RefObject<HTM
       window.removeEventListener("resize", schedule);
     };
   }, [active, place, host]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
     const root = host.current;
@@ -125,12 +141,6 @@ export default function ActiveBlockToolbar({ host }: { host: React.RefObject<HTM
       window.removeEventListener("mousemove", onMove);
     };
   }, [host]);
-
-  const flash = (text: string) => {
-    setNotice(text);
-    if (noticeTimer.current) clearTimeout(noticeTimer.current);
-    noticeTimer.current = setTimeout(() => setNotice(null), 1200);
-  };
 
   if (!active || !pos || typing) return null;
   const label = blockMeta(active.type).label;
@@ -149,7 +159,7 @@ export default function ActiveBlockToolbar({ host }: { host: React.RefObject<HTM
       onMouseDown={(e) => e.stopPropagation()}
     >
       <span className="max-w-[110px] truncate px-1.5 text-[11px] font-semibold text-slate-500" title={label}>
-        {notice ?? label}
+        {notice?.text ?? label}
       </span>
       <span className="mx-0.5 h-4 w-px bg-slate-200" />
       <button type="button" title="Move up" className={btn} onMouseDown={stop(() => moveBlockById(active.id, -1))}>

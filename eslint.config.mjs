@@ -10,6 +10,15 @@ const eslintConfig = [
   ...nextCoreWebVitals,
   ...nextTypescript,
   {
+    // server.js must stay CommonJS: hosts like Passenger require() it as the
+    // application entry point, and the migration scripts are .cjs for the same
+    // reason. require() in these files is intentional, not a mistake.
+    files: ["server.js", "scripts/**/*.cjs"],
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
+    },
+  },
+  {
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
       // `const { id: _id, ...rest }` is how you drop a key while keeping the

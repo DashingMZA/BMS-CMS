@@ -66,6 +66,7 @@ export default function BlockEditor({ initialContent, onChange, editable = true,
   // Defer mount to after first commit — BlockNoteView calls flushSync internally
   // on mount, which throws if it lands during React's render phase.
   const [mounted, setMounted] = useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional mount flag: BlockNoteView flushSyncs on mount, which must happen after commit, never during render
   useEffect(() => setMounted(true), []);
   // Primed once per session so the insert path can read defaults synchronously:
   // a default that arrived mid-session would apply to some inserts and not

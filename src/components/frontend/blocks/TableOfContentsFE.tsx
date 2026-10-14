@@ -28,7 +28,13 @@ export default function TableOfContentsFE({
 }) {
   const toc = resolveToc(props, headings, scopeBase);
   const [open, setOpen] = useState(!toc.startCollapsed);
-  useEffect(() => setOpen(!toc.startCollapsed), [toc.startCollapsed]);
+  // Re-seed when the config changes, during render rather than in an effect —
+  // the documented "adjust state during render" pattern.
+  const [prevCollapsed, setPrevCollapsed] = useState(toc.startCollapsed);
+  if (prevCollapsed !== toc.startCollapsed) {
+    setPrevCollapsed(toc.startCollapsed);
+    setOpen(!toc.startCollapsed);
+  }
 
   // Scrollspy: which entry's heading is nearest the top of the viewport.
   // Only wired on the real page — the canvas has no live headings to watch,

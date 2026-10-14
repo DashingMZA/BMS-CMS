@@ -85,14 +85,27 @@ export default function BlockLibrary({
   const count = showingSaved ? savedResults.length : results.length;
 
   // Reset position whenever the result set changes, so the highlight is never
-  // left pointing past the end of a shorter list.
-  useEffect(() => setActive(0), [query, tab]);
+  // left pointing past the end of a shorter list — adjusted during render
+  // rather than in an effect (the documented pattern).
+  const queryTab = `${query}	${tab}`;
+  const [prevQueryTab, setPrevQueryTab] = useState(queryTab);
+  if (prevQueryTab !== queryTab) {
+    setPrevQueryTab(queryTab);
+    setActive(0);
+  }
 
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (prevOpen !== open) {
+    setPrevOpen(open);
+    if (open) {
+      setQuery("");
+      const recent = readRecent();
+      setRecent(recent);
+      setTab(recent.length > 0 ? "recent" : "all");
+    }
+  }
   useEffect(() => {
     if (!open) return;
-    setQuery("");
-    setRecent(readRecent());
-    setTab(readRecent().length > 0 ? "recent" : "all");
     const t = setTimeout(() => inputRef.current?.focus(), 20);
     return () => clearTimeout(t);
   }, [open]);

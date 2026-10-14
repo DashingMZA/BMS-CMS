@@ -2,7 +2,7 @@
 
 import Turnstile, { resetTurnstile } from "@/components/frontend/Turnstile";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import {
   HONEYPOT_FIELD,
   selectOptions,
@@ -43,7 +43,7 @@ export default function ContactFormFE({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [state, setState] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [message, setMessage] = useState("");
-  const startedAt = useRef(Date.now());
+  const [startedAt] = useState(() => Date.now());
 
   const set = (name: string, v: string | boolean) => {
     setValues((prev) => ({ ...prev, [name]: v }));
@@ -74,7 +74,7 @@ export default function ContactFormFE({
         body: JSON.stringify({
           formId,
           values,
-          elapsed: Date.now() - startedAt.current,
+          elapsed: Date.now() - startedAt,
           pagePath: window.location.pathname,
           turnstileToken: (form.querySelector('input[name="cf-turnstile-response"]') as HTMLInputElement | null)?.value ?? "",
         }),

@@ -80,7 +80,7 @@
       r.addedNodes.forEach((n) => {
         if (!(n instanceof Element)) return;
         if (n.matches && n.matches(".bms-plugin[data-plugin]")) mountOne(n);
-        n.querySelectorAll && n.querySelectorAll(".bms-plugin[data-plugin]").forEach(mountOne);
+        if (n.querySelectorAll) n.querySelectorAll(".bms-plugin[data-plugin]").forEach(mountOne);
       });
       r.removedNodes.forEach((n) => {
         if (!(n instanceof Element)) return;

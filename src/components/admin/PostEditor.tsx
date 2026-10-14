@@ -235,6 +235,9 @@ export default function PostEditor({
   // date is *in the URL*, so a wrong date is a wrong address. It also feeds
   // `article:published_time` and `datePublished`.
   const [publishedAt, setPublishedAt] = useState(toLocalInput(post?.publishedAt, siteTimeZone(settings)));
+  // Frozen at mount for the "Scheduled" badge below — stable for the session,
+  // and useState's lazy initializer is where an impure read belongs.
+  const [now] = useState(() => Date.now());
   // Per-document CSS and scripts. The API refuses these from a non-admin
   // independently of the UI — this only decides whether the fields are editable.
   const [code, setCode] = useState({
@@ -495,29 +498,32 @@ export default function PostEditor({
 
   // Autosave existing posts every 20s when there are unsaved changes
   const saveRef = useRef<() => void>(() => {});
-  saveRef.current = () => {
-    // After a refused save nothing reaches the server; keep the conflict
-    // copy current instead, so typing after the warning is not lost either.
-    if (conflict) {
-      if (dirty) backup.writeConflict(buildBody());
-      return;
-    }
-    if (!dirty || saving) return;
-    // A published post must not change on the site until Update is pressed —
-    // its autosave is a browser backup. A draft is not public: it autosaves
-    // to the database so a crash cannot lose it.
-    //
-    // A post that was never saved used to be skipped by both, so a crashed
-    // tab lost the whole first draft. It is backed up in the browser, and
-    // once it has a title it is created as a draft.
-    if (!docId) {
-      backup.write(buildBody());
-      if (title.trim() && status !== "published") handleSave(undefined, true);
-      return;
-    }
-    if (status === "published") backup.write(buildBody());
-    else handleSave(undefined, true);
-  };
+  // Keep the interval's callback current after every render.
+  useEffect(() => {
+    saveRef.current = () => {
+      // After a refused save nothing reaches the server; keep the conflict
+      // copy current instead, so typing after the warning is not lost either.
+      if (conflict) {
+        if (dirty) backup.writeConflict(buildBody());
+        return;
+      }
+      if (!dirty || saving) return;
+      // A published post must not change on the site until Update is pressed —
+      // its autosave is a browser backup. A draft is not public: it autosaves
+      // to the database so a crash cannot lose it.
+      //
+      // A post that was never saved used to be skipped by both, so a crashed
+      // tab lost the whole first draft. It is backed up in the browser, and
+      // once it has a title it is created as a draft.
+      if (!docId) {
+        backup.write(buildBody());
+        if (title.trim() && status !== "published") handleSave(undefined, true);
+        return;
+      }
+      if (status === "published") backup.write(buildBody());
+      else handleSave(undefined, true);
+    };
+  });
   useEffect(() => {
     const id = setInterval(() => saveRef.current(), 20000);
     return () => clearInterval(id);
@@ -855,7 +861,7 @@ export default function PostEditor({
                 {(
                   <p className="mt-1 text-[11px] text-slate-400">Time in {siteTimeZone(settings)} — the site&apos;s time zone (Settings → Timezone).</p>
                 )}
-                {publishedAt && Date.parse(fromLocalInput(publishedAt, siteTimeZone(settings))) > Date.now() ? (
+                {publishedAt && Date.parse(fromLocalInput(publishedAt, siteTimeZone(settings))) > now ? (
                   <p className="mt-1 rounded-lg border border-sky-200 bg-sky-50 px-2.5 py-1.5 text-[11px] leading-relaxed text-sky-800">
                     <strong>Scheduled.</strong> Set the status to Published and this post stays
                     hidden — off the archive, the feed, search and the sitemap — until this date,

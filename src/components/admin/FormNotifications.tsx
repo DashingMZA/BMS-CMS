@@ -47,6 +47,7 @@ export default function FormNotifications() {
     if (st) setStatus(st);
   }, []);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional fetch-on-mount: this panel loads its values once when opened
   useEffect(() => { void load(); }, [load]);
 
   const set = (k: Key, v: string) => setValues((p) => ({ ...(p ?? {}), [k]: v }));

@@ -36,6 +36,7 @@ export default function FormsPage() {
     setUnread(data.unread ?? 0);
   }, []);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional fetch-on-mount: this screen loads its rows once when opened
   useEffect(() => { void load(); }, [load]);
 
   const formNames = useMemo(

@@ -75,6 +75,7 @@ export default function TranslationsPanel({
   );
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional fetch-on-open: candidates load when the dialog opens for a document
     if (openFor) loadCandidates(openFor);
   }, [openFor, loadCandidates]);
 

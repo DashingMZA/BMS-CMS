@@ -66,15 +66,14 @@ export function SlashMenu({
   selectedIndex?: number;
   onItemClick?: (item: MenuItem) => void;
 }) {
-  let lastGroup = "";
   return (
     <div className="w-72 max-h-80 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl py-1.5">
       {items.length === 0 && (
         <div className="px-3 py-4 text-xs text-slate-400 text-center">No matching blocks</div>
       )}
       {items.map((item, i) => {
-        const showGroup = item.group && item.group !== lastGroup;
-        lastGroup = item.group || lastGroup;
+        const prevGroup = i > 0 ? items[i - 1].group : "";
+        const showGroup = item.group && item.group !== prevGroup;
         const active = i === selectedIndex;
         return (
           <div key={`${item.title}-${i}`}>

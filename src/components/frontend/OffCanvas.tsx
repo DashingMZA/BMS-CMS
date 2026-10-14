@@ -31,7 +31,13 @@ export default function OffCanvas({
   // with page scrolling still locked. It closes when the address changes,
   // and on any link tap inside it (a `#section` link keeps the path).
   const pathname = usePathname();
-  useEffect(() => setOpen(false), [pathname]);
+  // Close when the address changes, during render rather than in an effect —
+  // the documented "adjust state during render" pattern.
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
+    setOpen(false);
+  }
 
   useEffect(() => {
     if (!open) return;

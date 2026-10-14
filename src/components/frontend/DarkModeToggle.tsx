@@ -49,6 +49,7 @@ export default function DarkModeToggle({ label }: { label: string }) {
     // stamping the attribute would freeze the site against a later change of
     // system preference.
     if (stored === "dark" || stored === "light") apply(stored);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional read-on-mount: the first paint must not claim a theme before localStorage is checked (avoids a hydration mismatch)
     setTheme(initial);
   }, []);
 

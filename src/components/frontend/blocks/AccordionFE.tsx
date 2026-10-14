@@ -46,7 +46,14 @@ export default function AccordionFE({
   const seed = () => new Set(acc.panes.flatMap((p, i) => (p.open ? [i] : [])));
   const [open, setOpen] = useState<Set<number>>(seed);
   const openKey = acc.panes.map((p) => (p.open ? "1" : "0")).join("");
-  useEffect(() => setOpen(seed), [openKey, acc.panes.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Re-seed when the config changes, during render rather than in an effect —
+  // the documented "adjust state during render" pattern.
+  const seedKey = `${openKey}:${acc.panes.length}`;
+  const [prevSeedKey, setPrevSeedKey] = useState(seedKey);
+  if (prevSeedKey !== seedKey) {
+    setPrevSeedKey(seedKey);
+    setOpen(seed());
+  }
 
   // Closed panes are `hidden="until-found"`: find-in-page and search engines
   // still see the text, and a match opens the pane (`beforematch`). React

@@ -208,7 +208,9 @@ function ColumnCanvas({ rowId, index, initial, schema, editable, focused, onBloc
   // The parent re-renders on every keystroke it receives; keeping the callback
   // in a ref means the change subscription is set up once per editor.
   const onBlocksRef = useRef(onBlocks);
-  onBlocksRef.current = onBlocks;
+  useEffect(() => {
+    onBlocksRef.current = onBlocks;
+  });
 
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -229,6 +231,7 @@ function ColumnCanvas({ rowId, index, initial, schema, editable, focused, onBloc
    * down with "Position undefined out of range" before a row ever paints.
    */
   const [mounted, setMounted] = useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional mount flag: the nested BlockNoteView flushSyncs on mount, which must happen after commit, never during render
   useEffect(() => setMounted(true), []);
 
   /**

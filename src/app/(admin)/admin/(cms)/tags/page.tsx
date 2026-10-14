@@ -39,6 +39,7 @@ export default function TagsPage() {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional fetch-on-mount: this screen loads its rows once when opened
     fetchTags();
     fetch("/api/settings")
       .then((r) => (r.ok ? r.json() : null))
@@ -46,9 +47,11 @@ export default function TagsPage() {
       .catch(() => {});
   }, []);
 
-  useEffect(() => {
-    setForm((f) => (f.language ? f : { ...f, language: defaultContentLanguage(settings) }));
-  }, [settings]);
+  // The form starts on the default language once settings arrive — adjusted
+  // during render rather than in an effect (the documented pattern).
+  if (!form.language) {
+    setForm({ ...form, language: defaultLang });
+  }
 
   // The server's own rule, so the preview is what gets saved: the old
   // a–z/0–9 preview blanked Arabic and Hindi names and turned "Café" into "caf".

@@ -59,10 +59,13 @@ export default function LinkSuggestions({ keyword, title, language, excludePost,
     return (url: string) => text.includes(`"href":"${url}"`) || text.includes(`"href":"${url}/"`) || text.includes(`${url}"`);
   }, [content]);
 
+  // Clear stale suggestions the moment the query gets too short — during render
+  // rather than in an effect (the documented pattern).
+  if (query.length < 2 && items.length > 0) setItems([]);
+
   useEffect(() => {
     if (timer.current) clearTimeout(timer.current);
     if (query.length < 2) {
-      setItems([]);
       return;
     }
     // The debounce only cancels a request that has not started. Once one is in

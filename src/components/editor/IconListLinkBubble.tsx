@@ -85,13 +85,16 @@ export default function IconListLinkBubble() {
   const [error, setError] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const editingRef = useRef(false);
-  editingRef.current = editing;
+  useEffect(() => {
+    editingRef.current = editing;
+  });
   const [active, setActive] = useState(false);
 
   useEffect(() => {
     const me = Symbol("bubble");
     if (owner) return;
     owner = me;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional singleton claim: only one bubble may be active; the module-level owner slot is claimed on mount with cleanup on unmount
     setActive(true);
     return () => {
       if (owner === me) owner = null;

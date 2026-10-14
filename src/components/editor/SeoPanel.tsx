@@ -64,6 +64,7 @@ export default function SeoPanel({
   // rather than during render: the server has no `window`, and a guessed origin
   // in the markup would not match what hydration produces.
   const [origin, setOrigin] = useState("");
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional read-on-mount: window does not exist during SSR, so this cannot move into render
   useEffect(() => setOrigin(window.location.origin), []);
 
   function update(key: keyof SeoData, value: string | boolean | null) {

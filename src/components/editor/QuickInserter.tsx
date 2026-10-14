@@ -59,7 +59,13 @@ function InserterPopover({ anchor, onPick, onBrowseAll, onClose }: PopoverProps)
     [searching, query, quick]
   );
 
-  useEffect(() => setCursor(0), [query]);
+  // Reset the highlight whenever the query changes — adjusted during render
+  // rather than in an effect (the documented pattern).
+  const [prevQuery, setPrevQuery] = useState(query);
+  if (prevQuery !== query) {
+    setPrevQuery(query);
+    setCursor(0);
+  }
 
   const choose = useCallback(
     (def: BlockDef) => {
@@ -209,12 +215,12 @@ export default function Inserter({
   onPick, onBrowseAll, variant = "round", className = "", title, tooltip,
 }: InserterProps) {
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLButtonElement>(null);
+  const [anchor, setAnchor] = useState<HTMLButtonElement | null>(null);
 
   const close = useCallback(() => setOpen(false), []);
 
   const common = {
-    ref,
+    ref: setAnchor,
     type: "button" as const,
     title: tooltip ? undefined : title ?? "Add block",
     onMouseDown: (e: React.MouseEvent) => e.preventDefault(),
@@ -280,9 +286,9 @@ export default function Inserter({
       ) : (
         trigger
       )}
-      {open && ref.current && (
+      {open && anchor && (
         <InserterPopover
-          anchor={ref.current}
+          anchor={anchor}
           onClose={close}
           onPick={(def) => { close(); onPick(def); }}
           onBrowseAll={() => { close(); onBrowseAll(); }}

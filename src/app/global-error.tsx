@@ -36,6 +36,7 @@ export default function GlobalError({
 
   // English for the first frame, then the visitor's language.
   const [lang, setLang] = useState("en");
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional read-on-mount: the visitor's language is only available in the browser (avoids a hydration mismatch)
   useEffect(() => setLang(guessLanguage()), []);
   const t = errorText(lang);
   const base = lang.split("-")[0].toLowerCase();

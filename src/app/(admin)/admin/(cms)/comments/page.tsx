@@ -55,6 +55,7 @@ export default function CommentsPage() {
     setLoading(false);
   }, [filter]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional fetch-on-mount: this screen loads its rows once when opened (and again when the filter changes)
   useEffect(() => { fetchComments(); }, [fetchComments]);
 
   // A failed action used to look like a click that did nothing: the list

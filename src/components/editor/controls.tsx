@@ -15,7 +15,6 @@ import {
   createContext,
   useContext,
   useState,
-  useCallback,
   useMemo,
   type ReactNode,
 } from "react";
@@ -199,10 +198,8 @@ export function ResponsiveSlider({
   const inherited = effectiveScalar(parsed, device);
   const unit = unitOf(parsed);
 
-  const write = useCallback(
-    (patch: Partial<RespScalar>) => onChange(serializeScalar({ ...parsed, ...patch })),
-    [onChange, parsed]
-  );
+  const write = (patch: Partial<RespScalar>) =>
+    onChange(serializeScalar({ ...parsed, ...patch }));
 
   const sliderValue = Number.parseFloat(raw || inherited);
 
@@ -272,10 +269,8 @@ export function ResponsiveBox({
   const unit = unitOf(parsed);
   const linked = parsed.lk === 1;
 
-  const write = useCallback(
-    (patch: Partial<RespSides>) => onChange(serializeSides({ ...parsed, ...patch })),
-    [onChange, parsed]
-  );
+  const write = (patch: Partial<RespSides>) =>
+    onChange(serializeSides({ ...parsed, ...patch }));
 
   const setSide = (index: number, next: string) => {
     const sides: Sides = linked

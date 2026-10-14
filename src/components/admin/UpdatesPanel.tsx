@@ -48,6 +48,7 @@ export default function UpdatesPanel() {
     }
   }, []);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional fetch-on-mount: the check runs once when the panel opens
   useEffect(() => { void check(); }, [check]);
 
   async function apply() {
