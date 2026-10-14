@@ -237,11 +237,22 @@ if (process.env.LEGACY_POLYFILLS !== "on") {
   // earlier version filtered `config.entry` and changed nothing (same chunk
   // hash, same 11 KiB). Swapping the module itself works for every entry.
   const noop = fileURLToPath(new URL("./src/lib/noop-module.js", import.meta.url));
+  // webpack builds (`next build --webpack`).
   nextConfig.webpack = (config, { isServer, webpack }) => {
     if (isServer) return config;
     config.plugins.push(new webpack.NormalModuleReplacementPlugin(/[\\/]build[\\/]polyfills[\\/]polyfill-module(\.js)?$/, noop));
     return config;
   };
+  // Turbopack builds (the default in Next 16). Next 16 refuses a build that
+  // defines `webpack` without `turbopack`, so the key must exist — but it
+  // stays empty on purpose. The webpack NormalModuleReplacementPlugin above
+  // has no Turbopack equivalent: resolveAlias matches the raw import
+  // specifier, and app-globals.js requires the polyfill relatively
+  // ("../build/polyfills/polyfill-module"), which cannot be aliased without
+  // breaking the resolver (tried 2026-10-14: it made @tiptap/core
+  // unresolvable). So under Turbopack the 11 KiB polyfill ships; the swap
+  // still applies to `next build --webpack`.
+  nextConfig.turbopack = {};
 }
 
 export default nextConfig;
