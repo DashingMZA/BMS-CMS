@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Fragment } from "react";
 import { uiText } from "@/lib/uiText";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
@@ -6,7 +7,8 @@ import { posts, tags, postTags, categories } from "@/lib/db/schema";
 import { parseSidebarWidgets, SIDEBAR_WIDGET_IDS, type SidebarWidget } from "@/lib/appearanceSettings";
 import { categoryPath, postPath, searchPath, tagPath } from "@/lib/permalinks";
 import { isLive } from "@/lib/publishState";
-import AdBlocks from "./AdSlot";
+import { parseAdBlocks, sidebarBlocksFor, type AdBlock } from "@/lib/ads";
+import AdBlocks, { AdBlockView } from "./AdSlot";
 
 /**
  * The real sidebar, replacing the placeholder box.
@@ -85,6 +87,18 @@ async function renderSidebar({
   const midPoint = Math.ceil(widgets.length / 2);
   const firstHalf = widgets.slice(0, midPoint);
   const secondHalf = widgets.slice(midPoint);
+
+  // "After widget N" ads, keyed by their widget number (1-based). A number
+  // past the end falls back to the bottom of the sidebar.
+  const customAds = new Map<number, AdBlock[]>();
+  for (const b of sidebarBlocksFor(parseAdBlocks(settings.ads_blocks), "custom", pageKind)) {
+    const n = Math.max(1, Math.min(b.count || 1, widgets.length));
+    const list = customAds.get(n) ?? [];
+    list.push(b);
+    customAds.set(n, list);
+  }
+  const customAdsAfter = (n: number) =>
+    (customAds.get(n) ?? []).map((b) => <AdBlockView key={`custom-${b.id}`} block={b} />);
 
   const renderWidget = ({ id, widget }: (typeof widgets)[number]) => (
     <section key={id} className="sidebar-widget" data-widget={widget.type}>
@@ -165,11 +179,21 @@ async function renderSidebar({
     <div className="space-y-8">
       {/* Ad blocks with the "Sidebar" position, "Top" slot. */}
       <AdBlocks position="sidebar" slot="top" pageKind={pageKind} />
-      {firstHalf.map(renderWidget)}
+      {firstHalf.map((w, i) => (
+        <Fragment key={w.id}>
+          {renderWidget(w)}
+          {customAdsAfter(i + 1)}
+        </Fragment>
+      ))}
       {/* Ad blocks with the "Sidebar" position, "Middle" slot — after the
           middle widget. */}
       <AdBlocks position="sidebar" slot="middle" pageKind={pageKind} />
-      {secondHalf.map(renderWidget)}
+      {secondHalf.map((w, i) => (
+        <Fragment key={w.id}>
+          {renderWidget(w)}
+          {customAdsAfter(midPoint + i + 1)}
+        </Fragment>
+      ))}
       {/* Ad blocks with the "Sidebar" position, "Bottom" slot. */}
       <AdBlocks position="sidebar" slot="bottom" pageKind={pageKind} />
     </div>

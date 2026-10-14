@@ -228,9 +228,9 @@ async function renderAfter({
 
       {showNav && (previous || next) && (
       <>
-      {/* Ad blocks with the "Before excerpt" position — above prev/next. */}
-      <AdBlocks position="before_excerpt" pageKind="posts" />
       <nav className="post-nav mt-12 grid-cols-1 gap-4 border-t border-black/10 pt-8 sm:grid-cols-2">
+        {/* Ad blocks with the "Before excerpt" position — below the line, above prev/next. */}
+        <div className="col-span-full"><AdBlocks position="before_excerpt" pageKind="posts" /></div>
         <div>
           {previous && (
             <Link href={postPath(previous, settings)} className="group block">

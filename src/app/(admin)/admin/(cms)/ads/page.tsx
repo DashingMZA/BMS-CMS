@@ -35,6 +35,7 @@ export default function AdsPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [tab, setTab] = useState<Tab>("blocks");
+  const [widgetCount, setWidgetCount] = useState(0);
 
   useEffect(() => {
     fetch("/api/settings")
@@ -44,6 +45,14 @@ export default function AdsPage() {
         setBlocks(parseAdBlocks(d.settings?.ads_blocks));
         setScriptHead(d.settings?.script_head ?? "");
         setScriptBodyEnd(d.settings?.script_body_end ?? "");
+        // Real sidebar widget count, so "After widget N" only offers N that exist.
+        try {
+          const w = JSON.parse(d.settings?.sidebar_widgets ?? "{}");
+          const ids = ["swidget1", "swidget2", "swidget3", "swidget4"];
+          setWidgetCount(ids.filter((id) => w && typeof w === "object" && w[id]).length);
+        } catch {
+          setWidgetCount(0);
+        }
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -242,6 +251,23 @@ export default function AdsPage() {
                               <option key={s.id} value={s.id}>{s.label}</option>
                             ))}
                           </select>
+                        </div>
+                      )}
+                      {b.position === "sidebar" && b.sidebarPosition === "custom" && (
+                        <div>
+                          <label className="label">After widget</label>
+                          <select
+                            className="input text-sm"
+                            value={Math.max(1, Math.min(b.count || 1, Math.max(1, widgetCount)))}
+                            onChange={(e) => patchBlock(b.id, { count: parseInt(e.target.value) || 1 })}
+                          >
+                            {Array.from({ length: Math.max(1, widgetCount) }, (_, i) => (
+                              <option key={i + 1} value={i + 1}>After widget {i + 1}</option>
+                            ))}
+                          </select>
+                          {widgetCount === 0 && (
+                            <p className="text-xs opacity-60 mt-1">No sidebar widgets configured yet.</p>
+                          )}
                         </div>
                       )}
                       <div>

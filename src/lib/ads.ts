@@ -55,6 +55,7 @@ export const AD_SIDEBAR_POSITIONS = [
   { id: "top",    label: "Top" },
   { id: "middle", label: "Middle" },
   { id: "bottom", label: "Bottom" },
+  { id: "custom", label: "After widget…" },
 ] as const;
 
 export type AdSidebarPosition = (typeof AD_SIDEBAR_POSITIONS)[number]["id"];
