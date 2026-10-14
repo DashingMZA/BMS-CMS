@@ -355,7 +355,7 @@ You do not need the CMS to develop. Make a `test.html` next to your files:
 <script type="module" src="script.js"></script>
 ```
 
-Open it in a browser (with a local server — `npx serve .` — modules will not
+Open it in a browser (with a local server — `pnpm dlx serve .` — modules will not
 load from `file://`). Change `dir` to `rtl` to check the Arabic layout. When it
 looks right, zip and install for real.
 

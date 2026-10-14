@@ -37,7 +37,7 @@ const INCLUDE = [
   "scripts",
   "server.js",
   "package.json",
-  "package-lock.json",
+  "pnpm-lock.yaml",
   "next.config.mjs",
   "auth.config.ts",
   "tsconfig.json",
