@@ -157,7 +157,7 @@ export default function Sidebar() {
                 rel="noopener noreferrer"
                 className="text-brand-400 hover:text-brand-300 hover:underline"
               >
-                Zaheer Ahmad
+                Zaheer
               </a>
             </span>
             <span className="text-slate-500 text-[10px] leading-tight block">For bloggers, by a blogger</span>
@@ -198,7 +198,7 @@ export default function Sidebar() {
 
       <div className="px-3 py-4 border-t border-slate-800 space-y-1">
         <a
-          href="https://whatsapp.com/channel/0029VabLVkeDeONB6gNs6U1h"
+          href="https://whatsapp.com/channel/0029VbDyfOSElah1wZ7CAr40"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"

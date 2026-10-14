@@ -95,7 +95,7 @@ export default function LoginPage() {
             </div>
             {step !== "totp" && (
               <>
-                <h1 className="text-2xl font-bold text-slate-900">BMS by Rehan</h1>
+                <h1 className="text-2xl font-bold text-slate-900">BMS by Zaheer</h1>
                 <p className="text-slate-400 text-xs mt-0.5 italic">A CMS made for bloggers by a blogger</p>
               </>
             )}
@@ -187,12 +187,12 @@ export default function LoginPage() {
         <p className="text-center text-xs text-slate-400 mt-5">
           Made with ♥ by{" "}
           <a
-            href="https://www.facebook.com/rehanmubarak32/"
+            href="https://www.facebook.com/dashingmza/"
             target="_blank"
             rel="noopener noreferrer"
             className="text-brand-500 hover:underline"
           >
-            Rehan
+            Zaheer
           </a>
         </p>
       </div>
