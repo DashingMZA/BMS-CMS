@@ -1,6 +1,6 @@
 // Applies the .sql files in drizzle/ that the database has not seen yet.
 //
-// One implementation for two callers: `npm run db:migrate` (a person, on the
+// One implementation for two callers: `pnpm run db:migrate` (a person, on the
 // PC or in a terminal on the host) and server.js after it starts listening
 // (the host, every restart). The second is why this exists — an upload that
 // adds a column used to need someone to open a terminal on the host and run

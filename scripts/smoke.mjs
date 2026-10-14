@@ -2,14 +2,14 @@
 //
 // Boots the production build and checks that the site actually works.
 //
-//   npm run build && npm run check
+//   pnpm run build && pnpm run check
 //
 // It starts `server.js` on a spare port, requests the routes a visitor, a
 // crawler and an administrator would hit, and checks not just the status
 // codes but the things that fail silently: the canonical tag, the security
 // headers, the stylesheet's cache header, the sitemap being a sitemap. Then
 // it stops the server. Any failure exits non-zero, so this can sit in front
-// of `npm run pack` and refuse to package a broken build.
+// of `pnpm run pack` and refuse to package a broken build.
 //
 // It uses the same .env.local the server would, so it also proves the
 // database is reachable from here.
@@ -26,7 +26,7 @@ config({ path: join(root, ".env"), quiet: true });
 
 const distDir = process.env.BUILD_DIR || ".next";
 if (!existsSync(join(root, distDir, "BUILD_ID"))) {
-  console.error(`\n  No production build in ${distDir}/. Run \`npm run build\` first.\n`);
+  console.error(`\n  No production build in ${distDir}/. Run \`pnpm run build\` first.\n`);
   process.exit(1);
 }
 

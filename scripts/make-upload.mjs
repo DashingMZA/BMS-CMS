@@ -9,9 +9,9 @@
 // perfectly good. This writes explicit permissions into every entry
 // (directories 755, files 644), so the extracted tree is correct on any host.
 //
-//   npm run pack          → ./upload.zip
+//   pnpm run pack          → ./upload.zip
 //
-// Run it after `npm run build`. It refuses to run without a build, and it
+// Run it after `pnpm run build`. It refuses to run without a build, and it
 // never includes .env.local, node_modules, or the build cache.
 
 import { createWriteStream, existsSync } from "node:fs";
@@ -24,7 +24,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const out = join(root, "upload.zip");
 
 if (!existsSync(join(root, ".next", "BUILD_ID"))) {
-  console.error("\n  No production build found. Run `npm run build` first.\n");
+  console.error("\n  No production build found. Run `pnpm run build` first.\n");
   process.exit(1);
 }
 
@@ -57,7 +57,7 @@ const EXCLUDE = new Set([".env.local", ".env", "node_modules", ".git", ".DS_Stor
 const EXCLUDE_PATHS = new Set([join(".next", "cache"), "backups", "plugins", "fonts", join("public", "uploads")]);
 
 // The Next.js version this build was made with. A build only runs on the
-// same version: `npm install` on the host picking a newer patch release made
+// same version: `pnpm install` on the host picking a newer patch release made
 // individual pages crash with a bare 500. server.js and Site Health compare
 // against this file and say so.
 {
@@ -78,7 +78,7 @@ const EXCLUDE_PATHS = new Set([join(".next", "cache"), "backups", "plugins", "fo
   if (bumped > built) {
     console.error(
       "\n  package.json changed after the last build, so the build carries the old version.\n" +
-        "  Run `npm run build` again, then pack.\n"
+        "  Run `pnpm run build` again, then pack.\n"
     );
     process.exit(1);
   }
