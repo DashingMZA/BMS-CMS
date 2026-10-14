@@ -10,6 +10,7 @@ import { contentColumn, resolveDocLayout, resolveDocSpacing, resolveDocStyle } f
 import { authorPath, postPath, tagPath } from "@/lib/permalinks";
 import { formatSiteDate, isoDate } from "@/lib/locale";
 import { isLive } from "@/lib/publishState";
+import AdBlocks from "@/components/frontend/AdSlot";
 
 /** One settled result, or a fallback if that query failed. */
 function settled<T>(result: PromiseSettledResult<T>, fallback: T): T {
@@ -180,6 +181,8 @@ async function renderAfter({
         ))}
       </div>
       )}
+      {/* Ad blocks with the "After post" position — below the tags. */}
+      <AdBlocks position="after_post" pageKind="posts" />
 
       {showAuthor && (
       <div className="post-author-box mt-14 items-center gap-4 rounded-xl border border-black/10 p-5">
@@ -224,6 +227,9 @@ async function renderAfter({
       )}
 
       {showNav && (previous || next) && (
+      <>
+      {/* Ad blocks with the "Before excerpt" position — above prev/next. */}
+      <AdBlocks position="before_excerpt" pageKind="posts" />
       <nav className="post-nav mt-12 grid-cols-1 gap-4 border-t border-black/10 pt-8 sm:grid-cols-2">
         <div>
           {previous && (
@@ -242,6 +248,9 @@ async function renderAfter({
           )}
         </div>
       </nav>
+      {/* Ad blocks with the "After excerpt" position — below prev/next. */}
+      <AdBlocks position="after_excerpt" pageKind="posts" />
+      </>
       )}
 
       {showRelated && related.length > 0 && (
@@ -277,6 +286,8 @@ async function renderAfter({
         )}
       </section>
       )}
+      {/* Ad blocks with the "Between posts" position — after related posts. */}
+      <AdBlocks position="between_posts" pageKind="posts" />
     </>
   );
 }

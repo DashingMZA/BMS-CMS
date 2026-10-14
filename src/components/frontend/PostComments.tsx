@@ -170,6 +170,10 @@ async function renderComments({
         {rows.length === 0 ? t.leaveAComment : t.comments(rows.length)}
       </h2>
 
+      {/* Ad blocks with the "Before comments" position — below the section
+          heading, above the first comment. */}
+      {pageKind && <AdBlocks position="before_comments" pageKind={pageKind} />}
+
       {items.length > 0 && (
         <ul className="mb-10 space-y-5">
           {items.map(({ comment, replies }, idx) => (
@@ -188,9 +192,10 @@ async function renderComments({
                   ))}
                 </ul>
               )}
-              {/* Ad blocks with the "Between comments" position — after each
-                  top-level comment, not after the last one. */}
-              {pageKind && idx < items.length - 1 && (
+              {/* Ad blocks with the "Between comments" position — after the
+                  middle comment: 2 → after 1st, 3-4 → after 2nd, 5-6 → after
+                  3rd, …; a single comment puts it above the reply form. */}
+              {pageKind && idx === Math.ceil(items.length / 2) - 1 && (
                 <AdBlocks position="between_comments" pageKind={pageKind} />
               )}
             </li>

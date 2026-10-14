@@ -248,10 +248,57 @@ export interface AdMarker {
 }
 
 /**
+ * Injects before/after paragraph/image ads into a raw HTML string (an
+ * `htmlEmbed` block's markup — which is what WordPress-imported articles
+ * are). Paragraphs are `<p>…</p>` elements, images `<img>` tags, counted in
+ * document order. Returns the HTML unchanged when nothing matches.
+ *
+ * Featured images are rendered separately (ContentImage), never inside this
+ * HTML, so they are never counted.
+ */
+export function injectHtmlAds(html: string, adBlocks: AdBlock[], pageKind: string): string {
+  const wants = adBlocks.filter(
+    (b) =>
+      isBlockLive(b) &&
+      (b.pages[pageKind as AdPageKind] ?? false) &&
+      ["before_paragraph", "after_paragraph", "before_image", "after_image"].includes(b.position)
+  );
+  if (wants.length === 0 || !html.includes("<")) return html;
+
+  const paras: { start: number; end: number }[] = [];
+  const images: { start: number; end: number }[] = [];
+  let m: RegExpExecArray | null;
+  const pRe = /<p(\s[^>]*)?>[\s\S]*?<\/p\s*>/gi;
+  while ((m = pRe.exec(html)) !== null) paras.push({ start: m.index, end: m.index + m[0].length });
+  const imgRe = /<img\b[^>]*>/gi;
+  while ((m = imgRe.exec(html)) !== null) images.push({ start: m.index, end: m.index + m[0].length });
+
+  const insertions: { pos: number; html: string }[] = [];
+  for (const b of wants) {
+    const adHtml = adBlockHtml(b);
+    const n = b.count - 1;
+    if (b.position === "before_paragraph" && paras[n]) insertions.push({ pos: paras[n].start, html: adHtml });
+    else if (b.position === "after_paragraph" && paras[n]) insertions.push({ pos: paras[n].end, html: adHtml });
+    else if (b.position === "before_image" && images[n]) insertions.push({ pos: images[n].start, html: adHtml });
+    else if (b.position === "after_image" && images[n]) insertions.push({ pos: images[n].end, html: adHtml });
+  }
+  if (insertions.length === 0) return html;
+
+  // Back to front, so earlier insertions don't shift later positions.
+  insertions.sort((a, b) => b.pos - a.pos);
+  let out = html;
+  for (const ins of insertions) out = out.slice(0, ins.pos) + ins.html + out.slice(ins.pos);
+  return out;
+}
+
+/**
  * Returns a copy of the block list with ad markers inserted at the requested
  * before/after paragraph/image positions. Markers are `{ type: "adSlot" }`
  * blocks carrying the ad block's id; BlockRenderer renders them, everything
  * else ignores unknown types, so a stale marker is harmless.
+ *
+ * `htmlEmbed` blocks (WordPress imports) get their ads injected directly
+ * into the HTML string, since they have no structured paragraphs to count.
  */
 export function injectContentAds<T extends Record<string, unknown>>(
   blocks: T[],
@@ -274,6 +321,19 @@ export function injectContentAds<T extends Record<string, unknown>>(
 
   for (const blk of blocks) {
     const t = blk?.type;
+    // An HTML embed carries its paragraphs as markup, not blocks.
+    if (t === "htmlEmbed") {
+      const props = (blk?.props ?? {}) as Record<string, unknown>;
+      if (typeof props.html === "string" && props.html.includes("<")) {
+        const injected = injectHtmlAds(props.html, adBlocks, pageKind);
+        if (injected !== props.html) {
+          out.push({ ...blk, props: { ...props, html: injected } });
+          continue;
+        }
+      }
+      out.push(blk);
+      continue;
+    }
     const isPara = typeof t === "string" && PARAGRAPH_TYPES.has(t);
     const isImage = typeof t === "string" && IMAGE_TYPES.has(t);
     if (isPara) paras++;

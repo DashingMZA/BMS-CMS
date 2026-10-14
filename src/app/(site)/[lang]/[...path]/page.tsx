@@ -651,7 +651,6 @@ export default async function ContentRoute({ params }: Params) {
         {(page.showComments === "enable" ||
           (page.showComments !== "disable" && settings.page_comments_show === "true")) && (
           <>
-            <AdBlocks position="before_comments" pageKind="static" />
             <PostComments pageId={page.id} language={page.language} pageKind="static" />
             <AdBlocks position="after_comments" pageKind="static" />
           </>
@@ -850,7 +849,6 @@ export default async function ContentRoute({ params }: Params) {
         <BlockRenderer blocks={injectContentAds((post.content as Block[]) ?? [], parseAdBlocks(settings.ads_blocks), "posts")} language={post.language} direction={post.direction} title={post.title} pageUrl={postUrl} column={postCol} />
       </div>
       <AdBlocks position="after_content" pageKind="posts" />
-      <AdBlocks position="after_post" pageKind="posts" />
 
       <PostAfterContent post={post} settings={settings} />
       {/* Resolved on the server rather than hidden with CSS. The site-wide
@@ -860,7 +858,6 @@ export default async function ContentRoute({ params }: Params) {
       {(post.showComments === "enable" ||
         (post.showComments !== "disable" && settings.post_comments_show !== "false")) && (
         <>
-          <AdBlocks position="before_comments" pageKind="posts" />
           <PostComments postId={post.id} language={post.language} pageKind="posts" />
           <AdBlocks position="after_comments" pageKind="posts" />
         </>

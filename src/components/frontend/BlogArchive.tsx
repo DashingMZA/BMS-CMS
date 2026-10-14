@@ -655,6 +655,10 @@ export default async function BlogArchive({
             The cards are what that grid was written for. */}
         {/* The design is a class, so every preset renders the same markup and
             switching one costs a stylesheet, not a republish. */}
+        {/* Ad blocks with the "Before post" position — above all posts. */}
+        {blocksFor(adBlocks, "before_post", pageKind).map((b) => (
+          <AdBlockView key={`before-post-${b.id}`} block={b} />
+        ))}
         <div className={`archive-items is-${cardStyle}`}>
           {list.map((post, index) => (
             <Fragment key={post.id}>
@@ -772,7 +776,19 @@ export default async function BlogArchive({
           </p>
         )}
 
+        {/* Ad blocks with the "After post" position — below all posts, above pagination. */}
+        {blocksFor(adBlocks, "after_post", pageKind).map((b) => (
+          <AdBlockView key={`after-post-${b.id}`} block={b} />
+        ))}
+        {/* Ad blocks with the "Before excerpt" position — above pagination. */}
+        {beforeExcerptBlocks.map((b) => (
+          <AdBlockView key={`before-excerpt-page-${b.id}`} block={b} />
+        ))}
         <Pagination base={base} page={page} totalPages={totalPages} style={paginationStyle(settings)} label={moreLabel} language={archiveLang} rtl={dir === "rtl"} />
+        {/* Ad blocks with the "After excerpt" position — below pagination. */}
+        {afterExcerptBlocks.map((b) => (
+          <AdBlockView key={`after-excerpt-page-${b.id}`} block={b} />
+        ))}
         {paginationStyle(settings) !== "numbers" && page < totalPages && (
           <LoadMore
             // As Pagination builds it: on the front page `base` is "/", and

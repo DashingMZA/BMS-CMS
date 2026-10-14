@@ -81,86 +81,95 @@ async function renderSidebar({
       : Promise.resolve([]),
   ]);
 
+  // "Middle" ads sit after the middle widget, not after all of them.
+  const midPoint = Math.ceil(widgets.length / 2);
+  const firstHalf = widgets.slice(0, midPoint);
+  const secondHalf = widgets.slice(midPoint);
+
+  const renderWidget = ({ id, widget }: (typeof widgets)[number]) => (
+    <section key={id} className="sidebar-widget" data-widget={widget.type}>
+      {/* h2, not h3: a widget title is a section heading of the page, the
+          same rank as a footer widget's. At h3 it jumped a level from the
+          document's `<h1>` whenever the content itself had no headings —
+          which is most short posts. */}
+      {widget.title && <h2 className="mb-3 text-sm font-bold uppercase tracking-wide">{widget.title}</h2>}
+
+      {widget.type === "search" && (
+        <form action={searchPath(language, settings)} className="flex">
+          <input
+            name="q"
+            type="search"
+            placeholder={uiText(language).searchPlaceholder}
+            aria-label={uiText(language).searchPlaceholder}
+            className="w-full rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black/10"
+          />
+          <button type="submit" className="sr-only">{uiText(language).search}</button>
+        </form>
+      )}
+
+      {widget.type === "recent" && (
+        <ul className="space-y-2 text-sm">
+          {recent.slice(0, widget.count ?? 5).map((p) => (
+            <li key={p.id}>
+              <Link href={postPath(p, settings)} className="opacity-80 hover:opacity-100 hover:underline">
+                {p.title}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {widget.type === "categories" && (
+        <ul className="space-y-2 text-sm">
+          {cats.slice(0, widget.count ?? 10).map((c) => (
+            <li key={c.id}>
+              <Link href={categoryPath(c.slug, language, settings)} className="opacity-80 hover:opacity-100 hover:underline">
+                {c.name}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {widget.type === "tags" && (
+        <div className="flex flex-wrap gap-1.5">
+          {tagList.slice(0, widget.count ?? 20).map((t) => (
+            <Link
+              key={t.id}
+              href={tagPath(t.slug, language, settings)}
+              className="rounded-full border border-black/10 px-2.5 py-1 text-xs opacity-80 transition-opacity hover:opacity-100"
+            >
+              {t.name}
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {widget.type === "links" && (
+        <ul className="space-y-2 text-sm">
+          {(widget.links ?? []).filter((l) => l.label).map((l, i) => (
+            <li key={i}>
+              <Link href={l.url || "#"} className="opacity-80 hover:opacity-100 hover:underline">{l.label}</Link>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {widget.type === "text" && widget.text && (
+        <p className="whitespace-pre-wrap text-sm leading-relaxed opacity-80">{widget.text}</p>
+      )}
+    </section>
+  );
+
   return (
     <div className="space-y-8">
       {/* Ad blocks with the "Sidebar" position, "Top" slot. */}
       <AdBlocks position="sidebar" slot="top" pageKind={pageKind} />
-      {widgets.map(({ id, widget }) => (
-        <section key={id} className="sidebar-widget" data-widget={widget.type}>
-          {/* h2, not h3: a widget title is a section heading of the page, the
-              same rank as a footer widget's. At h3 it jumped a level from the
-              document's `<h1>` whenever the content itself had no headings —
-              which is most short posts. */}
-          {widget.title && <h2 className="mb-3 text-sm font-bold uppercase tracking-wide">{widget.title}</h2>}
-
-          {widget.type === "search" && (
-            <form action={searchPath(language, settings)} className="flex">
-              <input
-                name="q"
-                type="search"
-                placeholder={uiText(language).searchPlaceholder}
-                aria-label={uiText(language).searchPlaceholder}
-                className="w-full rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black/10"
-              />
-              <button type="submit" className="sr-only">{uiText(language).search}</button>
-            </form>
-          )}
-
-          {widget.type === "recent" && (
-            <ul className="space-y-2 text-sm">
-              {recent.slice(0, widget.count ?? 5).map((p) => (
-                <li key={p.id}>
-                  <Link href={postPath(p, settings)} className="opacity-80 hover:opacity-100 hover:underline">
-                    {p.title}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-
-          {widget.type === "categories" && (
-            <ul className="space-y-2 text-sm">
-              {cats.slice(0, widget.count ?? 10).map((c) => (
-                <li key={c.id}>
-                  <Link href={categoryPath(c.slug, language, settings)} className="opacity-80 hover:opacity-100 hover:underline">
-                    {c.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-
-          {widget.type === "tags" && (
-            <div className="flex flex-wrap gap-1.5">
-              {tagList.slice(0, widget.count ?? 20).map((t) => (
-                <Link
-                  key={t.id}
-                  href={tagPath(t.slug, language, settings)}
-                  className="rounded-full border border-black/10 px-2.5 py-1 text-xs opacity-80 transition-opacity hover:opacity-100"
-                >
-                  {t.name}
-                </Link>
-              ))}
-            </div>
-          )}
-
-          {widget.type === "links" && (
-            <ul className="space-y-2 text-sm">
-              {(widget.links ?? []).filter((l) => l.label).map((l, i) => (
-                <li key={i}>
-                  <Link href={l.url || "#"} className="opacity-80 hover:opacity-100 hover:underline">{l.label}</Link>
-                </li>
-              ))}
-            </ul>
-          )}
-
-          {widget.type === "text" && widget.text && (
-            <p className="whitespace-pre-wrap text-sm leading-relaxed opacity-80">{widget.text}</p>
-          )}
-        </section>
-      ))}
-      {/* Ad blocks with the "Sidebar" position, "Middle" slot. */}
+      {firstHalf.map(renderWidget)}
+      {/* Ad blocks with the "Sidebar" position, "Middle" slot — after the
+          middle widget. */}
       <AdBlocks position="sidebar" slot="middle" pageKind={pageKind} />
+      {secondHalf.map(renderWidget)}
       {/* Ad blocks with the "Sidebar" position, "Bottom" slot. */}
       <AdBlocks position="sidebar" slot="bottom" pageKind={pageKind} />
     </div>
