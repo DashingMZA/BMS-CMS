@@ -55,7 +55,7 @@ A1. Create .env.local from .env.example with exactly these set:
 
 A2. pnpm install
 
-A3. pnpm run db:migrate
+A3. pnpm db:migrate
     Must end with "Applied N migrations." — N is however many .sql files are
     in drizzle/ (18 at the time of writing) — or "up to date" if re-running.
     Anything else: stop, show me, do not continue.
@@ -69,11 +69,11 @@ A3. pnpm run db:migrate
     but it also means a FAILED migration is silent from outside. Read
     startup.log after any deploy that carries a new one.
 
-A4. pnpm run build
+A4. pnpm build
     Must exit 0 with the route table and no "Error". The build reads the
     database, so A3 and a working DATABASE_URL must come first.
 
-A5. pnpm run pack
+A5. pnpm pack
     Produces upload.zip in the project folder with correct Linux permissions
     written in. Do NOT zip the folder with Windows/PowerShell instead — a
     Windows zip has no Unix permissions and the host then creates folders it
