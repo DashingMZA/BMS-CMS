@@ -10,12 +10,13 @@
  * Keep it in step with `globals.css`: a rule added there for a frontend
  * component has to be added here too, or it will be missing on the live site
  * while it works in the admin's preview.
+ *
+ * Tailwind v4: the `@tailwind` directives are gone — `@import "tailwindcss"`
+ * is the entry point now. `@config` still loads the legacy JS config (narrow
+ * content scan + brand palette), verified against tailwindcss 4.3.3.
  */
 @config "../../tailwind.site.config.ts";
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 @layer base {
   :root {
@@ -37,14 +38,19 @@
    compiles to about a kilobyte, and a block or a plugin reaching for `.card`
    should find it. The 61.5 KB this file exists to cut was utilities, not
    these. */
-@layer components {
+
+/* Tailwind v4: `@apply` cannot reference a plain CSS class, only utilities.
+   `@utility` makes `.btn` a real utility so `.btn-primary` etc. can apply it —
+   and it keeps the class usable in HTML exactly as before. */
+@utility btn {
   /* Only what the theme's own `.btn` rule (siteCss buttonCss: display,
      background, colour, radius, padding, font, transition) does not set:
      the two used to disagree on display and padding, and the theme's rule
      won every time, so those declarations here were dead weight. */
-  .btn {
-    @apply items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
-  }
+  @apply items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+@layer components {
   .btn-primary {
     @apply btn bg-brand-600 text-white hover:bg-brand-700;
   }
