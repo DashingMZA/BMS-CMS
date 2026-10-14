@@ -42,8 +42,8 @@ const INCLUDE = [
   "auth.config.ts",
   "tsconfig.json",
   "postcss.config.mjs",
-  "tailwind.config.ts",
-  "tailwind.site.config.ts",
+  "tailwind.config.mts",
+  "tailwind.site.config.mts",
 ];
 
 // What never ships, wherever it appears. Only names that cannot also be the
