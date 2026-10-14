@@ -448,6 +448,6 @@ BMS.plugin(slug, mountFn)           register; mountFn(root, ctx) → cleanup?
 /bms-plugins.js                     the runtime
 ```
 
-**Samples** in this folder: `plugins/bmi-calculator` (complete, with
-settings and attributes) and `plugins/starter` (the smallest useful plugin —
-copy it to begin).
+**Samples** in `plugins-samples/`: `bmi-calculator.zip` (complete, with
+settings and attributes) and `starter.zip` (the smallest useful plugin —
+extract it to begin).

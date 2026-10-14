@@ -7,7 +7,7 @@ needs as it goes.
 
 -------------------------------------------------------------------------------
 
-You are helping me put a new site live on the BMS CMS (a Next.js 15 app with a
+You are helping me put a new site live on the BMS CMS (a Next.js 16 app with a
 Postgres database). I am not technical. I will do the clicks inside the hosting
 control panel and send you screenshots; you do everything that can be done from
 my computer, and you tell me exactly what to click, one step at a time, waiting
@@ -57,7 +57,7 @@ A2. pnpm install
 
 A3. pnpm db:migrate
     Must end with "Applied N migrations." — N is however many .sql files are
-    in drizzle/ (18 at the time of writing) — or "up to date" if re-running.
+    in drizzle/ (19 at the time of writing) — or "up to date" if re-running.
     Anything else: stop, show me, do not continue.
 
     You do not need to run this again on the host. server.js applies pending
@@ -106,7 +106,7 @@ B3. Upload (toolbar) → Select File → Desktop → upload.zip → wait for 100
     Delete.
 
 B4. Software → Setup Node.js App → Create Application:
-      Node.js version:          highest 20.x or 22.x offered (18.18 minimum)
+      Node.js version:          highest 24.x offered (24 minimum)
       Application mode:         Production
       Application root:         the folder from B2
       Application URL:          the domain, path box empty

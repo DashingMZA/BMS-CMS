@@ -1,6 +1,6 @@
 # BMS by Rehan — CMS
 
-A content management system built on Next.js 15, React 19, Drizzle and Postgres.
+A content management system built on Next.js 16, React 19, Drizzle and Postgres.
 This is a clean copy: no posts, no pages, no media, no users. Installing it
 gives you an empty site and a setup screen.
 
@@ -11,7 +11,7 @@ It runs on **shared hosting with a Node.js app manager** (cPanel, Plesk), on a
 
 ## What you need, whichever host
 
-1. **Node.js 18.18 or newer** (20 recommended).
+1. **Node.js 24 or newer** (required — `package.json` enforces `>= 24`).
 2. **A Postgres database.** Any of these:
    - your host's own Postgres, if cPanel/Plesk offers one;
    - [Neon](https://neon.tech) — free, nothing to install, works from anywhere;
@@ -84,7 +84,7 @@ includes `node_modules`, `.env.local` or the build cache.
    Turn on *Settings → Show Hidden Files* first, or you will not see `.next`.
 
 1. **Create the app.** cPanel → *Setup Node.js App* → *Create Application*:
-   - Node.js version: **20** (18.18 minimum)
+   - Node.js version: **24** (highest 24.x the panel offers)
    - Application mode: **Production**
    - Application root: the folder you uploaded to (e.g. `bms`)
    - Application URL: your domain
@@ -179,10 +179,10 @@ and *Restart* from the panel. Back up first: Settings → Export, and a copy of
 Everything builds on the server here — a VPS has the memory for it.
 
 ```bash
-# once: Node 20 and pm2
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+# once: Node 24 and pm2
+curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
 sudo apt-get install -y nodejs
-sudo pnpm install -g pm2
+sudo npm install -g pnpm pm2
 
 # the app
 git clone <your repo> bms && cd bms      # or upload and unzip
