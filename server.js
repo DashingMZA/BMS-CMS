@@ -6,7 +6,7 @@
 // thing written as one: build the app, wrap its request handler in a plain
 // HTTP server, listen.
 //
-// On a VPS with pm2 or systemd, `npm run start` does the same job and this
+// On a VPS with pm2 or systemd, `pnpm run start` does the same job and this
 // file is not needed — but it works there too, so `pm2 start server.js` is
 // fine if that is what your process manager already does.
 //
@@ -48,7 +48,7 @@ let next;
 try {
   next = require("next");
 } catch (err) {
-  log("could not load Next. Has `npm install` been run in this folder?");
+  log("could not load Next. Has `pnpm install` been run in this folder?");
   log(err && err.stack ? err.stack : String(err));
   process.exit(1);
 }
@@ -57,7 +57,7 @@ try {
 // honoured here too rather than this check looking in the wrong place.
 const distDir = process.env.BUILD_DIR || ".next";
 if (!fs.existsSync(path.join(__dirname, distDir, "BUILD_ID"))) {
-  log(`no production build found (${distDir}/BUILD_ID is missing). Run \`npm run build\` and upload the ${distDir} folder.`);
+  log(`no production build found (${distDir}/BUILD_ID is missing). Run \`pnpm run build\` and upload the ${distDir} folder.`);
   process.exit(1);
 }
 
@@ -151,16 +151,16 @@ function watchForNewBuild() {
 }
 
 // A build made with one Next.js version crashes page by page on another.
-// `npm install` on the host can pull a newer patch release when package.json
+// `pnpm install` on the host can pull a newer patch release when package.json
 // allows it; say so at the top of startup.log instead of leaving a mystery 500.
 try {
   const built = fs.readFileSync(path.join(__dirname, distDir, "BMS_NEXT_VERSION"), "utf8").trim();
   const installed = require("next/package.json").version;
   if (built && installed && built !== installed) {
-    log(`WARNING: this build was made with Next.js ${built} but ${installed} is installed. Pages will fail with 500 errors. Run "npm install" so the pinned version (${built}) is installed, then restart.`);
+    log(`WARNING: this build was made with Next.js ${built} but ${installed} is installed. Pages will fail with 500 errors. Run "pnpm install" so the pinned version (${built}) is installed, then restart.`);
   }
 } catch {
-  // No marker (a build not packed with npm run pack) — nothing to compare.
+  // No marker (a build not packed with pnpm run pack) — nothing to compare.
 }
 
 const { createServer } = require("http");
@@ -175,7 +175,7 @@ const handle = app.getRequestHandler();
 // Pending database migrations, applied on every start.
 //
 // An upload that adds a column used to need someone to open a terminal on the
-// host and run `npm run db:migrate`; forget it and every page touching the new
+// host and run `pnpm run db:migrate`; forget it and every page touching the new
 // column answered 500 until they did. The upload carries drizzle/, so the
 // restart that loads the new code can bring the schema with it.
 //
@@ -199,7 +199,7 @@ async function migrateDatabase() {
     else log(`migrations: up to date (${result.skipped} in place, checked via ${result.driver})`);
   } catch (err) {
     log("migrations: FAILED —", err && err.message ? err.message : String(err));
-    log("migrations: the site is starting anyway; run `npm run db:migrate` after fixing the cause");
+    log("migrations: the site is starting anyway; run `pnpm run db:migrate` after fixing the cause");
   }
 }
 
@@ -729,7 +729,7 @@ app
   .catch((err) => {
     // A build that is missing or was made by a different Next version lands
     // here. Say so plainly — the host's own error page is not helpful.
-    log("could not start. Has `npm run build` been run on this code?");
+    log("could not start. Has `pnpm run build` been run on this code?");
     log(err && err.stack ? err.stack : String(err));
     process.exit(1);
   });
