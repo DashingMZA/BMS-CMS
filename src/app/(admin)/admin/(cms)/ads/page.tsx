@@ -3,40 +3,57 @@
 import { useEffect, useState } from "react";
 import Header from "@/components/admin/Header";
 import { cn } from "@/lib/utils";
-import { AD_POSITIONS, parsePlacements, serializePlacements, type AdPlacements } from "@/lib/ads";
-import { Check, Loader2, Save, Megaphone } from "lucide-react";
+import {
+  AD_ALIGNMENTS,
+  AD_BLOCK_POSITIONS,
+  AD_PAGE_KINDS,
+  newAdBlock,
+  parseAdBlocks,
+  serializeAdBlocks,
+  type AdBlock,
+  type AdPageKind,
+} from "@/lib/ads";
+import { Check, Loader2, Save, Megaphone, Plus, Trash2, Code2 } from "lucide-react";
 
-type Tab = "adstxt" | "placements";
+type Tab = "adstxt" | "blocks" | "headerfooter";
 
 const TABS: { id: Tab; label: string; hint: string }[] = [
-  { id: "adstxt",     label: "ads.txt",       hint: "Served at /ads.txt — authorizes your ad sellers" },
-  { id: "placements", label: "Ad Placements", hint: "Where ads appear on the site" },
+  { id: "adstxt",       label: "ads.txt",         hint: "Served at /ads.txt — authorizes your ad sellers" },
+  { id: "blocks",       label: "Ad Blocks",       hint: "Ad Inserter-style blocks: code, position, alignment, page targeting" },
+  { id: "headerfooter", label: "Header & Footer", hint: "Code for <head> and before </body> — synced with Customizer → Custom Scripts" },
 ];
 
 export default function AdsPage() {
   const [adsTxt, setAdsTxt] = useState("");
-  const [placements, setPlacements] = useState<AdPlacements>({});
+  const [blocks, setBlocks] = useState<AdBlock[]>([]);
+  const [scriptHead, setScriptHead] = useState("");
+  const [scriptBodyEnd, setScriptBodyEnd] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [tab, setTab] = useState<Tab>("adstxt");
+  const [tab, setTab] = useState<Tab>("blocks");
 
   useEffect(() => {
     fetch("/api/settings")
       .then((r) => r.json())
       .then((d) => {
         setAdsTxt(d.settings?.ads_txt ?? "");
-        setPlacements(parsePlacements(d.settings?.ads_placements));
+        setBlocks(parseAdBlocks(d.settings?.ads_blocks));
+        setScriptHead(d.settings?.script_head ?? "");
+        setScriptBodyEnd(d.settings?.script_body_end ?? "");
         setLoading(false);
       })
       .catch(() => setLoading(false));
   }, []);
 
-  const setPlacement = (id: string, patch: Partial<{ enabled: boolean; code: string }>) =>
-    setPlacements((p) => {
-      const prev = p[id] ?? { enabled: false, code: "" };
-      return { ...p, [id]: { ...prev, ...patch } };
-    });
+  const patchBlock = (id: string, patch: Partial<AdBlock>) =>
+    setBlocks((bs) => bs.map((b) => (b.id === id ? { ...b, ...patch } : b)));
+
+  const patchPages = (id: string, kind: AdPageKind, v: boolean) =>
+    setBlocks((bs) => bs.map((b) => (b.id === id ? { ...b, pages: { ...b.pages, [kind]: v } } : b)));
+
+  const addBlock = () => setBlocks((bs) => [...bs, newAdBlock(bs.length)]);
+  const removeBlock = (id: string) => setBlocks((bs) => bs.filter((b) => b.id !== id));
 
   async function save(e?: React.FormEvent) {
     e?.preventDefault();
@@ -46,7 +63,11 @@ export default function AdsPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         ads_txt: adsTxt,
-        ads_placements: serializePlacements(placements) ?? "",
+        ads_blocks: serializeAdBlocks(blocks) ?? "",
+        // Same keys the Customizer's Custom Scripts panel writes — editing
+        // here and editing there are the same edit.
+        script_head: scriptHead,
+        script_body_end: scriptBodyEnd,
       }),
     }).catch(() => null);
     setSaving(false);
@@ -71,7 +92,7 @@ export default function AdsPage() {
   }
 
   const current = TABS.find((t) => t.id === tab)!;
-  const activeCount = AD_POSITIONS.filter((p) => placements[p.id]?.enabled && placements[p.id]?.code.trim()).length;
+  const activeCount = blocks.filter((b) => b.enabled && b.code.trim()).length;
 
   return (
     <>
@@ -88,7 +109,7 @@ export default function AdsPage() {
               )}
             >
               {t.label}
-              {t.id === "placements" && activeCount > 0 && (
+              {t.id === "blocks" && activeCount > 0 && (
                 <span className="ml-2 text-xs bg-brand-100 text-brand-700 rounded-full px-2 py-0.5">{activeCount}</span>
               )}
             </button>
@@ -117,46 +138,169 @@ export default function AdsPage() {
             </div>
           )}
 
-          {tab === "placements" && (
+          {tab === "blocks" && (
             <div className="space-y-4">
               <div className="card p-5">
                 <div className="flex items-start gap-3">
                   <Megaphone size={18} className="text-slate-400 mt-0.5 shrink-0" />
                   <p className="text-xs text-slate-500 leading-relaxed">
-                    Paste your ad code (AdSense units, banners, affiliate snippets) into any position
-                    and switch it on. Code is rendered exactly as entered. Positions with no code —
-                    or switched off — render nothing, so the layout is untouched until you use them.
+                    Each block holds one ad unit. Choose where it is inserted, how it aligns,
+                    and which kinds of pages show it. Blocks that are off — or have no code —
+                    render nothing, so the layout is untouched until you use them.
                   </p>
                 </div>
               </div>
-              {AD_POSITIONS.map((pos) => {
-                const p = placements[pos.id] ?? { enabled: false, code: "" };
+
+              {blocks.map((b, i) => {
+                const pos = AD_BLOCK_POSITIONS.find((p) => p.id === b.position);
                 return (
-                  <div key={pos.id} className="card p-5">
-                    <div className="flex items-center justify-between mb-1">
-                      <h2 className="font-semibold text-sm">{pos.label}</h2>
-                      <label className="flex items-center gap-2 text-xs text-slate-500 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={p.enabled}
-                          onChange={(e) => setPlacement(pos.id, { enabled: e.target.checked })}
-                          className="rounded"
-                        />
-                        Enabled
-                      </label>
+                  <div key={b.id} className="card p-5">
+                    <div className="flex items-center justify-between mb-4">
+                      <input
+                        className="font-semibold text-sm bg-transparent border-b border-transparent hover:border-slate-300 focus:border-brand-500 focus:outline-none px-1 -ml-1"
+                        value={b.name}
+                        onChange={(e) => patchBlock(b.id, { name: e.target.value })}
+                        aria-label="Block name"
+                      />
+                      <div className="flex items-center gap-3">
+                        <label className="flex items-center gap-2 text-xs text-slate-500 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={b.enabled}
+                            onChange={(e) => patchBlock(b.id, { enabled: e.target.checked })}
+                            className="rounded"
+                          />
+                          Enabled
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => removeBlock(b.id)}
+                          className="text-slate-400 hover:text-red-600"
+                          title="Delete block"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
                     </div>
-                    <p className="text-xs text-slate-400 mb-3">{pos.hint}</p>
+
+                    <label className="label">Ad code</label>
                     <textarea
-                      className="input font-mono text-xs"
-                      rows={4}
-                      value={p.code}
-                      onChange={(e) => setPlacement(pos.id, { code: e.target.value })}
+                      className="input font-mono text-xs mb-4"
+                      rows={5}
+                      value={b.code}
+                      onChange={(e) => patchBlock(b.id, { code: e.target.value })}
                       placeholder='<ins class="adsbygoogle" ...></ins>'
                       spellCheck={false}
                     />
+
+                    <div className="grid sm:grid-cols-3 gap-4 mb-4">
+                      <div>
+                        <label className="label">Insertion</label>
+                        <select
+                          className="input text-sm"
+                          value={b.position}
+                          onChange={(e) => patchBlock(b.id, { position: e.target.value })}
+                        >
+                          {AD_BLOCK_POSITIONS.map((p) => (
+                            <option key={p.id} value={p.id}>{p.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="label">Alignment</label>
+                        <select
+                          className="input text-sm"
+                          value={b.alignment}
+                          onChange={(e) => patchBlock(b.id, { alignment: e.target.value })}
+                        >
+                          {AD_ALIGNMENTS.map((a) => (
+                            <option key={a.id} value={a.id}>{a.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                      {pos?.needsCount && (
+                        <div>
+                          <label className="label">{pos.label.replace("Before ", "").replace("After ", "")} number</label>
+                          <input
+                            type="number"
+                            min={1}
+                            max={50}
+                            className="input text-sm"
+                            value={b.count}
+                            onChange={(e) => patchBlock(b.id, { count: Math.max(1, parseInt(e.target.value, 10) || 1) })}
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    <label className="label">Show on</label>
+                    <div className="flex flex-wrap gap-x-5 gap-y-2">
+                      {AD_PAGE_KINDS.map((k) => (
+                        <label key={k.id} className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={b.pages[k.id]}
+                            onChange={(e) => patchPages(b.id, k.id, e.target.checked)}
+                            className="rounded"
+                          />
+                          {k.label}
+                        </label>
+                      ))}
+                    </div>
+                    {i < blocks.length - 1 && <hr className="mt-5 border-slate-100" />}
                   </div>
                 );
               })}
+
+              <button
+                type="button"
+                onClick={addBlock}
+                className="btn-secondary inline-flex items-center gap-2"
+              >
+                <Plus size={15} /> Add ad block
+              </button>
+            </div>
+          )}
+
+          {tab === "headerfooter" && (
+            <div className="space-y-4">
+              <div className="card p-5">
+                <div className="flex items-start gap-3">
+                  <Code2 size={18} className="text-slate-400 mt-0.5 shrink-0" />
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Site-wide code: AdSense verification, analytics, pixels. These are the{" "}
+                    <strong>same fields</strong> as Customizer → Custom Scripts — saving here
+                    updates that panel too, and vice versa.
+                  </p>
+                </div>
+              </div>
+              <div className="card p-5">
+                <h2 className="font-semibold text-sm mb-2">Head code</h2>
+                <p className="text-xs text-slate-400 mb-3">
+                  Injected into <code className="font-mono">&lt;head&gt;</code> — analytics, verification tags, AdSense auto-ads script.
+                </p>
+                <textarea
+                  className="input font-mono text-xs"
+                  rows={7}
+                  value={scriptHead}
+                  onChange={(e) => setScriptHead(e.target.value)}
+                  placeholder='<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-..."></script>'
+                  spellCheck={false}
+                />
+              </div>
+              <div className="card p-5">
+                <h2 className="font-semibold text-sm mb-2">Footer code</h2>
+                <p className="text-xs text-slate-400 mb-3">
+                  Injected before the closing <code className="font-mono">&lt;/body&gt;</code> tag — chat widgets, pixels.
+                </p>
+                <textarea
+                  className="input font-mono text-xs"
+                  rows={7}
+                  value={scriptBodyEnd}
+                  onChange={(e) => setScriptBodyEnd(e.target.value)}
+                  spellCheck={false}
+                />
+              </div>
             </div>
           )}
 

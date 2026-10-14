@@ -97,3 +97,12 @@
 .img-adv-lift:hover {
   transform: translateY(-5px);
 }
+
+/* Ad block alignments (Ads → Ad Blocks → Alignment) */
+.bms-adblock { margin: 1.5rem 0; }
+.bms-ad-left { text-align: left; }
+.bms-ad-center { text-align: center; }
+.bms-ad-right { text-align: right; }
+.bms-ad-float-left { float: left; margin: 0 1.5rem 1rem 0; max-width: 50%; }
+.bms-ad-float-right { float: right; margin: 0 0 1rem 1.5rem; max-width: 50%; }
+.bms-ad-no-wrap { overflow: hidden; }

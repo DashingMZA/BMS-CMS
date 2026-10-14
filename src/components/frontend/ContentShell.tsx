@@ -31,6 +31,10 @@ export interface ContentDesign {
 const pageTypeFor = (kind: "page" | "post" | "archive") =>
   kind === "archive" ? ("category" as const) : kind;
 
+/** Document kind → ad page kind for sidebar ad targeting. */
+const adKindFor = (kind: "page" | "post" | "archive") =>
+  kind === "post" ? "posts" : kind === "archive" ? "archive" : "static";
+
 export default async function ContentShell({
   design,
   kind = "page",
@@ -213,7 +217,7 @@ async function renderContentShell({
           </article>
           {showSidebar && (
             <aside className="content-sidebar">
-              <Sidebar settings={settings} language={language ?? defaultContentLanguage(settings)} />
+              <Sidebar settings={settings} language={language ?? defaultContentLanguage(settings)} pageKind={adKindFor(kind)} />
             </aside>
           )}
         </div>

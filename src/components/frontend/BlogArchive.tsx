@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { cache } from "react";
+import { cache, Fragment } from "react";
 import { db } from "@/lib/db";
 import { lookupImageSizes, schemaId, schemaUrl } from "@/lib/seoMeta";
 import { posts, postTags, categories as categoriesTable } from "@/lib/db/schema";
@@ -12,7 +12,8 @@ import { jsonLd } from "@/lib/seo";
 import ContentImage from "@/components/frontend/ContentImage";
 import BlockStyle from "@/components/shared/BlockStyle";
 import Pagination from "@/components/frontend/Pagination";
-import AdSlot from "@/components/frontend/AdSlot";
+import { AdBlockView } from "@/components/frontend/AdSlot";
+import { blocksFor, parseAdBlocks } from "@/lib/ads";
 import { getSiteSettings } from "@/lib/settings";
 import { absoluteUrlFor, authorPath, categoryPath, postPath, postUrl } from "@/lib/permalinks";
 import { postsPagePath } from "@/lib/postsPage";
@@ -246,6 +247,7 @@ export default async function BlogArchive({
   base,
   language,
   pageType,
+  pageKind = "archive",
 }: {
   page?: number;
   categoryId?: number;
@@ -339,6 +341,8 @@ export default async function BlogArchive({
    * language now has its own archive at its own prefix.
    */
   language: string;
+  /** Ad targeting kind: "archive" | "category" | "search" | "homepage". */
+  pageKind?: string;
 }) {
   const perPage = await postsPerPage();
   const inLanguage = and(isLive(posts), eq(posts.language, language));
@@ -431,6 +435,9 @@ export default async function BlogArchive({
 
   const total = totals?.n ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / perPage));
+
+  // Ad blocks for the "Between posts" position on this kind of archive.
+  const betweenPostsBlocks = blocksFor(parseAdBlocks(settings.ads_blocks), "between_posts", pageKind);
   const siteCardStyle = CARD_STYLES.includes(settings.archive_card_style) ? settings.archive_card_style : "classic";
   // The listing's fixed words, in the language this archive lists.
   const archiveLang = langOverride || language;
@@ -647,10 +654,10 @@ export default async function BlogArchive({
             switching one costs a stylesheet, not a republish. */}
         <div className={`archive-items is-${cardStyle}`}>
           {list.map((post, index) => (
-            <article
-              key={post.id}
-              className="archive-card group flex flex-col"
-            >
+            <Fragment key={post.id}>
+              <article
+                className="archive-card group flex flex-col"
+              >
               {post.featuredImage && (
                 <Link href={postPath(post, settings)} className="block overflow-hidden">
                   {/* Through the optimiser, which matters most here: an archive
@@ -738,6 +745,15 @@ export default async function BlogArchive({
                 </Link>
               </div>
             </article>
+              {/* Ad Inserter-style "Between posts": after every 3rd card. */}
+              {(index + 1) % 3 === 0 && betweenPostsBlocks.length > 0 && (
+                <div className="col-span-full">
+                  {betweenPostsBlocks.map((b) => (
+                    <AdBlockView key={b.id} block={b} />
+                  ))}
+                </div>
+              )}
+            </Fragment>
           ))}
         </div>
 
@@ -748,8 +764,6 @@ export default async function BlogArchive({
         )}
 
         <Pagination base={base} page={page} totalPages={totalPages} style={paginationStyle(settings)} label={moreLabel} language={archiveLang} rtl={dir === "rtl"} />
-        {/* Ad: below the post list on archive pages. */}
-        <AdSlot position="after_posts" />
         {paginationStyle(settings) !== "numbers" && page < totalPages && (
           <LoadMore
             // As Pagination builds it: on the front page `base` is "/", and

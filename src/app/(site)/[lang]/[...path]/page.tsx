@@ -43,8 +43,8 @@ import type { Block } from "@blocknote/core";
 import { siteUrl } from "@/lib/siteUrl";
 import { absoluteUrl, autoOgImage, deriveDescription, lookupImageSize, ogImageDescriptor, ogLocale, publisherSchema, robotsDirectives, schemaId, schemaUrl, twitterImage } from "@/lib/seoMeta";
 import OgProperties from "@/components/frontend/OgProperties";
-import AdSlot from "@/components/frontend/AdSlot";
-import { injectContentAds, parsePlacements } from "@/lib/ads";
+import AdBlocks from "@/components/frontend/AdSlot";
+import { injectContentAds, parseAdBlocks } from "@/lib/ads";
 import { isLive, isLiveNow } from "@/lib/publishState";
 import { breadcrumbId, breadcrumbIsVisible, breadcrumbSchema, pageCrumbs, postCrumbs } from "@/lib/breadcrumbSchema";
 import { firstBlockEntityId } from "@/lib/blockSchema";
@@ -636,11 +636,12 @@ export default async function ContentRoute({ params }: Params) {
             className="w-full aspect-video object-cover rounded-xl mb-10"
           />
         )}
-        <AdSlot position="after_title" />
+        <AdBlocks position="before_post" pageKind="static" />
         <div className="max-w-none" data-page-body>
-          <BlockRenderer blocks={injectContentAds((page.content as Block[]) ?? [], parsePlacements(settings.ads_placements))} language={page.language} direction={page.direction} title={page.title} pageUrl={pageUrl} column={col} />
+          <BlockRenderer blocks={injectContentAds((page.content as Block[]) ?? [], parseAdBlocks(settings.ads_blocks), "static")} language={page.language} direction={page.direction} title={page.title} pageUrl={pageUrl} column={col} />
         </div>
-        <AdSlot position="after_content" />
+        <AdBlocks position="after_content" pageKind="static" />
+        <AdBlocks position="after_post" pageKind="static" />
 
         {/* Same precedence as a post: the page's own setting wins, and the
             Customizer default decides only when the page has not chosen.
@@ -823,7 +824,7 @@ export default async function ContentRoute({ params }: Params) {
         // heading, it does not delete it from the document.
         !contentHasH1(post.content) && <h1 className="sr-only">{post.title}</h1>
       )}
-      <AdSlot position="after_title" />
+      <AdBlocks position="before_post" pageKind="posts" />
 
       {!hideFeaturedImg && post.featuredImage && (
         <ContentImage
@@ -835,11 +836,13 @@ export default async function ContentRoute({ params }: Params) {
           {...(featuredInfo ? { width: featuredInfo.width, height: featuredInfo.height, blurDataURL: featuredInfo.blur } : {})}
         />
       )}
+      <AdBlocks position="before_content" pageKind="posts" />
 
       <div className="max-w-none">
-        <BlockRenderer blocks={injectContentAds((post.content as Block[]) ?? [], parsePlacements(settings.ads_placements))} language={post.language} direction={post.direction} title={post.title} pageUrl={postUrl} column={postCol} />
+        <BlockRenderer blocks={injectContentAds((post.content as Block[]) ?? [], parseAdBlocks(settings.ads_blocks), "posts")} language={post.language} direction={post.direction} title={post.title} pageUrl={postUrl} column={postCol} />
       </div>
-      <AdSlot position="after_content" />
+      <AdBlocks position="after_content" pageKind="posts" />
+      <AdBlocks position="after_post" pageKind="posts" />
 
       <PostAfterContent post={post} settings={settings} />
       {/* Resolved on the server rather than hidden with CSS. The site-wide

@@ -29,7 +29,23 @@ import { localizeFontCss } from "@/lib/localFonts";
 import { customFontFaceCss, customFontFamilies, parseCustomFonts } from "@/lib/customFonts";
 import { delayLoader, delayScriptsIn, deferScriptsIn } from "@/lib/delayScripts";
 import ScriptRunner from "./ScriptRunner";
-import AdSlot from "./AdSlot";
+import AdBlocks from "./AdSlot";
+
+/**
+ * Maps the layout's page type to the ad system's page kind. Returns null for
+ * types ads never target (404, default).
+ */
+function adPageKind(pageType: string): string | null {
+  switch (pageType) {
+    case "front": return "homepage";
+    case "blog": return "archive";
+    case "post": return "posts";
+    case "page": return "static";
+    case "category": return "category";
+    case "search": return "search";
+    default: return null;
+  }
+}
 import { FACADE_SCRIPT } from "@/lib/videoFacade";
 import { prefetchScript, type PrefetchMode } from "@/lib/prefetch";
 import { intIn, matchesPath, on, parseList, speedSettings } from "@/lib/speed";
@@ -902,10 +918,6 @@ async function renderSiteLayout({ children, hideHeader, hideFooter, transparentH
         )}
         <ElementSlot hook="before_header" pageType={pageType} language={langOverride || docLanguage} contentLanguage={docLanguage} direction={direction} />
 
-        {/* Ad: above the header. Skipped in the customizer preview, where a
-            live ad unit would be noise while arranging the layout. */}
-        {!customizerMode && <AdSlot position="header_top" />}
-
         {/* Header — a desktop set and a mobile set, swapped at the configured
             breakpoint by CSS. Built row by row (top, main, bottom): a row whose
             desktop and mobile settings would produce the same markup is emitted
@@ -974,14 +986,16 @@ async function renderSiteLayout({ children, hideHeader, hideFooter, transparentH
 
         <ElementSlot hook="after_header" pageType={pageType} language={langOverride || docLanguage} contentLanguage={docLanguage} direction={direction} />
 
-        {/* Ad: below the header navigation. */}
-        {!customizerMode && <AdSlot position="after_menu" />}
-
         {/* tabIndex so the skip link moves focus here, not just the scroll. */}
         <main id="bms-main" tabIndex={-1} className="flex-1 outline-none">{children}</main>
 
-        {/* Ad: just above the footer. */}
-        {!customizerMode && <AdSlot position="footer_top" />}
+        {/* Ad blocks with the "Footer" position. Skipped in the customizer
+            preview, where a live ad unit would be noise while arranging the
+            layout. */}
+        {!customizerMode && (() => {
+          const kind = adPageKind(pageType);
+          return kind ? <AdBlocks position="footer" pageKind={kind} /> : null;
+        })()}
 
         <ElementSlot hook="before_footer" pageType={pageType} language={langOverride || docLanguage} contentLanguage={docLanguage} direction={direction} />
 
@@ -1044,9 +1058,6 @@ async function renderSiteLayout({ children, hideHeader, hideFooter, transparentH
         )}
 
         <ElementSlot hook="after_footer" pageType={pageType} language={langOverride || docLanguage} contentLanguage={docLanguage} direction={direction} />
-
-        {/* Ad: at the very bottom of the page. */}
-        {!customizerMode && <AdSlot position="footer_bottom" />}
       </div>
 
       {settings.script_body_end && <div dangerouslySetInnerHTML={{ __html: delay ? delayScriptsIn(settings.script_body_end, delayExclude) : settings.script_body_end }} />}

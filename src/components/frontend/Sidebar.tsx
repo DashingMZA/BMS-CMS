@@ -6,7 +6,7 @@ import { posts, tags, postTags, categories } from "@/lib/db/schema";
 import { parseSidebarWidgets, SIDEBAR_WIDGET_IDS, type SidebarWidget } from "@/lib/appearanceSettings";
 import { categoryPath, postPath, searchPath, tagPath } from "@/lib/permalinks";
 import { isLive } from "@/lib/publishState";
-import AdSlot from "./AdSlot";
+import AdBlocks from "./AdSlot";
 
 /**
  * The real sidebar, replacing the placeholder box.
@@ -20,6 +20,8 @@ export default async function Sidebar(props: {
   settings: Record<string, string>;
   /** Recent posts are this language's; content is not shared across languages. */
   language: string;
+  /** Ad targeting kind: "posts" | "static" | "archive" | ... */
+  pageKind?: string;
 }) {
   try {
     return await renderSidebar(props);
@@ -32,9 +34,11 @@ export default async function Sidebar(props: {
 async function renderSidebar({
   settings,
   language,
+  pageKind = "posts",
 }: {
   settings: Record<string, string>;
   language: string;
+  pageKind?: string;
 }) {
   const configured = parseSidebarWidgets(settings.sidebar_widgets);
   const widgets = SIDEBAR_WIDGET_IDS
@@ -153,8 +157,8 @@ async function renderSidebar({
           )}
         </section>
       ))}
-      {/* Ad: below the sidebar widgets. */}
-      <AdSlot position="sidebar" />
+      {/* Ad blocks with the "Sidebar" position. */}
+      <AdBlocks position="sidebar" pageKind={pageKind} />
     </div>
   );
 }
