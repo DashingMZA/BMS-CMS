@@ -59,6 +59,7 @@ import { DAYS, addressLines, dayName, localEnabled, mapEmbedUrl, parseHours } fr
 import { siteUrl } from "@/lib/siteUrl";
 import { documentDir, siteLang } from "@/lib/locale";
 import { expandShortcodes, loadPlugin, pluginContainerHtml, soleShortcode } from "@/lib/plugins";
+import { adBlockHtml, findAdBlockByShortcode, parseAdBlocks, parseAdShortcode, type AdBlock } from "@/lib/ads";
 import ContentImage from "@/components/frontend/ContentImage";
 import Icon from "@/components/shared/Icon";
 import { AdBlockById } from "@/components/frontend/AdSlot";
@@ -142,6 +143,13 @@ let imageSizes: Map<string, ImageInfo> = new Map();
  * from the database and disk, and the block renderer itself is synchronous.
  */
 let pluginHtml: Map<string, string> = new Map();
+/**
+ * Ad markup for paragraphs that are exactly an `[adinserter]` shortcode,
+ * keyed by block id. Resolved before the tree is built, like pluginHtml:
+ * the ad blocks come from the settings table, and the block renderer
+ * itself is synchronous.
+ */
+let adShortcodeHtml: Map<string, string> = new Map();
 /** Settings → Timezone, for blocks that store a wall-clock time (the countdown). */
 let siteTz: string | undefined;
 /** Whether video embeds render as click-to-play facades (Customizer → Speed). */
@@ -366,6 +374,39 @@ async function resolvePluginBlocks(blocks: AnyBlock[], ctx: { lang: string; dir:
   return out;
 }
 
+/**
+ * Resolves `[adinserter block="N"]` / `[adinserter name="…"]` shortcodes that
+ * sit alone in a paragraph, to the ad block's HTML. Shortcodes are manual
+ * placements: they resolve even when the block's automatic position is
+ * Disabled, but never for a block with no code. Mirrors resolvePluginBlocks
+ * — same walk, including row-layout columns.
+ */
+function resolveAdShortcodes(blocks: AnyBlock[], adBlocks: AdBlock[]): Map<string, string> {
+  const out = new Map<string, string>();
+  const walk = (list: AnyBlock[]) => {
+    for (const b of list) {
+      const id = String(b.id ?? "");
+      if (b.type === "paragraph" && id) {
+        const ref = parseAdShortcode(getTextContent(b.content));
+        if (ref) {
+          const found = findAdBlockByShortcode(adBlocks, ref);
+          if (found) out.set(id, adBlockHtml(found));
+        }
+      }
+      const props = (b.props ?? {}) as Record<string, unknown>;
+      if (Array.isArray(b.children)) walk(b.children as AnyBlock[]);
+      if (b.type === "rowLayout") {
+        for (const c of parseColumns(props.cols, parseInt(String(props.columns) || "2", 10) || 2)) {
+          walk((c.blocks ?? []) as AnyBlock[]);
+        }
+      }
+      for (const v of Object.values(props)) if (Array.isArray(v) && v.length && typeof v[0] === "object") walk(v as AnyBlock[]);
+    }
+  };
+  walk(blocks);
+  return out;
+}
+
 /** `width`/`height` for a src when the media library recorded them, plus the blurred placeholder — for `ContentImage`. */
 function imageAttrs(src: unknown): { width: number; height: number; blurDataURL?: string } | Record<string, never> {
   const found = typeof src === "string" ? imageSizes.get(src) : undefined;
@@ -473,6 +514,9 @@ function renderBlockInner(block: AnyBlock, t: UiText): React.ReactNode {
       // A paragraph that is exactly `[slug]` is a plugin, not a sentence.
       const plugin = pluginHtml.get(String(block.id ?? ""));
       if (plugin) return <div className="my-6" data-bms-html={htmlSig(plugin)} dangerouslySetInnerHTML={{ __html: plugin }} />;
+      // A paragraph that is exactly `[adinserter …]` is a manually placed ad.
+      const adShortcode = adShortcodeHtml.get(String(block.id ?? ""));
+      if (adShortcode) return <div className="my-6" data-bms-html={htmlSig(adShortcode)} dangerouslySetInnerHTML={{ __html: adShortcode }} />;
       // An empty line — Enter pressed for breathing room — is a `<p> </p>`
       // on the published page: sixty of them on one measured article, each
       // an element to parse and a gap of a font-dependent height. Left out
@@ -1849,6 +1893,7 @@ async function renderBlocks({ blocks, language, direction, author, pageUrl, abov
   column = col ?? { px: 800, fluid: false, gutter: 96 };
   iconSymbols = new Set<string>();
   pluginHtml = plugins;
+  adShortcodeHtml = resolveAdShortcodes(blocks, parseAdBlocks(settings.ads_blocks));
   siteTz = settings.site_timezone || undefined;
   videoFacade = settings.perf_video_facade !== "false";
   businessSettings = settings;

@@ -8,6 +8,7 @@ import { getSiteSettings } from "@/lib/settings";
 import { uiText } from "@/lib/uiText";
 import { defaultContentLanguage } from "@/lib/locale";
 import { formatSiteDate, isoDate } from "@/lib/locale";
+import AdBlocks from "./AdSlot";
 
 type Row = {
   id: number;
@@ -103,6 +104,8 @@ export default async function PostComments(
     /** The document's language, so the heading and the form speak it. Falls back
      *  to the site language, which is right for a single-language site. */
     language?: string;
+    /** "posts" or "static" — selects which ad blocks the between-comments slot shows. */
+    pageKind?: string;
   },
 ) {
   try {
@@ -117,8 +120,10 @@ async function renderComments({
   postId,
   pageId,
   language,
+  pageKind,
 }: ({ postId: number; pageId?: undefined } | { pageId: number; postId?: undefined }) & {
   language?: string;
+  pageKind?: string;
 }) {
   // Free: `getSiteSettings` is memoised per request, so this is the same read
   // the layout already did rather than another query.
@@ -167,7 +172,7 @@ async function renderComments({
 
       {items.length > 0 && (
         <ul className="mb-10 space-y-5">
-          {items.map(({ comment, replies }) => (
+          {items.map(({ comment, replies }, idx) => (
             // `<li>`, not `<div>`: a `<ul>` may only contain `<li>`, and the
             // markup was invalid on every page with a comment.
             <li key={comment.id}>
@@ -182,6 +187,11 @@ async function renderComments({
                     </li>
                   ))}
                 </ul>
+              )}
+              {/* Ad blocks with the "Between comments" position — after each
+                  top-level comment, not after the last one. */}
+              {pageKind && idx < items.length - 1 && (
+                <AdBlocks position="between_comments" pageKind={pageKind} />
               )}
             </li>
           ))}

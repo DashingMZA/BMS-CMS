@@ -436,8 +436,11 @@ export default async function BlogArchive({
   const total = totals?.n ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / perPage));
 
-  // Ad blocks for the "Between posts" position on this kind of archive.
+  // Ad blocks for the "Between posts" and excerpt positions on this kind of archive.
   const betweenPostsBlocks = blocksFor(parseAdBlocks(settings.ads_blocks), "between_posts", pageKind);
+  const adBlocks = parseAdBlocks(settings.ads_blocks);
+  const beforeExcerptBlocks = blocksFor(adBlocks, "before_excerpt", pageKind);
+  const afterExcerptBlocks = blocksFor(adBlocks, "after_excerpt", pageKind);
   const siteCardStyle = CARD_STYLES.includes(settings.archive_card_style) ? settings.archive_card_style : "classic";
   // The listing's fixed words, in the language this archive lists.
   const archiveLang = langOverride || language;
@@ -724,11 +727,17 @@ export default async function BlogArchive({
                     </>
                   )}
                 </p>
+                {beforeExcerptBlocks.map((b) => (
+                  <AdBlockView key={`before-excerpt-${b.id}`} block={b} />
+                ))}
                 {post.excerpt && (
                   <p className="archive-card-excerpt mt-3 line-clamp-6 text-[13.5px] leading-[1.65] opacity-75">
                     {post.excerpt}
                   </p>
                 )}
+                {afterExcerptBlocks.map((b) => (
+                  <AdBlockView key={`after-excerpt-${b.id}`} block={b} />
+                ))}
                 {/* Pushed to the bottom so cards of different text lengths still
                     line their actions up along one row.
 

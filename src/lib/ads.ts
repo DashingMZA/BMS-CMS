@@ -1,3 +1,5 @@
+import { htmlSig } from "./htmlSig";
+
 // Ads: ad blocks (Ad Inserter style), page targeting, and the ads.txt file.
 //
 // Ad blocks are stored in the settings table as JSON under `ads_blocks`, the
@@ -19,20 +21,38 @@ export interface AdBlockPositionDef {
 /**
  * Where a block can be inserted. The ids are stable: the admin screen and the
  * frontend both reference them, so renaming one would orphan saved blocks.
+ *
+ * `disabled` is a pseudo-position: it is only ever chosen in the admin
+ * dropdown, never rendered on the frontend. Order matches Ad Inserter.
  */
 export const AD_BLOCK_POSITIONS: AdBlockPositionDef[] = [
+  { id: "disabled",         label: "Disabled" },
   { id: "before_post",      label: "Before post" },
-  { id: "after_post",       label: "After post" },
   { id: "before_content",   label: "Before content" },
-  { id: "after_content",    label: "After content" },
   { id: "before_paragraph", label: "Before paragraph", needsCount: true },
   { id: "after_paragraph",  label: "After paragraph", needsCount: true },
   { id: "before_image",     label: "Before image", needsCount: true },
   { id: "after_image",      label: "After image", needsCount: true },
+  { id: "after_content",    label: "After content" },
+  { id: "after_post",       label: "After post" },
+  { id: "before_excerpt",   label: "Before excerpt" },
+  { id: "after_excerpt",    label: "After excerpt" },
   { id: "between_posts",    label: "Between posts" },
-  { id: "sidebar",          label: "Sidebar" },
+  { id: "before_comments",  label: "Before comments" },
+  { id: "between_comments", label: "Between comments" },
+  { id: "after_comments",   label: "After comments" },
   { id: "footer",           label: "Footer" },
+  { id: "sidebar",          label: "Sidebar" },
 ];
+
+/** Where inside the sidebar a sidebar-positioned block renders. */
+export const AD_SIDEBAR_POSITIONS = [
+  { id: "top",    label: "Top" },
+  { id: "middle", label: "Middle" },
+  { id: "bottom", label: "Bottom" },
+] as const;
+
+export type AdSidebarPosition = (typeof AD_SIDEBAR_POSITIONS)[number]["id"];
 
 export interface AdAlignmentDef {
   id: string;
@@ -72,6 +92,8 @@ export interface AdBlock {
   /** For before/after paragraph/image: which one (1-based). */
   count: number;
   alignment: string;
+  /** For the sidebar position: top, middle, or bottom of the sidebar. */
+  sidebarPosition: AdSidebarPosition;
   pages: Record<AdPageKind, boolean>;
 }
 
@@ -85,11 +107,17 @@ export function newAdBlock(index: number): AdBlock {
     name: `Block ${index + 1}`,
     code: "",
     enabled: false,
-    position: "after_paragraph",
+    position: "disabled",
     count: 2,
     alignment: "center",
+    sidebarPosition: "top",
     pages: defaultPages(),
   };
+}
+
+/** A block counts as live when it has code and is not on the Disabled pseudo-position. */
+export function isBlockLive(b: AdBlock): boolean {
+  return b.enabled && b.position !== "disabled" && b.code.trim().length > 0;
 }
 
 /** The stored JSON (or null/garbage) as an array of blocks. */
@@ -110,9 +138,12 @@ export function parseAdBlocks(raw: string | null | undefined): AdBlock[] {
         name: typeof r.name === "string" && r.name ? r.name : `Block ${i + 1}`,
         code: typeof r.code === "string" ? r.code : "",
         enabled: !!r.enabled,
-        position: typeof r.position === "string" && AD_BLOCK_POSITIONS.some((p) => p.id === r.position) ? r.position : "after_paragraph",
+        position: typeof r.position === "string" && AD_BLOCK_POSITIONS.some((p) => p.id === r.position) ? r.position : "disabled",
         count: typeof r.count === "number" && r.count > 0 ? Math.trunc(r.count) : 2,
         alignment: typeof r.alignment === "string" && AD_ALIGNMENTS.some((a) => a.id === r.alignment) ? r.alignment : "center",
+        sidebarPosition: typeof r.sidebarPosition === "string" && AD_SIDEBAR_POSITIONS.some((s) => s.id === r.sidebarPosition)
+          ? (r.sidebarPosition as AdSidebarPosition)
+          : "top",
         pages,
       } as AdBlock;
     });
@@ -124,15 +155,67 @@ export function parseAdBlocks(raw: string | null | undefined): AdBlock[] {
 /** Null when there is nothing to store, so the settings row stays empty. */
 export function serializeAdBlocks(blocks: AdBlock[] | null | undefined): string | null {
   if (!blocks || blocks.length === 0) return null;
-  const kept = blocks.filter((b) => b.code.trim() || b.enabled);
+  const kept = blocks.filter((b) => b.code.trim() || isBlockLive(b));
   return kept.length ? JSON.stringify(kept) : null;
 }
 
-/** Blocks for one position, enabled, with code, targeting this page kind. */
+/** Blocks for one position, live, targeting this page kind. */
 export function blocksFor(blocks: AdBlock[], position: string, pageKind: string): AdBlock[] {
   return blocks.filter(
-    (b) => b.enabled && b.code.trim() && b.position === position && (b.pages[pageKind as AdPageKind] ?? false)
+    (b) => isBlockLive(b) && b.position === position && (b.pages[pageKind as AdPageKind] ?? false)
   );
+}
+
+/** Sidebar blocks for one sidebar slot (top/middle/bottom), live, for this page kind. */
+export function sidebarBlocksFor(blocks: AdBlock[], slot: AdSidebarPosition, pageKind: string): AdBlock[] {
+  return blocksFor(blocks, "sidebar", pageKind).filter((b) => b.sidebarPosition === slot);
+}
+
+/**
+ * The ad block as an HTML string — the same markup AdBlockView renders.
+ * `data-bms-html` carries the fingerprint ScriptRunner uses to execute the
+ * block's <script> tags after a client-side navigation.
+ */
+export function adBlockHtml(block: AdBlock): string {
+  const align = adAlignmentClass(block.alignment);
+  const cls = ["bms-adblock", align].filter(Boolean).join(" ");
+  const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
+  return `<div class="${esc(cls)}" data-ad-block="${esc(block.id)}" data-bms-html="${htmlSig(block.code)}">${block.code}</div>`;
+}
+
+/**
+ * Matches `[adinserter block="1"]` or `[adinserter name="Block 1"]`
+ * (single or double quotes, extra whitespace tolerated).
+ */
+const AD_SHORTCODE_RE = /\[adinserter\s+(?:block\s*=\s*["'](\d+)["']|name\s*=\s*["']([^"']+)["'])\s*\]/i;
+
+export function parseAdShortcode(text: string): { block?: number; name?: string } | null {
+  const m = AD_SHORTCODE_RE.exec(text.trim());
+  if (!m) return null;
+  if (m[1] !== undefined) return { block: parseInt(m[1], 10) };
+  return { name: m[2].trim() };
+}
+
+/**
+ * Finds the block a shortcode refers to: `block="N"` is the 1-based number
+ * shown in the admin list, `name="…"` matches the block name (case-insensitive).
+ * Shortcodes are manual placements, so they resolve even when the block's
+ * automatic position is Disabled — but never for a block with no code.
+ */
+export function findAdBlockByShortcode(
+  blocks: AdBlock[],
+  ref: { block?: number; name?: string }
+): AdBlock | null {
+  const withCode = blocks.filter((b) => b.code.trim());
+  if (ref.block !== undefined) {
+    const b = withCode[ref.block - 1];
+    return b ?? null;
+  }
+  if (ref.name) {
+    const want = ref.name.toLowerCase();
+    return withCode.find((b) => b.name.toLowerCase() === want) ?? null;
+  }
+  return null;
 }
 
 /** The alignment class for a block. */
@@ -173,8 +256,7 @@ export function injectContentAds<T extends Record<string, unknown>>(
   if (!Array.isArray(blocks) || blocks.length === 0) return blocks;
   const wants = adBlocks.filter(
     (b) =>
-      b.enabled &&
-      b.code.trim() &&
+      isBlockLive(b) &&
       (b.pages[pageKind as AdPageKind] ?? false) &&
       ["before_paragraph", "after_paragraph", "before_image", "after_image"].includes(b.position)
   );

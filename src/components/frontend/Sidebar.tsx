@@ -83,6 +83,8 @@ async function renderSidebar({
 
   return (
     <div className="space-y-8">
+      {/* Ad blocks with the "Sidebar" position, "Top" slot. */}
+      <AdBlocks position="sidebar" slot="top" pageKind={pageKind} />
       {widgets.map(({ id, widget }) => (
         <section key={id} className="sidebar-widget" data-widget={widget.type}>
           {/* h2, not h3: a widget title is a section heading of the page, the
@@ -157,8 +159,10 @@ async function renderSidebar({
           )}
         </section>
       ))}
-      {/* Ad blocks with the "Sidebar" position. */}
-      <AdBlocks position="sidebar" pageKind={pageKind} />
+      {/* Ad blocks with the "Sidebar" position, "Middle" slot. */}
+      <AdBlocks position="sidebar" slot="middle" pageKind={pageKind} />
+      {/* Ad blocks with the "Sidebar" position, "Bottom" slot. */}
+      <AdBlocks position="sidebar" slot="bottom" pageKind={pageKind} />
     </div>
   );
 }

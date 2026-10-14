@@ -1,5 +1,5 @@
 import { getSiteSettings } from "@/lib/settings";
-import { adAlignmentClass, blocksFor, parseAdBlocks, type AdBlock } from "@/lib/ads";
+import { adAlignmentClass, blocksFor, findAdBlockByShortcode, isBlockLive, parseAdBlocks, sidebarBlocksFor, type AdBlock, type AdSidebarPosition } from "@/lib/ads";
 import { htmlSig } from "@/lib/htmlSig";
 
 /**
@@ -21,21 +21,29 @@ export function AdBlockView({ block }: { block: AdBlock }) {
 }
 
 /**
- * Renders every enabled block for one position on this kind of page.
+ * Renders every live block for one position on this kind of page.
  * A Server Component: the blocks come from the settings table, which only
  * the server reads. Renders nothing when no block matches.
+ *
+ * Pass `slot` with `position="sidebar"` to render only one sidebar slot
+ * (top/middle/bottom).
  */
 export default async function AdBlocks({
   position,
   pageKind,
+  slot,
   className,
 }: {
   position: string;
   pageKind: string;
+  slot?: AdSidebarPosition;
   className?: string;
 }) {
   const settings = await getSiteSettings();
-  const blocks = blocksFor(parseAdBlocks(settings.ads_blocks), position, pageKind);
+  const parsed = parseAdBlocks(settings.ads_blocks);
+  const blocks = slot && position === "sidebar"
+    ? sidebarBlocksFor(parsed, slot, pageKind)
+    : blocksFor(parsed, position, pageKind);
   if (blocks.length === 0) return null;
 
   return (
@@ -49,11 +57,24 @@ export default async function AdBlocks({
 
 /**
  * Renders a single block by id — for the `adSlot` markers BlockRenderer
- * inserts inside content. Returns null when the block is gone or disabled.
+ * inserts inside content. Returns null when the block is gone, has no code,
+ * or is switched off.
  */
 export async function AdBlockById({ blockId, pageKind: _pageKind }: { blockId: string; pageKind?: string }) {
   const settings = await getSiteSettings();
   const block = parseAdBlocks(settings.ads_blocks).find((b) => b.id === blockId);
-  if (!block || !block.enabled || !block.code.trim()) return null;
+  if (!block || !isBlockLive(block)) return null;
+  return <AdBlockView block={block} />;
+}
+
+/**
+ * Renders a block referenced by an `[adinserter]` shortcode. Shortcodes are
+ * manual placements, so they render even when the block's automatic position
+ * is Disabled — only a missing block or empty code renders nothing.
+ */
+export async function AdBlockByShortcode({ shortcodeRef }: { shortcodeRef: { block?: number; name?: string } }) {
+  const settings = await getSiteSettings();
+  const block = findAdBlockByShortcode(parseAdBlocks(settings.ads_blocks), shortcodeRef);
+  if (!block) return null;
   return <AdBlockView block={block} />;
 }

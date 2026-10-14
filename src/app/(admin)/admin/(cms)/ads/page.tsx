@@ -7,13 +7,16 @@ import {
   AD_ALIGNMENTS,
   AD_BLOCK_POSITIONS,
   AD_PAGE_KINDS,
+  AD_SIDEBAR_POSITIONS,
+  isBlockLive,
   newAdBlock,
   parseAdBlocks,
   serializeAdBlocks,
   type AdBlock,
   type AdPageKind,
+  type AdSidebarPosition,
 } from "@/lib/ads";
-import { Check, Loader2, Save, Megaphone, Plus, Trash2, Code2 } from "lucide-react";
+import { Check, Loader2, Save, Megaphone, Plus, Trash2, Code2, Copy } from "lucide-react";
 
 type Tab = "adstxt" | "blocks" | "headerfooter";
 
@@ -48,6 +51,10 @@ export default function AdsPage() {
 
   const patchBlock = (id: string, patch: Partial<AdBlock>) =>
     setBlocks((bs) => bs.map((b) => (b.id === id ? { ...b, ...patch } : b)));
+
+  /** Choosing a position (or Disabled) drives the block's on/off state. */
+  const patchPosition = (id: string, position: string) =>
+    patchBlock(id, { position, enabled: position !== "disabled" });
 
   const patchPages = (id: string, kind: AdPageKind, v: boolean) =>
     setBlocks((bs) => bs.map((b) => (b.id === id ? { ...b, pages: { ...b.pages, [kind]: v } } : b)));
@@ -92,7 +99,11 @@ export default function AdsPage() {
   }
 
   const current = TABS.find((t) => t.id === tab)!;
-  const activeCount = blocks.filter((b) => b.enabled && b.code.trim()).length;
+  const activeCount = blocks.filter(isBlockLive).length;
+
+  const copyShortcode = (text: string) => {
+    navigator.clipboard?.writeText(text).catch(() => {});
+  };
 
   return (
     <>
@@ -145,14 +156,17 @@ export default function AdsPage() {
                   <Megaphone size={18} className="text-slate-400 mt-0.5 shrink-0" />
                   <p className="text-xs text-slate-500 leading-relaxed">
                     Each block holds one ad unit. Choose where it is inserted, how it aligns,
-                    and which kinds of pages show it. Blocks that are off — or have no code —
-                    render nothing, so the layout is untouched until you use them.
+                    and which kinds of pages show it. Pick <strong>Disabled</strong> to switch
+                    a block off — it renders nothing on the site. Use the shortcode under
+                    each block to place it manually inside any article.
                   </p>
                 </div>
               </div>
 
               {blocks.map((b, i) => {
                 const pos = AD_BLOCK_POSITIONS.find((p) => p.id === b.position);
+                const live = isBlockLive(b);
+                const shortcode = `[adinserter block="${i + 1}"]`;
                 return (
                   <div key={b.id} className="card p-5">
                     <div className="flex items-center justify-between mb-4">
@@ -163,15 +177,14 @@ export default function AdsPage() {
                         aria-label="Block name"
                       />
                       <div className="flex items-center gap-3">
-                        <label className="flex items-center gap-2 text-xs text-slate-500 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={b.enabled}
-                            onChange={(e) => patchBlock(b.id, { enabled: e.target.checked })}
-                            className="rounded"
-                          />
-                          Enabled
-                        </label>
+                        <span
+                          className={cn(
+                            "text-xs font-medium rounded-full px-2.5 py-1",
+                            live ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                          )}
+                        >
+                          {live ? "Enabled" : "Disabled"}
+                        </span>
                         <button
                           type="button"
                           onClick={() => removeBlock(b.id)}
@@ -199,13 +212,27 @@ export default function AdsPage() {
                         <select
                           className="input text-sm"
                           value={b.position}
-                          onChange={(e) => patchBlock(b.id, { position: e.target.value })}
+                          onChange={(e) => patchPosition(b.id, e.target.value)}
                         >
                           {AD_BLOCK_POSITIONS.map((p) => (
                             <option key={p.id} value={p.id}>{p.label}</option>
                           ))}
                         </select>
                       </div>
+                      {b.position === "sidebar" && (
+                        <div>
+                          <label className="label">Sidebar position</label>
+                          <select
+                            className="input text-sm"
+                            value={b.sidebarPosition}
+                            onChange={(e) => patchBlock(b.id, { sidebarPosition: e.target.value as AdSidebarPosition })}
+                          >
+                            {AD_SIDEBAR_POSITIONS.map((s) => (
+                              <option key={s.id} value={s.id}>{s.label}</option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
                       <div>
                         <label className="label">Alignment</label>
                         <select
@@ -234,7 +261,7 @@ export default function AdsPage() {
                     </div>
 
                     <label className="label">Show on</label>
-                    <div className="flex flex-wrap gap-x-5 gap-y-2">
+                    <div className="flex flex-wrap gap-x-5 gap-y-2 mb-4">
                       {AD_PAGE_KINDS.map((k) => (
                         <label key={k.id} className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
                           <input
@@ -246,6 +273,20 @@ export default function AdsPage() {
                           {k.label}
                         </label>
                       ))}
+                    </div>
+
+                    <div className="flex items-center gap-2 text-xs text-slate-500">
+                      <span className="shrink-0">Shortcode:</span>
+                      <code className="font-mono bg-slate-100 rounded px-2 py-1">{shortcode}</code>
+                      <button
+                        type="button"
+                        onClick={() => copyShortcode(shortcode)}
+                        className="text-slate-400 hover:text-slate-700"
+                        title="Copy shortcode"
+                      >
+                        <Copy size={13} />
+                      </button>
+                      <span className="text-slate-400">— paste anywhere in an article to show this ad</span>
                     </div>
                     {i < blocks.length - 1 && <hr className="mt-5 border-slate-100" />}
                   </div>

@@ -648,7 +648,11 @@ export default async function ContentRoute({ params }: Params) {
             Pages ship with comments off, so this renders nothing until asked. */}
         {(page.showComments === "enable" ||
           (page.showComments !== "disable" && settings.page_comments_show === "true")) && (
-          <PostComments pageId={page.id} language={page.language} />
+          <>
+            <AdBlocks position="before_comments" pageKind="static" />
+            <PostComments pageId={page.id} language={page.language} pageKind="static" />
+            <AdBlocks position="after_comments" pageKind="static" />
+          </>
         )}
       </ContentShell>
     );
@@ -851,7 +855,11 @@ export default async function ContentRoute({ params }: Params) {
           crawler, and a query nobody wanted. Off means not rendered. */}
       {(post.showComments === "enable" ||
         (post.showComments !== "disable" && settings.post_comments_show !== "false")) && (
-        <PostComments postId={post.id} language={post.language} />
+        <>
+          <AdBlocks position="before_comments" pageKind="posts" />
+          <PostComments postId={post.id} language={post.language} pageKind="posts" />
+          <AdBlocks position="after_comments" pageKind="posts" />
+        </>
       )}
     </ContentShell>
   );
