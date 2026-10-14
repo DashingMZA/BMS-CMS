@@ -152,12 +152,12 @@ export default function Sidebar() {
             <span className="text-white font-semibold text-sm block leading-tight">
               BMS by{" "}
               <a
-                href="https://facebook.com/rehanmubarak32/"
+                href="https://facebook.com/dashingmza/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-brand-400 hover:text-brand-300 hover:underline"
               >
-                Rehan
+                Zaheer Ahmad
               </a>
             </span>
             <span className="text-slate-500 text-[10px] leading-tight block">For bloggers, by a blogger</span>
