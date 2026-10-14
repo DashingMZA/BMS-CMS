@@ -1,7 +1,7 @@
 /*
  * The public site's stylesheet.
  *
- * Same rules as `globals.css`, built from `tailwind.site.config.ts` — which
+ * Same rules as `globals.css`, built from `tailwind.site.config.mts` — which
  * scans only what a visitor can reach, instead of the whole admin. See that
  * file for why. `@config` has to sit in the stylesheet that carries the
  * `@tailwind` directives, which is the only reason this file exists as a copy
@@ -15,7 +15,7 @@
  * is the entry point now. `@config` still loads the legacy JS config (narrow
  * content scan + brand palette), verified against tailwindcss 4.3.3.
  */
-@config "../../tailwind.site.config.ts";
+@config "../../tailwind.site.config.mts";
 @import "tailwindcss";
 
 @layer base {

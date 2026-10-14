@@ -1,12 +1,12 @@
 /*
- * The admin's stylesheet, built from `tailwind.config.ts` (which scans
+ * The admin's stylesheet, built from `tailwind.config.mts` (which scans
  * everything). The public site uses `site.css` instead, built from a config
- * that scans only what a visitor can reach — see `tailwind.site.config.ts`.
+ * that scans only what a visitor can reach — see `tailwind.site.config.mts`.
  * A rule added here for a frontend component has to be added there too.
  *
  * The `@config` below is not optional. Tailwind resolves one config per
  * stylesheet, but the moment any stylesheet in the build declares one, the
- * ones that say nothing stop falling back to `tailwind.config.ts` and pick
+ * ones that say nothing stop falling back to `tailwind.config.mts` and pick
  * up whichever config was loaded last. Leaving it off cost the admin 550 of
  * its 948 selectors — it silently built against the site's narrow scan.
  *
@@ -14,7 +14,7 @@
  * is the entry point now. `@config` still loads the legacy JS config,
  * verified against tailwindcss 4.3.3.
  */
-@config "../../tailwind.config.ts";
+@config "../../tailwind.config.mts";
 @import "tailwindcss";
 
 @layer base {
