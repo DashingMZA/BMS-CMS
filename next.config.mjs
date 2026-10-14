@@ -237,7 +237,6 @@ if (process.env.LEGACY_POLYFILLS !== "on") {
   // earlier version filtered `config.entry` and changed nothing (same chunk
   // hash, same 11 KiB). Swapping the module itself works for every entry.
   const noop = fileURLToPath(new URL("./src/lib/noop-module.js", import.meta.url));
-  // webpack builds (`next build --webpack`).
   nextConfig.webpack = (config, { isServer, webpack }) => {
     if (isServer) return config;
     config.plugins.push(new webpack.NormalModuleReplacementPlugin(/[\\/]build[\\/]polyfills[\\/]polyfill-module(\.js)?$/, noop));

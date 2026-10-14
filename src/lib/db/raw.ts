@@ -36,7 +36,7 @@ export async function rawQuery<T extends Row = Row>(
 
   if (isNeonHttp(url)) {
     neonClient ??= neon(url);
-    return (await neonClient(text, params)) as T[];
+    return (await neonClient.query(text, params)) as T[];
   }
 
   // Middleware's pool, separate from the app's. Kept at a couple of

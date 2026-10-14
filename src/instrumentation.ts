@@ -19,7 +19,7 @@ export const onRequestError: Instrumentation.onRequestError = async (err, reques
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
   const { recordError } = await import("@/lib/errorLog");
   await recordError({
-    source: context.routerKind === "App Router" && context.routeType === "route" ? "route" : context.routeType === "proxy" ? "middleware" : "render",
+    source: context.routerKind === "App Router" && context.routeType === "route" ? "route" : context.routeType === "proxy" ? "proxy" : "render",
     path: request.path,
     method: request.method,
     message: e?.message || String(err),

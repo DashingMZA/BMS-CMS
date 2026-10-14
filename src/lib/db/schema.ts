@@ -605,7 +605,7 @@ export const plugins = pgTable("plugins", {
 // here instead: what failed, where, and the stack — enough to fix it.
 export const errorLog = pgTable("error_log", {
   id: serial("id").primaryKey(),
-  /** "render", "route", "middleware", "client" — where it surfaced. */
+  /** "render", "route", "proxy", "client" — where it surfaced. */
   source: varchar("source", { length: 20 }).notNull().default("render"),
   path: text("path"),
   method: varchar("method", { length: 10 }),

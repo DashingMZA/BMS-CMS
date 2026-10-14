@@ -8,7 +8,7 @@
 import { rawQuery } from "@/lib/db/raw";
 
 export interface ErrorRecord {
-  source: "render" | "route" | "middleware" | "client" | "server";
+  source: "render" | "route" | "proxy" | "client" | "server";
   path?: string | null;
   method?: string | null;
   message: string;

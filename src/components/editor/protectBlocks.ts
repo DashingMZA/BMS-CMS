@@ -1,6 +1,6 @@
 import { Extension } from "@tiptap/core";
 import type { EditorState } from "prosemirror-state";
-import { getBlockInfoFromSelection } from "@blocknote/core";
+import { blockEdgePos, getBlockInfoFromSelection } from "@blocknote/core";
 
 // Backspace / Delete must never destroy an element.
 //
@@ -44,10 +44,9 @@ export const ProtectBlocks = Extension.create({
       const { state } = this.editor;
       if (!state.selection.empty) return false;
       const info = getBlockInfoFromSelection(state);
-      if (!info.isBlockContainer) return false;
-      const { blockContent } = info;
-      const atStart = state.selection.from === blockContent.beforePos + 1;
-      if (!atStart || !isProtected(blockContent.node.type.name)) return false;
+      if (!info.hasContent) return false;
+      const atStart = state.selection.from === blockEdgePos(info, "start");
+      if (!atStart || !isProtected(info.blockNoteType)) return false;
       // An indented element may still step out a level — it moves, it isn't lost.
       this.editor.commands.liftListItem("blockContainer");
       return true;
@@ -57,11 +56,10 @@ export const ProtectBlocks = Extension.create({
       const { state } = this.editor;
       if (!state.selection.empty) return false;
       const info = getBlockInfoFromSelection(state);
-      if (!info.isBlockContainer) return false;
-      const { blockContent } = info;
-      const atEnd = state.selection.from === blockContent.afterPos - 1;
+      if (!info.hasContent) return false;
+      const atEnd = state.selection.from === blockEdgePos(info, "end");
       if (!atEnd) return false;
-      const next = nextBlockContentType(state, blockContent.afterPos);
+      const next = nextBlockContentType(state, info.content.afterPos);
       return next !== null && isProtected(next);
     };
 

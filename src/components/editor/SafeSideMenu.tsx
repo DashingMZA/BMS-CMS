@@ -36,16 +36,19 @@ function TrimmedDragMenu(props: any) {
   );
 }
 
+// In BlockNote 0.56 the sideMenu render prop only receives `{ dragHandleMenu }`
+// — the hovered `block` is resolved internally by the controller, so the
+// `props.block` guard this file used to carry has no equivalent. The nested
+// Row Layout case it protected against (an outer editor resolving a column's
+// block id) is now the controller's own responsibility.
 export default function SafeSideMenu() {
   return (
     <SideMenuController
-      sideMenu={(props) =>
-        props.block ? (
-          <SideMenu {...props}>
-            <DragHandleButton {...props} dragHandleMenu={TrimmedDragMenu} />
-          </SideMenu>
-        ) : null
-      }
+      sideMenu={(props) => (
+        <SideMenu {...props}>
+          <DragHandleButton {...props} dragHandleMenu={TrimmedDragMenu} />
+        </SideMenu>
+      )}
     />
   );
 }
