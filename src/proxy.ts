@@ -158,7 +158,7 @@ function maintenanceResponse(m: MaintenanceState): NextResponse {
   });
 }
 
-export default async function middleware(req: NextRequest) {
+export default async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   const canonical = await canonicalRedirect(req);
@@ -168,7 +168,7 @@ export default async function middleware(req: NextRequest) {
   //
   // `SiteLayout` renders the screen, but a server component cannot set one, so
   // the notice went out as 200 and Google could index it as the homepage. The
-  // middleware can, and it runs in the Node runtime with database access.
+  // proxy can, and it runs in the Node runtime with database access.
   //
   // Only for visitors with no session: anyone signed in falls through to
   // SiteLayout, which does the administrator check and either shows the site
@@ -407,7 +407,7 @@ export const config = {
   ],
   // Node, not Edge. The redirect and language lookups above need a database,
   // and on a VPS or shared host that database is reached over TCP, which the
-  // Edge sandbox cannot open. Node middleware runs everywhere this CMS is
-  // meant to run; Edge middleware runs only where the database is Neon.
+  // Edge sandbox cannot open. Node proxy runs everywhere this CMS is
+  // meant to run; Edge proxy runs only where the database is Neon.
   runtime: "nodejs",
 };

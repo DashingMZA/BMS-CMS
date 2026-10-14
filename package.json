@@ -14,8 +14,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "deploy": "pnpm install && pnpm run db:migrate && pnpm run build",
+    "lint": "eslint .",
+    "deploy": "pnpm install && pnpm db:migrate && pnpm build",
     "check": "node scripts/smoke.mjs",
     "pack": "node scripts/make-upload.mjs",
     "db:migrate": "node scripts/db-migrate.mjs",
@@ -61,14 +61,6 @@
     "eslint-config-next": "^16.4.0",
     "postcss": "^8.5.30",
     "tailwindcss": "^4.3.3",
-    "typescript": "^7.0.2"
-  },
-  "overrides": {
-    "next-auth": {
-      "nodemailer": "$nodemailer"
-    },
-    "next": {
-      "postcss": "$postcss"
-    }
+    "typescript": "^6.0.3"
   }
 }
