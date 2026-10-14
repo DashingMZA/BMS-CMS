@@ -1,4 +1,4 @@
-# BMS by Rehan — CMS
+# BMS by Zaheer — CMS
 
 A content management system built on Next.js 16, React 19, Drizzle and Postgres.
 This is a clean copy: no posts, no pages, no media, no users. Installing it
