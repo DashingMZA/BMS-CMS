@@ -182,7 +182,7 @@ Everything builds on the server here — a VPS has the memory for it.
 # once: Node 20 and pm2
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 sudo apt-get install -y nodejs
-sudo npm install -g pm2
+sudo pnpm install -g pm2
 
 # the app
 git clone <your repo> bms && cd bms      # or upload and unzip

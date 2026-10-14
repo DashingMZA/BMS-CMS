@@ -211,7 +211,7 @@ uses your plugin.
 | Tool | Use when | Notes |
 |---|---|---|
 | **Plain JS + CSS** | Almost always | Zero build step. Zip the folder, done. All the samples are written this way. |
-| **Vite** (bundler) | Your tool grows past a few files, or you want TypeScript, imports, npm packages | Build to a single `script.js` (IIFE or ES module). See §7. |
+| **Vite** (bundler) | Your tool grows past a few files, or you want TypeScript, imports, pnpm packages | Build to a single `script.js` (IIFE or ES module). See §7. |
 | **Preact** (3 KB) | You genuinely need components and state | Bundle it with Vite; never load React. |
 | **Alpine.js** (15 KB) | Declarative interactivity in the HTML with little JS | Load it from your own folder, not a CDN — see §9. |
 | **Chart.js / other libs** | Charts, maths, dates | Bundle only what you use; check the size. |
@@ -293,8 +293,8 @@ under Admin → Plugins, put `[tip-calculator]` in a post. Done.
 ## 7. Using Vite (when plain JS is not enough)
 
 ```bash
-npm create vite@latest my-tool -- --template vanilla-ts
-cd my-tool && npm install
+pnpm create vite@latest my-tool -- --template vanilla-ts
+cd my-tool && pnpm install
 ```
 
 `vite.config.ts` — build to one file with a fixed name:
@@ -321,11 +321,11 @@ BMS.plugin("my-tool", (root, ctx) => {
 });
 ```
 
-`npm run build` → copy `dist/script.js` (and `dist/style.css` if you import
+`pnpm run build` → copy `dist/script.js` (and `dist/style.css` if you import
 CSS in TS) next to your `plugin.json` and `index.html`, zip, upload. Keep the
 source in your own repo; the zip is a build artifact.
 
-Preact with Vite: `npm i preact`, render into the shadow root:
+Preact with Vite: `pnpm i preact`, render into the shadow root:
 ```ts
 import { render } from "preact";
 BMS.plugin("my-tool", (root, ctx) => {
@@ -421,7 +421,7 @@ drizzle/000N_<feature>.sql           migration, if it needs a table
 ```
 
 Register the block in `blockLibrary.ts` and `blockMeta.ts`, add it to
-`PANEL_TYPES`. Then `npm run build` and ship a release. The App Info block is
+`PANEL_TYPES`. Then `pnpm run build` and ship a release. The App Info block is
 a complete example of this shape.
 
 ---

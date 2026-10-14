@@ -2,8 +2,8 @@ import { fileURLToPath } from "node:url";
 
 // Plain JavaScript on purpose. A `next.config.ts` is transpiled when the server
 // starts, which needs the `typescript` package - a devDependency. On a host
-// that ran `npm install --omit=dev`, Next notices it is missing and tries to
-// npm-install it during boot, which on shared hosting is slow at best and a
+// that ran `pnpm install --omit=dev`, Next notices it is missing and tries to
+// pnpm-install it during boot, which on shared hosting is slow at best and a
 // hung startup at worst. This file needs nothing to load.
 
 /** @type {import("next").NextConfig} */
@@ -14,7 +14,7 @@ const nextConfig = {
   // build somewhere else makes "does this still compile for production" a
   // question that can be answered at any time, without stopping anything:
   //
-  //   BUILD_DIR=.next-verify npm run build
+  //   BUILD_DIR=.next-verify pnpm run build
   distDir: process.env.BUILD_DIR || ".next",
 
   // Off: LiteSpeed (and Cloudflare in front of it) compress responses at the
