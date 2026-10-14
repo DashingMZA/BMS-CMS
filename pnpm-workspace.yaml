@@ -10,9 +10,18 @@ minimumReleaseAgeExclude:
   - nodemailer@10.1.1
 
 # pnpm 12 no longer reads the "pnpm" field in package.json — workspace-level
-# settings live here instead. These force a single nodemailer and a single
-# postcss across the tree (previously written as npm-style "overrides" in
-# package.json, which pnpm silently ignored).
+# settings live here instead.
+#
+# Single source of truth for the two versions that must stay unified across
+# the tree: the catalog pins them once, package.json references them with
+# `catalog:`, and the overrides below force transitive copies onto the same
+# line. (The old "$nodemailer" / "$postcss" override syntax is deprecated in
+# pnpm 12 — this is its replacement.)
+catalogs:
+  default:
+    nodemailer: ^10.1.1
+    postcss: ^8.5.30
+
 overrides:
-  "next-auth>nodemailer": "$nodemailer"
-  "next>postcss": "$postcss"
+  "next-auth>nodemailer": "catalog:default"
+  "next>postcss": "catalog:default"
