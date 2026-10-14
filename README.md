@@ -51,14 +51,14 @@ Fill in `.env.local` with the **production** values: the database the live site
 will use, and `NEXTAUTH_URL` / `NEXT_PUBLIC_SITE_URL` set to the real domain.
 
 ```bash
-npm install
-npm run db:migrate             # creates the tables in that database
-npm run build                  # pre-renders from it
-npm run check                  # boots the build and tests it (optional, 30s)
-npm run pack                   # makes upload.zip
+pnpm install
+pnpm run db:migrate             # creates the tables in that database
+pnpm run build                  # pre-renders from it
+pnpm run check                  # boots the build and tests it (optional, 30s)
+pnpm run pack                   # makes upload.zip
 ```
 
-`npm run check` starts the built site on a spare port and verifies the pages,
+`pnpm run check` starts the built site on a spare port and verifies the pages,
 the sitemap, the security headers and the admin gates — the things that fail
 without any error message. If it prints FAIL, do not upload.
 
@@ -67,7 +67,7 @@ without any error message. If it prints FAIL, do not upload.
 > Access*, or use a hosted database such as Neon, which is reachable from
 > anywhere. This is the one thing that cannot be worked around by uploading.
 
-`npm run pack` writes **`upload.zip`** in the project folder. It contains
+`pnpm run pack` writes **`upload.zip`** in the project folder. It contains
 exactly what the host needs — the build, `server.js`, the migrations and the
 config files — with correct Linux permissions written into it, and never
 includes `node_modules`, `.env.local` or the build cache.
@@ -95,16 +95,16 @@ includes `node_modules`, `.env.local` or the build cache.
    `AUTH_TRUST_HOST`, `NEXT_PUBLIC_SITE_URL`. (Alternatively upload `.env.local`
    itself into the app root; both work.)
 
-3. **Install dependencies.** Click *Run NPM Install*, or in the terminal the
+3. **Install dependencies.** Click *Run PNPM Install*, or in the terminal the
    panel gives you:
    ```bash
-   npm install --omit=dev
+   pnpm install --omit=dev
    ```
 
 4. **Check the database from the host** (the tables already exist — you made
    them from your computer — so this should say *up to date*):
    ```bash
-   npm run db:migrate
+   pnpm run db:migrate
    ```
    If it cannot connect, the message says why — almost always the host blocking
    outbound connections to an external database (ask support to allow port
@@ -155,10 +155,10 @@ includes `node_modules`, `.env.local` or the build cache.
 On your computer, with `.env.local` still pointing at the live database:
 
 ```bash
-npm install
-npm run db:migrate      # applies anything new; says "up to date" otherwise
-npm run build
-npm run pack
+pnpm install
+pnpm run db:migrate      # applies anything new; says "up to date" otherwise
+pnpm run build
+pnpm run pack
 ```
 
 Upload the new `upload.zip` into the app folder and extract it over the old
@@ -166,7 +166,7 @@ files — **`public/uploads` and `.env.local` are untouched**, the zip never
 contains them — then on the host:
 
 ```bash
-npm install --omit=dev
+pnpm install --omit=dev
 ```
 
 and *Restart* from the panel. Back up first: Settings → Export, and a copy of
@@ -187,10 +187,10 @@ sudo npm install -g pm2
 # the app
 git clone <your repo> bms && cd bms      # or upload and unzip
 cp .env.example .env.local               # then edit it
-npm install
-npm run db:migrate
-npm run build
-pm2 start npm --name bms -- start
+pnpm install
+pnpm run db:migrate
+pnpm run build
+pm2 start pnpm --name bms -- start
 pm2 save && pm2 startup                  # restart on reboot
 ```
 
@@ -220,7 +220,7 @@ and `DB_SSL=off` in `.env.local`. Raise `DB_POOL_MAX` to 10–20.
 ```bash
 cd bms
 git pull                 # or upload the new files over the old ones
-npm run deploy           # install → migrate → build, in that order
+pnpm run deploy           # install → migrate → build, in that order
 pm2 restart bms
 ```
 
@@ -230,7 +230,7 @@ pm2 restart bms
 
 Import the repository, add the environment variables, and set
 `BLOB_READ_WRITE_TOKEN` — Vercel's disk is read-only, so uploads must go to
-Blob. Use a Neon database. Run `npm run db:migrate` once from your computer
+Blob. Use a Neon database. Run `pnpm run db:migrate` once from your computer
 against the production `DATABASE_URL`; after that, every schema change is a
 migration you run the same way before pushing the code that needs it.
 
@@ -249,7 +249,7 @@ migration you run the same way before pushing the code that needs it.
 
 ## About the database
 
-`npm run db:migrate` applies every file in `drizzle/` that this database has not
+`pnpm run db:migrate` applies every file in `drizzle/` that this database has not
 seen, records what it applied in a `cms_migrations` table, and runs each file in
 a transaction so a failure rolls back rather than leaving half a schema behind.
 Safe to run repeatedly; if there is nothing to do, it says so. Exits non-zero on
@@ -258,7 +258,7 @@ failure, so it is safe to chain in a deploy script.
 The site also runs the same check itself every time it starts (`server.js`), so
 uploading a new version and restarting the app applies its migrations without a
 terminal on the host. `startup.log` records what was applied; if a file fails the
-site still starts, Site Health names the file, and `npm run db:migrate` reports
+site still starts, Site Health names the file, and `pnpm run db:migrate` reports
 the error in full.
 
 **Do not use `drizzle-kit migrate`** — it tracks migrations through a journal

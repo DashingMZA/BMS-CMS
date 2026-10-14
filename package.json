@@ -15,7 +15,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "deploy": "npm install && npm run db:migrate && npm run build",
+    "deploy": "pnpm install && pnpm run db:migrate && pnpm run build",
     "check": "node scripts/smoke.mjs",
     "pack": "node scripts/make-upload.mjs",
     "db:migrate": "node scripts/db-migrate.mjs",
