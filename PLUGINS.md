@@ -321,7 +321,7 @@ BMS.plugin("my-tool", (root, ctx) => {
 });
 ```
 
-`pnpm run build` → copy `dist/script.js` (and `dist/style.css` if you import
+`pnpm build` → copy `dist/script.js` (and `dist/style.css` if you import
 CSS in TS) next to your `plugin.json` and `index.html`, zip, upload. Keep the
 source in your own repo; the zip is a build artifact.
 
@@ -421,7 +421,7 @@ drizzle/000N_<feature>.sql           migration, if it needs a table
 ```
 
 Register the block in `blockLibrary.ts` and `blockMeta.ts`, add it to
-`PANEL_TYPES`. Then `pnpm run build` and ship a release. The App Info block is
+`PANEL_TYPES`. Then `pnpm build` and ship a release. The App Info block is
 a complete example of this shape.
 
 ---

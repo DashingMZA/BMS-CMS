@@ -52,13 +52,13 @@ will use, and `NEXTAUTH_URL` / `NEXT_PUBLIC_SITE_URL` set to the real domain.
 
 ```bash
 pnpm install
-pnpm run db:migrate             # creates the tables in that database
-pnpm run build                  # pre-renders from it
-pnpm run check                  # boots the build and tests it (optional, 30s)
-pnpm run pack                   # makes upload.zip
+pnpm db:migrate             # creates the tables in that database
+pnpm build                  # pre-renders from it
+pnpm check                  # boots the build and tests it (optional, 30s)
+pnpm pack                   # makes upload.zip
 ```
 
-`pnpm run check` starts the built site on a spare port and verifies the pages,
+`pnpm check` starts the built site on a spare port and verifies the pages,
 the sitemap, the security headers and the admin gates — the things that fail
 without any error message. If it prints FAIL, do not upload.
 
@@ -67,7 +67,7 @@ without any error message. If it prints FAIL, do not upload.
 > Access*, or use a hosted database such as Neon, which is reachable from
 > anywhere. This is the one thing that cannot be worked around by uploading.
 
-`pnpm run pack` writes **`upload.zip`** in the project folder. It contains
+`pnpm pack` writes **`upload.zip`** in the project folder. It contains
 exactly what the host needs — the build, `server.js`, the migrations and the
 config files — with correct Linux permissions written into it, and never
 includes `node_modules`, `.env.local` or the build cache.
@@ -104,7 +104,7 @@ includes `node_modules`, `.env.local` or the build cache.
 4. **Check the database from the host** (the tables already exist — you made
    them from your computer — so this should say *up to date*):
    ```bash
-   pnpm run db:migrate
+   pnpm db:migrate
    ```
    If it cannot connect, the message says why — almost always the host blocking
    outbound connections to an external database (ask support to allow port
@@ -156,9 +156,9 @@ On your computer, with `.env.local` still pointing at the live database:
 
 ```bash
 pnpm install
-pnpm run db:migrate      # applies anything new; says "up to date" otherwise
-pnpm run build
-pnpm run pack
+pnpm db:migrate      # applies anything new; says "up to date" otherwise
+pnpm build
+pnpm pack
 ```
 
 Upload the new `upload.zip` into the app folder and extract it over the old
@@ -188,8 +188,8 @@ sudo pnpm install -g pm2
 git clone <your repo> bms && cd bms      # or upload and unzip
 cp .env.example .env.local               # then edit it
 pnpm install
-pnpm run db:migrate
-pnpm run build
+pnpm db:migrate
+pnpm build
 pm2 start pnpm --name bms -- start
 pm2 save && pm2 startup                  # restart on reboot
 ```
@@ -220,7 +220,7 @@ and `DB_SSL=off` in `.env.local`. Raise `DB_POOL_MAX` to 10–20.
 ```bash
 cd bms
 git pull                 # or upload the new files over the old ones
-pnpm run deploy           # install → migrate → build, in that order
+pnpm deploy           # install → migrate → build, in that order
 pm2 restart bms
 ```
 
