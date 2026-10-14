@@ -53,9 +53,9 @@ A1. Create .env.local from .env.example with exactly these set:
       NEXT_PUBLIC_SITE_URL=https://<domain>
     No spaces around "=", no quotes.
 
-A2. npm install
+A2. pnpm install
 
-A3. npm run db:migrate
+A3. pnpm run db:migrate
     Must end with "Applied N migrations." — N is however many .sql files are
     in drizzle/ (18 at the time of writing) — or "up to date" if re-running.
     Anything else: stop, show me, do not continue.
@@ -69,11 +69,11 @@ A3. npm run db:migrate
     but it also means a FAILED migration is silent from outside. Read
     startup.log after any deploy that carries a new one.
 
-A4. npm run build
+A4. pnpm run build
     Must exit 0 with the route table and no "Error". The build reads the
     database, so A3 and a working DATABASE_URL must come first.
 
-A5. npm run pack
+A5. pnpm run pack
     Produces upload.zip in the project folder with correct Linux permissions
     written in. Do NOT zip the folder with Windows/PowerShell instead — a
     Windows zip has no Unix permissions and the host then creates folders it
@@ -166,7 +166,7 @@ B5. On the app page, Environment variables → Add Variable, eight times.
 
     Then SAVE (top right).
 
-B6. Run NPM Install (wait for the green "completed" toast) → RESTART.
+B6. Run PNPM Install (wait for the green "completed" toast) → RESTART.
 
 B7. Open https://<domain>/admin/setup in a new tab. It should show a form with
     Name, Email, Password. If it does, I create the admin and we go to Part C.
@@ -187,7 +187,7 @@ The host shows no error anywhere. server.js writes its own log instead.
      server.js repairs this by itself on start; if this still appears, the
      server.js on the host is old — re-upload just server.js from the
      project folder, Restart.
-   - "could not load Next" → Run NPM Install did not complete. Run it again,
+   - "could not load Next" → Run PNPM Install did not complete. Run it again,
      Restart.
    - "no production build found" → .next did not come across (usually B1 was
      skipped so I could not see it, or the zip was extracted into a
@@ -356,7 +356,7 @@ LAST TIME, IN ORDER, WHAT ACTUALLY WENT WRONG
 1. I pasted the description of a value instead of the value (see B5).
 2. 503 with nothing in any log — fixed by server.js writing startup.log.
 3. EACCES on .next/static — Windows zip without permissions; fixed by
-   npm run pack and by server.js repairing permissions on start.
+   pnpm run pack and by server.js repairing permissions on start.
 4. A one-off 500 on the dashboard right after login — the sleeping database
    waking up; C3 prevents it.
 5. Physical Memory Usage crept to 100% hours after everything looked fine.
