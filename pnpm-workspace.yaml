@@ -1,0 +1,10 @@
+allowBuilds:
+  esbuild: true
+  unrs-resolver: true
+minimumReleaseAgeExclude:
+  - '@blocknote/core@0.56.0'
+  - '@blocknote/mantine@0.56.0'
+  - '@blocknote/react@0.56.0'
+  - '@vercel/blob@2.8.2'
+  - lucide-react@1.57.0
+  - nodemailer@10.1.1
