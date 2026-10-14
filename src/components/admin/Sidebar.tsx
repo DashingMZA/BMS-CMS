@@ -31,6 +31,7 @@ import {
   MessageCircle,
   Gauge,
   Megaphone,
+  Wrench,
 } from "lucide-react";
 
 type NavItem = {
@@ -77,6 +78,7 @@ const navGroups: { label: string; items: NavItem[] }[] = [
     items: [
       { label: "Users", href: "/admin/users", icon: Users },
       { label: "Settings", href: "/admin/settings", icon: Settings },
+      { label: "Tools", href: "/admin/tools", icon: Wrench },
       { label: "Site Health", href: "/admin/health", icon: HeartPulse },
       { label: "Errors", href: "/admin/errors", icon: AlertOctagon },
       // Last in the admin group: it is the thing you visit occasionally, not
@@ -109,6 +111,7 @@ const ADMIN_ONLY_HREFS = new Set([
   "/admin/ads",
   "/admin/speed",
   "/admin/settings",
+  "/admin/tools",
   "/admin/navigation",
   "/admin/elements",
   "/admin/links",
