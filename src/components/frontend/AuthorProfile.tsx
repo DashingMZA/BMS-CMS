@@ -4,7 +4,15 @@
 // Two slots rather than one component, because the two halves sit on either
 // side of the biography and `BlogArchive` owns the header between them.
 
-import { Globe, Facebook, Github, Instagram, Linkedin, Twitter, Youtube } from "lucide-react";
+import { Globe } from "lucide-react";
+import {
+  SiX,
+  SiFacebook,
+  SiGithub,
+  SiInstagram,
+  SiYoutube,
+} from "@icons-pack/react-simple-icons";
+import { LinkedinIcon } from "@/components/icons/brands";
 
 export interface AuthorLike {
   name: string | null;
@@ -43,12 +51,12 @@ export function authorLinks(a: AuthorLike) {
   return (
     [
       ["Website", a.website, Globe],
-      ["X", a.twitter, Twitter],
-      ["LinkedIn", a.linkedin, Linkedin],
-      ["GitHub", a.github, Github],
-      ["Instagram", a.instagram, Instagram],
-      ["Facebook", a.facebook, Facebook],
-      ["YouTube", a.youtube, Youtube],
+      ["X", a.twitter, SiX],
+      ["LinkedIn", a.linkedin, LinkedinIcon],
+      ["GitHub", a.github, SiGithub],
+      ["Instagram", a.instagram, SiInstagram],
+      ["Facebook", a.facebook, SiFacebook],
+      ["YouTube", a.youtube, SiYoutube],
     ] as const
   )
     .map(([label, raw, Icon]) => ({ label, href: safeUrl(raw), Icon }))

@@ -2,7 +2,8 @@
 
 import { hasRobotsAdvanced, parseRobotsAdvanced, serializeRobotsAdvanced, type RobotsAdvanced } from "@/lib/robots";
 import { useEffect, useState } from "react";
-import { ChevronDown, ChevronUp, Search, Share2, Twitter, Settings2, Braces } from "lucide-react";
+import { ChevronDown, ChevronUp, Search, Share2, Settings2, Braces } from "lucide-react";
+import { SiX } from "@icons-pack/react-simple-icons";
 import SchemaTab from "./SchemaTab";
 
 export interface SeoData {
@@ -74,7 +75,7 @@ export default function SeoPanel({
   const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
     { id: "search",   label: "Search",     icon: Search },
     { id: "social",   label: "Open Graph", icon: Share2 },
-    { id: "twitter",  label: "Twitter",    icon: Twitter },
+    { id: "twitter",  label: "Twitter",    icon: SiX },
     { id: "schema",   label: "Schema",     icon: Braces },
     { id: "advanced", label: "Advanced",   icon: Settings2 },
   ];

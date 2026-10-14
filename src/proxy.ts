@@ -405,9 +405,7 @@ export const config = {
     // Next's own files are excluded: they are never a redirect source.
     "/((?!_next/|uploads/|fonts/).*\\.(?:html?|php|aspx?|jsp|cfm|shtml|pdf))",
   ],
-  // Node, not Edge. The redirect and language lookups above need a database,
-  // and on a VPS or shared host that database is reached over TCP, which the
-  // Edge sandbox cannot open. Node proxy runs everywhere this CMS is
-  // meant to run; Edge proxy runs only where the database is Neon.
-  runtime: "nodejs",
+  // No `runtime` key: Next 16 forbids route segment config in the proxy file,
+  // and the proxy always runs on the Node.js runtime anyway — which is what
+  // the database lookups above need (the Edge sandbox cannot open TCP).
 };
