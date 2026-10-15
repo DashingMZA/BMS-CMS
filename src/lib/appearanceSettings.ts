@@ -424,6 +424,9 @@ export interface AppearanceSettings {
   search_content_style: string;     // boxed | unboxed
   search_columns: string;           // 1..4
   search_elements: string;          // JSON: { id: string; visible: boolean }[]
+  search_excerpt_length: string;    // words, 0 = hide
+  search_empty_title: string;       // "No results" heading
+  search_empty_text: string;        // "No results" body copy
   search_item_title_font: string;
   search_item_title_size: string;
   search_item_title_weight: string;
@@ -900,6 +903,9 @@ export const defaults: AppearanceSettings = {
   search_sidebar: "sidebar1",
   search_content_style: "boxed",
   search_columns: "3",
+  search_excerpt_length: "25",
+  search_empty_title: "",
+  search_empty_text: "",
   search_elements: JSON.stringify([
     { id: "feature",    visible: true },
     { id: "categories", visible: true },

@@ -115,7 +115,7 @@ export function SearchPanel({ s, set }: { s: CustomizerSettings; set: SetFn }) {
             />
           </Field>
 
-          <Field label="Category Pages Default Sidebar">
+          <Field label="Search Results Default Sidebar">
             <select className={inputCls} value={s.search_sidebar} onChange={(e) => set("search_sidebar", e.target.value)}>
               <option value="sidebar1">Sidebar 1</option>
             </select>
@@ -149,6 +149,39 @@ export function SearchPanel({ s, set }: { s: CustomizerSettings; set: SetFn }) {
                 </button>
               ))}
             </div>
+          </Field>
+
+          <Field label="Excerpt Length (words)">
+            <input
+              type="number"
+              min={0}
+              max={100}
+              className={inputCls}
+              value={s.search_excerpt_length}
+              onChange={(e) => set("search_excerpt_length", e.target.value)}
+            />
+            <p className="text-[11px] text-slate-400 mt-1">0 hides the excerpt.</p>
+          </Field>
+
+          <SectionHead>Empty State</SectionHead>
+
+          <Field label="No Results Heading">
+            <input
+              className={inputCls}
+              value={s.search_empty_title}
+              onChange={(e) => set("search_empty_title", e.target.value)}
+              placeholder="No results found"
+            />
+          </Field>
+
+          <Field label="No Results Text">
+            <textarea
+              rows={2}
+              className={inputCls}
+              value={s.search_empty_text}
+              onChange={(e) => set("search_empty_text", e.target.value)}
+              placeholder="Try different keywords…"
+            />
           </Field>
 
           <SectionHead>Search Item Layout</SectionHead>

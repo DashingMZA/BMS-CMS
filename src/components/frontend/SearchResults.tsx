@@ -51,6 +51,14 @@ export default function SearchResults({
   const heading = query ? t.searchResultsFor(query) : t.search;
   const href = (p: SearchPost) => postPath(p, settings);
 
+  // Excerpt length from the Customizer (words, 0 = hide).
+  const excerptWords = Math.max(0, parseInt(settings.search_excerpt_length ?? "25", 10) || 0);
+  const truncateWords = (text: string | null, words: number) => {
+    if (!text || words <= 0) return words <= 0 ? "" : text;
+    const parts = text.split(/\s+/);
+    return parts.length > words ? parts.slice(0, words).join(" ") + "…" : text;
+  };
+
   /**
    * One copy of the title, not two.
    *
@@ -105,7 +113,12 @@ export default function SearchResults({
             )}
 
             {posts.length === 0 ? (
-              <p className="opacity-60">{t.noResults}</p>
+              <div className="search-empty">
+                <p className="text-lg font-semibold">{settings.search_empty_title || t.noResults}</p>
+                {settings.search_empty_text && (
+                  <p className="opacity-60 mt-1">{settings.search_empty_text}</p>
+                )}
+              </div>
             ) : (
               <div className="search-items">
                 {posts.map((p) => (
@@ -143,9 +156,11 @@ export default function SearchResults({
                       {p.publishedAt ? formatSiteDate(p.publishedAt, settings, language) : null}
                     </div>
 
-                    <p data-search-el="excerpt" className="text-sm opacity-80 leading-relaxed">
-                      {p.excerpt}
-                    </p>
+                    {excerptWords > 0 && p.excerpt && (
+                      <p data-search-el="excerpt" className="text-sm opacity-80 leading-relaxed">
+                        {truncateWords(p.excerpt, excerptWords)}
+                      </p>
+                    )}
 
                     <div data-search-el="readmore">
                       <Link href={href(p)} className="text-sm font-medium hover:opacity-70 transition-opacity" style={{ color: "var(--color-primary,#0ea5e9)" }}>
