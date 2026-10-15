@@ -355,6 +355,39 @@ function LayoutGeneral({
               <option value="below-content">Below content</option>
             </select>
           </Field>
+          {/* Functional, not visual: which chips and how many. Lives in
+              General; Design keeps only the colours. */}
+          <SectionHead>Category filter row</SectionHead>
+          <Toggle
+            label="Show the category filter row"
+            value={s.archive_chips_show}
+            onChange={(v) => set("archive_chips_show", v)}
+          />
+          {s.archive_chips_show !== "false" && (
+            <>
+              <Field label="Chip source">
+                <select
+                  className={inputCls}
+                  value={s.archive_chips_source || "categories"}
+                  onChange={(e) => set("archive_chips_source", e.target.value)}
+                >
+                  <option value="categories">Categories</option>
+                  <option value="tags">Tags</option>
+                  <option value="both">Categories + Tags</option>
+                </select>
+              </Field>
+              <Field label="Max chips" help="Caps the row so hundreds of tags can't bury the posts. Most-used first.">
+                <input
+                  type="number"
+                  min={1}
+                  max={200}
+                  className={inputCls}
+                  value={s.archive_chips_limit || "30"}
+                  onChange={(e) => set("archive_chips_limit", e.target.value)}
+                />
+              </Field>
+            </>
+          )}
         </>
       )}
     </>
@@ -391,34 +424,9 @@ function LayoutDesign({
           <Field label="Count colour"><Swatch k="archive_count_color" s={s} set={set} /></Field>
 
           <SectionHead>Category filter row</SectionHead>
-          <Toggle
-            label="Show the category filter row"
-            value={s.archive_chips_show}
-            onChange={(v) => set("archive_chips_show", v)}
-          />
+          {/* Colours only — the show/source/limit controls live in General. */}
           {s.archive_chips_show !== "false" && (
             <>
-              <Field label="Chip source">
-                <select
-                  className={inputCls}
-                  value={s.archive_chips_source || "categories"}
-                  onChange={(e) => set("archive_chips_source", e.target.value)}
-                >
-                  <option value="categories">Categories</option>
-                  <option value="tags">Tags</option>
-                  <option value="both">Categories + Tags</option>
-                </select>
-              </Field>
-              <Field label="Max chips" help="Caps the row so hundreds of tags can't bury the posts. Most-used first.">
-                <input
-                  type="number"
-                  min={1}
-                  max={200}
-                  className={inputCls}
-                  value={s.archive_chips_limit || "30"}
-                  onChange={(e) => set("archive_chips_limit", e.target.value)}
-                />
-              </Field>
               <Field label="Chip text"><Swatch k="archive_chip_color" s={s} set={set} /></Field>
               <Field label="Chip background" help="Left empty, chips take a faint tint of the text colour around them, which suits a light and a dark theme alike.">
                 <Swatch k="archive_chip_bg" s={s} set={set} />

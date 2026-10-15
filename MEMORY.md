@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `dccfdf5` — Archive chips: default source to categories
+When `archive_chips_source` is unset, default to "categories" instead of showing both. The undefined case was rendering categories+tags despite the Customizer default being "categories".
+
 ### 2026-10-15 — `a45423a` — Sidebar: own background + text color
 `.content-sidebar` now has explicit `background:var(--color-bg)` and `color:var(--color-text)` with padding — independent of page `site_bg` (which may be dark on archives/pages, making inherited dark text invisible). This explains the cookies page too: no images/tags, just dark-bg + dark-text.
 
