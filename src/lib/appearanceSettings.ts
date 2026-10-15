@@ -339,6 +339,8 @@ export interface AppearanceSettings {
   post_spacing: string;
   post_title_show: string;
   post_meta_show: string;
+  /** JSON: { id: string; visible: boolean }[] — order + visibility of the meta row items (date, author, reading-time). */
+  post_meta_order: string;
   post_feature_show: string;
   /** Featured image placement when no hero: above-title | below-title. */
   post_feature_position: string;
@@ -836,6 +838,11 @@ export const defaults: AppearanceSettings = {
   post_spacing: "default",
   post_title_show: "true",
   post_meta_show: "true",
+  post_meta_order: JSON.stringify([
+    { id: "date", visible: true },
+    { id: "author", visible: true },
+    { id: "reading-time", visible: true },
+  ]),
   post_feature_show: "true",
   post_feature_position: "below-title",
   post_hero_layout: "none",
@@ -1223,6 +1230,21 @@ export function parsePostElements(raw: string): SearchElement[] {
     id,
     // Excerpts repeat the intro on most posts, so they stay off until asked for.
     visible: id !== "excerpt",
+  }));
+  return mergeElements(raw, fallback);
+}
+
+/** The items inside the post meta row, in draw order. */
+export const POST_META_LABELS: Record<string, string> = {
+  date: "Date",
+  author: "Author",
+  "reading-time": "Reading time",
+};
+
+export function parsePostMetaOrder(raw: string): SearchElement[] {
+  const fallback: SearchElement[] = Object.keys(POST_META_LABELS).map((id) => ({
+    id,
+    visible: true,
   }));
   return mergeElements(raw, fallback);
 }

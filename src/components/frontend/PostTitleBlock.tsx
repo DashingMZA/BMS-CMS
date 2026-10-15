@@ -23,6 +23,7 @@ export default function PostTitleBlock({
   language,
   dateText,
   homeHref = "/",
+  metaOrder,
 }: {
   /**
    * Where the trail's first crumb goes: the document's *language* root —
@@ -66,6 +67,11 @@ export default function PostTitleBlock({
   kind?: "post" | "page";
   /** The document's language, for the two fixed words in this block. */
   language?: string;
+  /**
+   * Meta row order + visibility, from `parsePostMetaOrder(settings.post_meta_order)`.
+   * When absent, the classic date → author → reading-time order renders.
+   */
+  metaOrder?: { id: string; visible: boolean }[];
   /**
    * The published date, already formatted by the caller.
    *
@@ -130,9 +136,25 @@ export default function PostTitleBlock({
       <div {...el("meta")} className="content-meta flex items-center gap-4 text-sm opacity-40 mb-8">
         {/* `dateTime` is the machine-readable half: the visible text follows
             the site's date format and language, which nothing can parse. */}
-        {publishedAt && dateText && <time dateTime={isoDate(publishedAt)}>{dateText}</time>}
-        {authorName && <span>{t.by} {authorName}</span>}
-        {readingTime && <span className="content-reading-time">{readingTime}</span>}
+        {(() => {
+          const items: Record<string, React.ReactNode> = {
+            date: publishedAt && dateText ? <time dateTime={isoDate(publishedAt)}>{dateText}</time> : null,
+            author: authorName ? <span>{t.by} {authorName}</span> : null,
+            "reading-time": readingTime ? <span className="content-reading-time">{readingTime}</span> : null,
+          };
+          // Customizer order (Customizer → Single Post → Meta order); the
+          // classic date → author → reading-time order when unset.
+          const order = (metaOrder ?? [
+            { id: "date", visible: true },
+            { id: "author", visible: true },
+            { id: "reading-time", visible: true },
+          ]).filter((m) => m.visible);
+          return order.map((m) => (
+            <span key={m.id} data-meta={m.id} style={{ display: "contents" }}>
+              {items[m.id] ?? null}
+            </span>
+          ));
+        })()}
       </div>
 
       {/* An element with no content still takes its margin, so the empty cases

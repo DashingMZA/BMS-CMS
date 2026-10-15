@@ -27,6 +27,7 @@ import ContentShell from "@/components/frontend/ContentShell";
 import ContentImage from "@/components/frontend/ContentImage";
 import PostTitleBlock from "@/components/frontend/PostTitleBlock";
 import HeroBlock from "@/components/frontend/HeroBlock";
+import { parsePostMetaOrder } from "@/lib/appearanceSettings";
 import { countWords, readingTimeLabel } from "@/lib/siteExtras";
 import PostAfterContent from "@/components/frontend/PostAfterContent";
 import PostComments from "@/components/frontend/PostComments";
@@ -829,6 +830,7 @@ export default async function ContentRoute({ params }: Params) {
     // Settings → Date format and the site's time zone, the same reading the
     // listing cards use — not the `en-US` shape this block used to hard-code.
     dateText: formatSiteDate(post.publishedAt, settings, post.language),
+    metaOrder: parsePostMetaOrder(settings.post_meta_order),
   };
 
   return (

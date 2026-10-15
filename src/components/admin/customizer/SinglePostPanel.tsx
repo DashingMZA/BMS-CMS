@@ -17,6 +17,8 @@ import {
   GOOGLE_FONTS,
   parsePostElements,
   POST_ELEMENT_LABELS,
+  parsePostMetaOrder,
+  POST_META_LABELS,
   type CustomizerSettings,
   type SearchElement,
 } from "@/lib/appearanceSettings";
@@ -147,6 +149,17 @@ export function SinglePostGeneral({ s, set }: { s: CustomizerSettings; set: SetF
             </div>
           )}
           <Switch label="Show post meta" value={s.post_meta_show} onChange={(v) => set("post_meta_show", v)} />
+          {s.post_meta_show !== "false" && (
+            <div className="pl-6">
+              <Field label="Meta order" help="Drag to reorder. Toggle an item off to hide it.">
+                <ElementList
+                  elements={parsePostMetaOrder(s.post_meta_order)}
+                  labels={POST_META_LABELS}
+                  onChange={(next) => set("post_meta_order", JSON.stringify(next))}
+                />
+              </Field>
+            </div>
+          )}
           <Switch label="Show post tags" value={s.post_tags_show} onChange={(v) => set("post_tags_show", v)} />
           <Switch label="Show post author box" value={s.post_author_box_show} onChange={(v) => set("post_author_box_show", v)} defaultOn={false} />
           {s.post_author_box_show === "true" && (
