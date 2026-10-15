@@ -26,7 +26,8 @@
 
 ## Work log (newest first)
 
-### 2026-10-15 — `b808096` — Elements: URL targeting + schedule
+### 2026-10-15 — `89792d2` — Sidebar ads without widgets
+Fixed: empty widget config hid top/middle/bottom sidebar ads too. Sidebar now renders when sidebar ads exist, even with zero widgets. "After widget N" UI already clear.
 - New URL conditions (show/hide on path prefixes) in ElementConditions
 - New `startAt`/`endAt` schedule columns + `inSchedule()` check
 - Admin UI: URLs card + Schedule card on element edit page
