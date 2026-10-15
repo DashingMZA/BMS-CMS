@@ -1,9 +1,10 @@
 import { cache, Fragment } from "react";
+import Link from "next/link";
+import Script from "next/script";
 import { db } from "@/lib/db";
 import { getSiteSettings } from "@/lib/settings";
 import { navItems } from "@/lib/db/schema";
 import { asc } from "drizzle-orm";
-import Link from "next/link";
 import DarkModeToggle from "./DarkModeToggle";
 import HeaderSearch from "./HeaderSearch";
 import HeaderNav from "./HeaderNav";
@@ -1098,7 +1099,14 @@ async function renderSiteLayout({ children, hideHeader, hideFooter, transparentH
         </>
       )}
       {delay && (settings.script_head || settings.script_body_end) && (
-        <script dangerouslySetInnerHTML={{ __html: delayLoader(intIn(speed.scripts_delay_timeout, 0, 60, 6)) }} />
+        /* next/script, not a raw <script>: React never executes a script tag
+           rendered as JSX on the client (and logs a warning about it), while
+           next/script injects and runs it properly. */
+        <Script
+          id="bms-delay-loader"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{ __html: delayLoader(intIn(speed.scripts_delay_timeout, 0, 60, 6)) }}
+        />
       )}
       {/* Speed helpers, Customizer → Speed. Both tiny, both inline so they
           cost no request; neither runs in the customizer preview. */}
