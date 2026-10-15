@@ -1,4 +1,4 @@
-# BMS by Zaheer — CMS
+# BMS by Rehan — CMS
 
 A content management system built on Next.js 16, React 19, Drizzle and Postgres.
 This is a clean copy: no posts, no pages, no media, no users. Installing it
@@ -55,7 +55,7 @@ pnpm install
 pnpm db:migrate             # creates the tables in that database
 pnpm build                  # pre-renders from it
 pnpm check                  # boots the build and tests it (optional, 30s)
-pnpm pack                   # makes upload.zip
+pnpm run pack               # makes upload.zip
 ```
 
 `pnpm check` starts the built site on a spare port and verifies the pages,
@@ -67,7 +67,7 @@ without any error message. If it prints FAIL, do not upload.
 > Access*, or use a hosted database such as Neon, which is reachable from
 > anywhere. This is the one thing that cannot be worked around by uploading.
 
-`pnpm pack` writes **`upload.zip`** in the project folder. It contains
+`pnpm run pack` writes **`upload.zip`** in the project folder. It contains
 exactly what the host needs — the build, `server.js`, the migrations and the
 config files — with correct Linux permissions written into it, and never
 includes `node_modules`, `.env.local` or the build cache.
@@ -127,7 +127,7 @@ includes `node_modules`, `.env.local` or the build cache.
 - **The first visit after a quiet spell is slow.** Passenger stops idle apps
   and restarts them on demand; expect 3–10 seconds on that one request. Set
   the app's *idle time* / *max pool idle time* as high as the host allows, and
-  run the keep-alive cron every 3 minutes (see `CRON_TOKEN` in env.example).
+  run the keep-alive cron every 3 minutes (see `CRON_TOKEN` in `.env.example`).
 
 - **Never put `pkill -f lsnode` on a short schedule.** It is sometimes
   suggested as a cure for LiteSpeed's worker processes accumulating, and every
@@ -158,7 +158,7 @@ On your computer, with `.env.local` still pointing at the live database:
 pnpm install
 pnpm db:migrate      # applies anything new; says "up to date" otherwise
 pnpm build
-pnpm pack
+pnpm run pack
 ```
 
 Upload the new `upload.zip` into the app folder and extract it over the old
@@ -220,7 +220,7 @@ and `DB_SSL=off` in `.env.local`. Raise `DB_POOL_MAX` to 10–20.
 ```bash
 cd bms
 git pull                 # or upload the new files over the old ones
-pnpm deploy           # install → migrate → build, in that order
+pnpm run deploy       # install → migrate → build, in that order
 pm2 restart bms
 ```
 
@@ -302,12 +302,17 @@ isolated (its CSS cannot affect the site or vice versa), server-rendered for
 search engines, and has settings the site owner edits in the admin.
 
 Two samples ship in `plugins-samples/` — upload `bmi-calculator.zip` to see
-one working, copy `starter/` to write your own. **`PLUGINS.md` is the full
+one working, copy `starter.zip` to write your own. **`PLUGINS.md` is the full
 developer guide**: file layout, the JavaScript API, settings and attributes,
 which frameworks to use, testing and packaging.
 
 Installed plugins live in `plugins/` next to the app. Back that folder up
 along with `public/uploads`.
+
+> **Vercel limitation:** plugins install to the `plugins/` folder on disk, but
+> Vercel's filesystem is read-only at runtime — uploaded/extracted plugins will
+> not persist between deployments. Use plugins on VPS/cPanel hosts with writable
+> disk; on Vercel, bundle any needed plugin into the deployment instead.
 
 ## Roles
 

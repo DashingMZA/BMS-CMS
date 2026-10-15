@@ -2,7 +2,7 @@
   "name": "bms-cms",
   "version": "1.9.63",
   "private": true,
-  "description": "BMS CMS - Blog Custome Content Managment",
+  "description": "BMS CMS - Blog Custom Content Management",
   "author": "Zaheer Ahmad",
   "homepage": "https://bmscms.cyou",
   "license": "MIT",
@@ -20,7 +20,8 @@
     "pack": "node scripts/make-upload.mjs",
     "db:migrate": "node scripts/db-migrate.mjs",
     "db:generate": "drizzle-kit generate",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@blocknote/core": "^0.56.0",

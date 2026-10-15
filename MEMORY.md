@@ -26,58 +26,115 @@
 
 ## Work log (newest first)
 
-### 2026-10-15 — `dbfbbe1` — CLAUDE.md + AGENTS.md link
+### 2026-10-15 — `9c452ed` — Log CLAUDE.md creation in MEMORY.md
+Bookkeeping entry for the CLAUDE.md commit, per the AGENTS.md rule (log every change).
+
+### 2026-10-15 — `3814c35` — CLAUDE.md + AGENTS.md link
 Created `CLAUDE.md`: full project map (what BMS-CMS is, tech stack, structure, all DB tables, every public route + rendering pipeline, all admin sections, API routes, key components, complete ads system reference with positions/targeting/pageKind wiring, settings/customizer, auth, conventions). Linked from `AGENTS.md` §0 so new agents read it first.
 
-### 2026-10-15 — `e214044` — parseAdBlocks: missing page kinds default to true
+### 2026-10-15 — `4dd1359` — MEMORY.md + AGENTS.md
+Created repo-level `MEMORY.md` (project work log) and `AGENTS.md` (agent instructions: read MEMORY.md first, log every change even single-word, push/deploy rules).
+
+### 2026-10-15 — `fa35498` — parseAdBlocks: missing page kinds default to true
 Old ad blocks saved before the `homepage`/`category`/`search` page kinds existed had those keys missing from `pages`. `!!undefined` turned them `false`, hiding sidebar ads on homepage/category/tag archives even though the user never unchecked anything. Now only keys actually present in the saved block are overridden; missing keys keep the default `true`.
 
-### 2026-10-14 — `56b8344` — Search page layout fix
+### 2026-10-14 — `819e3af` — Search page layout fix
 `content-shell` on the search page was missing `mx-auto px-4` (ContentShell always has them) — content was stuck to the left edge. Added.
 
-### 2026-10-14 — `19cd862` — Ad pageKind targeting for archives
-- Homepage (`[lang]/page.tsx`): now passes `pageKind="homepage"` (was default `"archive"`)
-- Category (`CategoryArchive.tsx`): now passes `pageKind="category"`
-- Tag (`tag/[slug]/page.tsx`): now passes `pageKind="archive"` explicitly
-- `ContentShell` gained an `adPageKind` prop; `BlogArchive` passes its `pageKind` through so the **sidebar** ads use the same targeting as the content ads (previously sidebar always got `"archive"`).
+### 2026-10-14 — `8aa5595` — Ad pageKind targeting for archives
+Homepage now passes `pageKind="homepage"` (was default `"archive"`), category passes `"category"`, tag passes `"archive"` explicitly. `ContentShell` gained an `adPageKind` prop; `BlogArchive` forwards its `pageKind` so sidebar ads target the same kind as content ads (previously sidebar always got `"archive"`).
 
-### 2026-10-14 — `a8f7206` — Sidebar on archives/search + responsive ad images
-- Archive pages (homepage, category, tag) now show the right sidebar when `archive_layout` is `"normal"` (the default). Only explicit `fullwidth`/`narrow`/`wide` hides it. Changed in `ContentShell.tsx` + matching CSS in `siteCss.ts`.
-- Search page now renders the main `Sidebar` (widgets + sidebar ads), following `search_archive_layout` (`"normal"` = right sidebar).
-- Ad images constrained: `.bms-adblock img { max-width: 100%; height: auto; }` in `site.css` + `globals.css` (970×250 billboard was overflowing).
+### 2026-10-14 — `b6ff915` — Sidebar on archives/search + responsive ad images
+Archive pages (homepage, category, tag) now show the right sidebar when `archive_layout` is `"normal"` (the default). Only explicit `fullwidth`/`narrow`/`wide` hides it. Changed in `ContentShell.tsx` + matching CSS in `siteCss.ts`. Search page now renders the main `Sidebar` (widgets + sidebar ads) following `search_archive_layout`. Ad images constrained: `.bms-adblock img { max-width: 100%; height: auto; }` (970×250 billboard was overflowing).
 
-### 2026-10-14 — `38ea85a` — Restored `@tiptap/core` + `prosemirror-state` in package.json
-pnpm had removed them (only transitive); `protectBlocks.ts` imports them directly.
+### 2026-10-14 — `440dca1` — Remaining executable scripts via Next.js `<Script>`
+`FACADE_SCRIPT` (video facade) and `prefetchScript(...)` moved from raw JSX `<script>` to Next.js `<Script>`. Kills the React "script tag while rendering" warning on archive pages.
 
-### 2026-10-15 — `57298cf` — Remaining executable scripts via Next.js `<Script>`
-`FACADE_SCRIPT` (video facade) and `prefetchScript(...)` moved from raw JSX `<script>` to `<Script>`. Kills the React "script tag while rendering" warning.
+### 2026-10-14 — `12cb73e` — delayLoader via Next.js `<Script>`
+The raw JSX `<script>` for delayLoader triggered React's "script tag while rendering" warning. Now loads via `<Script strategy="afterInteractive">` — warning gone, delay behavior unchanged.
 
-### 2026-10-15 — `a82b649` — delayLoader via Next.js `<Script strategy="afterInteractive">`
+### 2026-10-14 — `6b17334` — Comment `<li>` hydration fix
+`Comment` rendered its own `<li>` inside a parent `<li>` → invalid nesting (`<li> cannot be a descendant of <li>`). Now only the parent list item owns the `<li>`; `Comment` renders content only.
 
-### 2026-10-15 — `fa4277b` — Comment `<li>` hydration fix
-`Comment` rendered its own `<li>` inside a parent `<li>` → invalid nesting. Now only the parent list owns the `<li>`.
+### 2026-10-14 — `796a7d8` — Before/After excerpt ads out of archive cards
+Excerpt ad blocks were rendering inside every post card on front/archive pages. Removed from cards; they now show only around prev/next navigation (posts/pages) and around pagination (front/archive).
 
-### 2026-10-15 — `819a735` — Before/After excerpt ads out of archive cards
-Excerpt ads were rendering inside every post card on front/archive pages. Removed from cards; they now show only around prev/next nav (posts/pages) and around pagination (front/archive).
+### 2026-10-14 — `596b7c1` — Ad alignment fix for block-level media
+Tailwind preflight sets `img` to `display:block`, so `text-align:center` never centered ad images — they stuck to the left. Center/left/right alignment now uses auto-margins on the image/video/iframe element itself.
 
-### 2026-10-15 — `7195744` — Ad alignment fix for images/video/iframes
-Tailwind preflight sets `img { display:block }`, so `text-align:center` never centered them. Alignment now uses auto-margins on the media element itself.
-
-### 2026-10-14 — `39cd1a9` — Ads v6
+### 2026-10-14 — `fb33927` — Ads v6
 `before_excerpt` moved below the prev/next border line; new sidebar slot **After widget…** with a widget-number dropdown listing only real configured widgets; custom ads interleaved after their widget in `Sidebar.tsx`.
 
-### 2026-10-14 — `3326782` — Ads v4
-Block names auto-renumber on delete (only auto "Block N" names; user-renamed kept); new positions Before/After menu (around site header), Before/After title (around `PostTitleBlock`), After footer.
+### 2026-10-14 — `d6ddc4c` — Ads v5: placement fixes
+Post/archive/comment/sidebar placements; paragraph/image injection for WordPress-imported `htmlEmbed` content.
 
-### 2026-10-14 — Ads v3 `de9fe0d`, v5 `1e7be2f` — placement refinements
-Paragraph/image injection for WordPress-imported `htmlEmbed` content; post/archive/comment/sidebar placement fixes.
+### 2026-10-14 — `33453ed` — Ads: auto-renumber + new positions
+Block names auto-renumber on delete (only auto "Block N" names; user-renamed kept). New positions: Before/After menu (around site header in `SiteLayout`), Before/After title (around `PostTitleBlock` on posts+pages), After footer (after `</footer>`).
 
-### 2026-10-14 — `07f1f8a` — Corrected stale Ads v2 push
+### 2026-10-14 — `ea2abaf` — Restored `@tiptap/core` + `prosemirror-state`
+pnpm had removed them (only transitive); `src/components/editor/protectBlocks.ts` imports them directly. Declared as direct dependencies (pnpm strictness).
 
-### 2026-10-14 — `ae3fde3` — Tools → WordPress WXR import/export
-Admin Tools menu (under Settings, admin-only): Import from WP (WXR upload → `SiteExport` → existing import pipeline; posts/pages/categories/tags/media/comments, Rank Math SEO, featured images, HTML Embed blocks) and Export for WP (WXR 1.2 download). Needs `fast-xml-parser` (`pnpm install`).
+### 2026-10-14 — `b5585f9` — Tools → WordPress WXR import/export
+New admin Tools menu (under Settings, admin-only): Import from WP (WXR `.xml` upload → parsed via `fast-xml-parser` → converted to SiteExport → existing import pipeline; posts/pages/categories/tags/media/comments, Rank Math SEO, featured images, HTML Embed blocks) and Export for WP (WXR 1.2 download readable by WordPress's own importer).
 
----
+### 2026-10-14 — `2b4b8b6` — Ads v3
+Status badges (green/red driven by Insertion dropdown; Disabled = off), Disabled position option, sidebar slots (Top/Middle/Bottom), shortcodes `[adinserter block="N"]` / `[adinserter name="…"]`, comment and excerpt positions.
+
+### 2026-10-14 — `7004f92` — Ads v2
+Ad Inserter-style blocks + Header/Footer tab (header & footer script editors).
+
+### 2026-10-14 — `d85ab81` — Ads v1
+ads.txt route (`/ads.txt` serving `ads_txt` setting) + admin Ads menu + initial ad placements. Stored in existing `siteSettings` (no migration).
+
+### 2026-10-14 — `1e0cc1e` — Docs for Next 16 / Node 24
+Updated docs for current versions.
+
+### 2026-10-14 — `bff4728` — npm → pnpm sweep
+Docs + upload script migrated from npm to pnpm.
+
+### 2026-10-14 — `ec840c2` / `e6dc1de` / `9c0ef9e` — Tailwind configs to `.mts`
+Renamed tailwind configs from `.ts` to `.mts` (silences Node MODULE_TYPELESS warning); removed stale `.ts` files (Git Data API lesson: old paths need explicit `"sha": null`).
+
+### 2026-10-14 — `d3ea8aa` — Restore next-auth v5 beta
+Code uses the v5 API; restored the beta dependency.
+
+### 2026-10-14 — `b8a07ce` — Tailwind v4 syntax
+Migrated stylesheets to Tailwind v4 syntax.
+
+### 2026-10-14 — `8904071` — pnpm catalogs
+Migrated pnpm overrides from deprecated `$` syntax to catalogs (`pnpm-workspace.yaml`).
+
+### 2026-10-14 — `3e2c56c` — Fix pnpm dev startup errors
+
+### 2026-10-14 — `4fd7c20` — updates
+
+### 2026-10-14 — `e6668dc` — Fix all 67 eslint errors
+react-hooks v7 rules cleanup.
+
+### 2026-10-14 — `cb67fc8` — /
+Root commit marker.
+
+### 2026-10-14 — `371aed2` / `c404247` / `47cf0a2` — npm → pnpm
+Migration commits from npm to pnpm.
+
+### 2026-10-14 — `485a5b5` — Merge branch 'master'
+
+### 2026-10-14 — `80e731c` — Remove src/middleware.ts
+Superseded by `src/proxy.ts` (Next 16 convention).
+
+### 2026-10-14 — `2b28c09` — Restore README.md and server.js
+Restored from `bf45c66`.
+
+### 2026-10-14 — `3e6a455` — Next 16: middleware.ts → proxy.ts
+Plus package.json/lint toolchain fixes.
+
+### 2026-10-14 — `bf45c66` — npm 2 pmpm
+(Typo in original message.)
+
+### 2026-10-14 — `e1cf2c7` / `0abfb12` — Package updates
+
+### 2026-10-06 — `a0a6b50` — bms-cms
+Initial commit.
 
 ## Ads system — intended placements (current)
 

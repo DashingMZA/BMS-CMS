@@ -314,8 +314,35 @@ targeting controls, Before/After menu+title+footer options, sidebar slot picker.
 - NextAuth v5 (`api/auth/[...nextauth]`), credentials + bcryptjs.
 - Optional TOTP 2FA (`otplib`, QR via `qrcode`) — enforced per user.
 - `proxy.ts` gates `/admin/*` (auth + role via `authz.ts`).
+- **Three roles** (`ROLES = ["admin", "editor", "author"]` in `authz.ts`):
+  - `admin` — everything: users, settings, site structure
+  - `editor` — all content (posts, pages, media, comments, etc.) but not users, settings, or site structure
+  - `author` — their own posts only; no pages, no moderation, nothing structural
+  - New users default to `editor`; the first account (via `/admin/setup`) is admin.
 - Password reset via email (`nodemailer`); forgot/reset routes under `(auth)`.
 - Secrets (`script_head`, tokens) are admin-only in settings reads.
+
+### First-run setup
+
+- `/admin/setup` — creates the first admin account on a fresh install (no login required; disabled once a user exists).
+- `/admin/login` — normal login (all roles).
+
+### Production server (`server.js`)
+
+- `server.js` (repo root) is a plain-Node startup file for hosts that launch a Node app
+  themselves (cPanel "Setup Node.js App" / Passenger / LiteSpeed, Plesk). It builds the
+  Next.js app, wraps the request handler in an HTTP server, and listens — the same thing
+  `next start` does, but as a requirable module.
+- On a VPS with pm2/systemd, `pnpm run start` does the same job; `server.js` is not needed
+  there (though `pm2 start server.js` also works).
+- Deploy script: `pnpm run deploy` = `pnpm install && pnpm db:migrate && pnpm build` (see `package.json`).
+
+### Plugin system
+
+- **Full guide:** [`PLUGINS.md`](./PLUGINS.md). Samples in `plugins-samples/` (`bmi-calculator.zip`, `starter.zip`).
+- Plugins are zip-uploaded via Admin → Plugins and extracted to `plugins/` on disk, next to the app.
+- Each plugin is isolated (its CSS can't affect the site or vice versa), server-rendered, and can expose settings + shortcodes (e.g. `[bmi-calculator]`).
+- **Vercel limitation:** Vercel's disk is read-only at runtime — uploaded plugins won't persist. Use plugins on VPS/cPanel hosts; on Vercel, bundle plugins into the deployment.
 
 ---
 
