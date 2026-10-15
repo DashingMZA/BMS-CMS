@@ -7,6 +7,7 @@ import { ChevronRight, GripVertical, Monitor, Tablet, Smartphone } from "lucide-
 import type { CustomizerSettings } from "@/lib/appearanceSettings";
 import { HEADER_ITEMS, parseZone, zoneKey, type DockDevice } from "./HeaderDock";
 import { COLS } from "@/lib/builderItems";
+import { Switch } from "./PanelKit";
 
 type SetFn = (k: keyof CustomizerSettings, v: string) => void;
 type Drag = { item: string; from: keyof CustomizerSettings | null };
@@ -25,18 +26,6 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 
 function Color({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return <ColorInput value={value} onChange={onChange} fallback="#ffffff" round />;
-}
-
-function Switch({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
-  const on = value === "true";
-  return (
-    <button type="button" onClick={() => onChange(on ? "false" : "true")} className="w-full flex items-center gap-2.5 py-2.5">
-      <span className={cn("w-9 h-5 rounded-full transition-colors relative shrink-0", on ? "bg-brand-600" : "bg-slate-300")}>
-        <span className={cn("absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all", on ? "left-[18px]" : "left-0.5")} />
-      </span>
-      <span className="text-sm text-slate-700">{label}</span>
-    </button>
-  );
 }
 
 /* ── panel ────────────────────────────────────────────────────────────────── */

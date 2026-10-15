@@ -9,7 +9,7 @@ import { parseZone, type Drag } from "./BuilderDock";
 import { FOOTER_ITEMS, footerZoneKey } from "./FooterDock";
 import { COLS } from "@/lib/builderItems";
 import { parseDockItems, type DockItem } from "@/components/frontend/MobileDock";
-import { inputCls } from "./PanelKit";
+import { inputCls, Switch } from "./PanelKit";
 
 type SetFn = (k: keyof CustomizerSettings, v: string) => void;
 
@@ -25,17 +25,6 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 
 function Color({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return <ColorInput value={value} onChange={onChange} fallback="#000000" round />;
-}
-
-function Switch({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {  const on = value === "true";
-  return (
-    <button type="button" onClick={() => onChange(on ? "false" : "true")} className="w-full flex items-center gap-2.5 py-2.5">
-      <span className={cn("w-9 h-5 rounded-full transition-colors relative shrink-0", on ? "bg-brand-600" : "bg-slate-300")}>
-        <span className={cn("absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all", on ? "left-[18px]" : "left-0.5")} />
-      </span>
-      <span className="text-sm text-slate-700">{label}</span>
-    </button>
-  );
 }
 
 const DOCK_ICONS = ["home", "search", "menu", "phone", "mail", "user", "heart", "cart"] as const;
@@ -183,6 +172,7 @@ export function FooterPanel({
             <Switch
               label="Show dock on mobile"
               value={s.footer_mobile_dock}
+              defaultOn={false}
               onChange={(v) => set("footer_mobile_dock", v)}
             />
             {s.footer_mobile_dock === "true" && (
@@ -199,7 +189,7 @@ export function FooterPanel({
           <Row label="Text Colour"><Color value={s.footer_text_color} onChange={(v) => set("footer_text_color", v)} /></Row>
           <Row label="Heading / Link Colour"><Color value={s.footer_heading_color} onChange={(v) => set("footer_heading_color", v)} /></Row>
           <div className="h-px bg-slate-200 my-4" />
-          <Switch label="Show top row" value={s.footer_toprow_enabled} onChange={(v) => set("footer_toprow_enabled", v)} />
+          <Switch label="Show top row" value={s.footer_toprow_enabled} defaultOn={false} onChange={(v) => set("footer_toprow_enabled", v)} />
           <Switch label="Show bottom row" value={s.footer_bottomrow_enabled} onChange={(v) => set("footer_bottomrow_enabled", v)} />
 
           <div className="h-px bg-slate-200 my-4" />

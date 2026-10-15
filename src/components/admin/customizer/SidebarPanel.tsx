@@ -17,11 +17,9 @@ import {
   type CustomizerSettings,
   type SidebarWidget,
 } from "@/lib/appearanceSettings";
+import { inputCls } from "./PanelKit";
 
 type SetFn = (k: keyof CustomizerSettings, v: string) => void;
-
-const inputCls =
-  "w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500/40";
 
 const HAS_COUNT = new Set(["recent", "categories", "tags", "archives", "comments"]);
 
