@@ -26,7 +26,8 @@
 
 ## Work log (newest first)
 
-### 2026-10-15 — `9becc75` — Customizer undo/redo
+### 2026-10-15 — `c7a13ea` — Share buttons for single posts
+New `post_share_show` setting (default off) + Customizer toggle. ShareButtons component: X, Facebook, LinkedIn, WhatsApp, copy-link. Renders in PostAfterContent below tags.
 Undo/redo buttons in the Customizer toolbar + Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y shortcuts. 50-step history, no-op changes don't pollute it.
 Archives (monthly post counts), Recent Comments (approved), Social Links (network+URL list). Type, rendering, data fetching, and Customizer config UI all added.
 - `ADMIN_PAGE_SIZE`: 50 → 20 (posts/pages lists)
