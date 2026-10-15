@@ -26,7 +26,8 @@
 
 ## Work log (newest first)
 
-### 2026-10-15 — `cc21656` — Bulk delete + 20/page pagination
+### 2026-10-15 — `8b8b2b6` — 3 new sidebar widgets
+Archives (monthly post counts), Recent Comments (approved), Social Links (network+URL list). Type, rendering, data fetching, and Customizer config UI all added.
 - `ADMIN_PAGE_SIZE`: 50 → 20 (posts/pages lists)
 - Tags page: checkbox bulk delete + 20/page client pagination (was: all rows at once)
 - Categories page: same bulk delete + 20/page pagination
