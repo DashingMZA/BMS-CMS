@@ -55,9 +55,20 @@ const defaults: Settings = {
 };
 
 
+const TABS = [
+  { id: "general", label: "General" },
+  { id: "language", label: "Language & Region" },
+  { id: "permalinks", label: "Permalink Settings" },
+  { id: "sitemap", label: "Sitemap & robots.txt" },
+  { id: "backup", label: "Export / Import" },
+] as const;
+
+type TabId = (typeof TABS)[number]["id"];
+
 export default function SettingsPage() {
   const [settings, setSettings] = useState<Settings>(defaults);
   const [newLanguage, setNewLanguage] = useState("");
+  const [activeTab, setActiveTab] = useState<TabId>("general");
 
   // Stored as one ordered, comma-separated setting; the first entry is the
   // default. Parsed here so the list and the stored string cannot drift.
@@ -74,6 +85,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [dirty, setDirty] = useState(false);
 
   useEffect(() => {
     fetch("/api/settings")
@@ -90,11 +102,12 @@ export default function SettingsPage() {
   const changedRef = useRef<Set<string>>(new Set());
   function update(key: keyof Settings, value: string) {
     changedRef.current.add(key);
+    setDirty(true);
     setSettings((prev) => ({ ...prev, [key]: value }));
   }
 
-  async function handleSave(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleSave(e?: React.FormEvent) {
+    e?.preventDefault();
     setSaving(true);
     const keys = [...changedRef.current];
     const res = await fetch("/api/settings", {
@@ -109,9 +122,29 @@ export default function SettingsPage() {
       return;
     }
     for (const k of keys) changedRef.current.delete(k);
+    setDirty(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   }
+
+  /** Switch tabs, but warn first if there are unsaved changes. */
+  function switchTab(tab: TabId) {
+    if (tab === activeTab) return;
+    if (dirty) {
+      if (!confirm("You have unsaved changes. Switch tabs without saving?")) return;
+      // Keep the changes in the form; just let them move. The next Save
+      // (on any tab) still saves everything changed.
+    }
+    setActiveTab(tab);
+    window.scrollTo({ top: 0 });
+  }
+
+  const saveButton = (
+    <button type="button" onClick={() => handleSave()} disabled={saving} className="btn-primary inline-flex items-center gap-2">
+      {saving ? <Loader2 size={15} className="animate-spin" /> : saved ? <Check size={15} /> : <Save size={15} />}
+      {saved ? "Saved" : "Save Settings"}
+    </button>
+  );
 
   if (loading) return (
     <>
@@ -124,8 +157,30 @@ export default function SettingsPage() {
     <>
       <Header title="Settings" />
       <main className="flex-1 p-6">
-        <form onSubmit={handleSave} className="max-w-2xl space-y-6">
+        {/* Tab bar */}
+        <div className="max-w-2xl mb-6 flex flex-wrap gap-1 border-b border-slate-200">
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => switchTab(t.id)}
+              className={`px-4 py-2.5 text-sm font-medium -mb-px border-b-2 transition-colors ${
+                activeTab === t.id
+                  ? "border-brand-600 text-brand-700"
+                  : "border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300"
+              }`}
+            >
+              {t.label}
+              {dirty && activeTab === t.id && (
+                <span className="ml-1.5 inline-block w-2 h-2 rounded-full bg-amber-500" title="Unsaved changes" />
+              )}
+            </button>
+          ))}
+        </div>
 
+        <div className="max-w-2xl">
+          {activeTab === "general" && (
+            <div className="space-y-6">
           {/* Anything that changes how the site looks lives in the Customizer.
               These fields used to be duplicated here. */}
           <div className="card p-5">
@@ -197,6 +252,12 @@ export default function SettingsPage() {
             </div>
           </div>
 
+              {saveButton}
+            </div>
+          )}
+
+          {activeTab === "language" && (
+            <div className="space-y-6">
           {/* Language & Region */}
           <div className="card p-5 space-y-5">
             <div className="flex items-center gap-2">
@@ -434,6 +495,12 @@ export default function SettingsPage() {
             </div>
           </div>
 
+              {saveButton}
+            </div>
+          )}
+
+          {activeTab === "permalinks" && (
+            <div className="space-y-6">
           {/* Permalinks */}
           <div className="card p-5 space-y-4">
             <div className="flex items-center gap-2">
@@ -481,6 +548,12 @@ export default function SettingsPage() {
             )}
           </div>
 
+              {saveButton}
+            </div>
+          )}
+
+          {activeTab === "sitemap" && (
+            <div className="space-y-6">
           {/* SEO: Sitemap & Robots */}
           <div className="card p-5">
             <div className="flex items-start gap-3">
@@ -496,6 +569,11 @@ export default function SettingsPage() {
               </div>
             </div>
           </div>
+            </div>
+          )}
+
+          {activeTab === "backup" && (
+            <div className="space-y-6">
 
           {/* Export.
               Outside the settings form on purpose — it is a download, not a
@@ -542,12 +620,9 @@ export default function SettingsPage() {
           </div>
 
           <ImportPanel />
-
-          <button type="submit" disabled={saving} className="btn-primary inline-flex items-center gap-2">
-            {saving ? <Loader2 size={15} className="animate-spin" /> : saved ? <Check size={15} /> : <Save size={15} />}
-            {saved ? "Saved" : "Save Settings"}
-          </button>
-        </form>
+            </div>
+          )}
+        </div>
       </main>
     </>
   );
