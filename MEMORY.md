@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `a45423a` — Sidebar: own background + text color
+`.content-sidebar` now has explicit `background:var(--color-bg)` and `color:var(--color-text)` with padding — independent of page `site_bg` (which may be dark on archives/pages, making inherited dark text invisible). This explains the cookies page too: no images/tags, just dark-bg + dark-text.
+
 ### 2026-10-15 — `3f91225` — Sidebar: exempt from content-visibility
 `.content-sidebar` and children now force `content-visibility:visible` — the Speed "render offscreen" optimization was leaving sidebar ads/images unpainted until click-drag interaction revealed them.
 
