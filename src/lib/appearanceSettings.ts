@@ -1089,8 +1089,10 @@ export type FooterWidget = {
  */
 export type SidebarWidget = {
   title?: string;
-  type: "text" | "links" | "search" | "recent" | "categories" | "tags" | "archives" | "comments" | "social";
+  type: "text" | "html" | "links" | "search" | "recent" | "categories" | "tags" | "archives" | "comments" | "social";
   text?: string;
+  /** Raw HTML for the "html" type. Rendered as-is; admin-only configuration. */
+  html?: string;
   links?: FooterLink[];
   /** Social profiles: network name + URL. */
   social?: { network: string; url: string }[];
@@ -1098,7 +1100,7 @@ export type SidebarWidget = {
   count?: number;
 };
 
-export const SIDEBAR_WIDGET_IDS = ["swidget1", "swidget2", "swidget3", "swidget4"] as const;
+export const SIDEBAR_WIDGET_IDS = ["swidget1", "swidget2", "swidget3", "swidget4", "swidget5", "swidget6"] as const;
 
 export const SIDEBAR_WIDGET_TYPES: { id: SidebarWidget["type"]; label: string }[] = [
   { id: "search",     label: "Search" },
@@ -1110,6 +1112,7 @@ export const SIDEBAR_WIDGET_TYPES: { id: SidebarWidget["type"]; label: string }[
   { id: "links",      label: "Link List" },
   { id: "social",     label: "Social Links" },
   { id: "text",       label: "Text" },
+  { id: "html",       label: "Custom HTML" },
 ];
 
 export function parseSidebarWidgets(raw: string): Record<string, SidebarWidget> {

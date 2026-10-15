@@ -98,6 +98,16 @@ export function SidebarPanel({ s, set }: { s: CustomizerSettings; set: SetFn }) 
                   />
                 )}
 
+                {w.type === "html" && (
+                  <textarea
+                    rows={6}
+                    className={`${inputCls} font-mono text-xs`}
+                    value={w.html ?? ""}
+                    placeholder="<div>Custom HTML…</div>"
+                    onChange={(e) => patch(id, { html: e.target.value })}
+                  />
+                )}
+
                 {w.type === "links" && (
                   <div className="space-y-2">
                     {(w.links ?? []).map((l, li) => (

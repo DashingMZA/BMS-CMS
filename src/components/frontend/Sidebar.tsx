@@ -241,6 +241,11 @@ async function renderSidebar({
       {widget.type === "text" && widget.text && (
         <p className="whitespace-pre-wrap text-sm leading-relaxed opacity-80">{widget.text}</p>
       )}
+
+      {widget.type === "html" && widget.html && (
+        // Admin-configured HTML, like the Custom HTML block — not user input.
+        <div className="text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: widget.html }} />
+      )}
     </section>
   );
 
