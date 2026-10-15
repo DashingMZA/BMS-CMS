@@ -26,6 +26,18 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `b5477a5` — Silence Turbopack filesystem-tracing warning
+`src/lib/htaccessFile.ts` does dynamic `path.join(parent, name)` for shared-hosting (cPanel) domain detection. Added `/*turbopackIgnore: true*/` so the build doesn't trace the whole project.
+
+### 2026-10-15 — FIRST VERIFIED PRODUCTION BUILD (user ran on Windows)
+User ran the full pipeline on `D:\github\zaheer\bms-cms`:
+- `pnpm install --frozen-lockfile` ✓
+- `pnpm lint` ✓ (0 errors, 0 warnings — after the useRouter fix)
+- `pnpm build` ✓ — 520 static pages, TypeScript clean, only 1 Turbopack warning (htaccessFile, now silenced)
+- `node scripts/smoke.mjs` ✓ — **25/25 checks passed**
+- `pnpm test` ✓ — 4/4 unit tests passed
+This closes the long-standing "pushed ≠ verified" gap — the build is now proven on the user's machine.
+
 ### 2026-10-15 — `ea71834` — Test infra + pinned deps (audit follow-up)
 - `tests/ads.test.mjs`: unit tests for ad targeting logic (Node built-in runner, no new deps) — covers the parseAdBlocks missing-key bug and blocksFor filtering. `pnpm test` runs them.
 - Pinned critical deps exactly (no `^`): `next-auth@5.0.0-beta.32`, `@blocknote/*@0.56.0`, `drizzle-orm@0.45.4`, `next@16.4.0`.
@@ -168,6 +180,6 @@ Initial commit.
 
 ## Open / unverified
 
-- Full production build success not established in this conversation.
-- User pulls each batch and tests on localhost:3000 — pushed ≠ verified.
+- ~~Full production build success not established.~~ **RESOLVED 2026-10-15:** user verified on Windows — `pnpm build` succeeds (520 pages), smoke 25/25, tests 4/4, lint clean.
 - No Vercel deployment performed during this work.
+- User pulls each batch and tests on localhost:3000.
