@@ -3,7 +3,7 @@ import { Fragment } from "react";
 import { uiText } from "@/lib/uiText";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { posts, tags, postTags, categories } from "@/lib/db/schema";
+import { posts, tags, postTags, categories, comments } from "@/lib/db/schema";
 import { parseSidebarWidgets, SIDEBAR_WIDGET_IDS, type SidebarWidget } from "@/lib/appearanceSettings";
 import { categoryPath, postPath, searchPath, tagPath } from "@/lib/permalinks";
 import { isLive } from "@/lib/publishState";
@@ -51,7 +51,7 @@ async function renderSidebar({
 
   const needs = (type: SidebarWidget["type"]) => widgets.some((w) => w.widget.type === type);
 
-  const [recent, cats, tagList] = await Promise.all([
+  const [recent, cats, tagList, archiveMonths, recentComments] = await Promise.all([
     needs("recent")
       ? db.query.posts.findMany({
           where: and(isLive(posts), eq(posts.language, language)),
@@ -79,6 +79,30 @@ async function renderSidebar({
           .groupBy(tags.id)
           .orderBy(desc(sql`count(${postTags.postId})`))
           .limit(20)
+          .catch(() => [])
+      : Promise.resolve([]),
+    needs("archives")
+      ? db
+          .select({
+            year: sql<number>`extract(year from ${posts.publishedAt})`,
+            month: sql<number>`extract(month from ${posts.publishedAt})`,
+            count: sql<number>`count(${posts.id})`,
+          })
+          .from(posts)
+          .where(and(isLive(posts), eq(posts.language, language)))
+          .groupBy(sql`extract(year from ${posts.publishedAt})`, sql`extract(month from ${posts.publishedAt})`)
+          .orderBy(desc(sql`extract(year from ${posts.publishedAt})`), desc(sql`extract(month from ${posts.publishedAt})`))
+          .limit(24)
+          .catch(() => [])
+      : Promise.resolve([]),
+    needs("comments")
+      ? db.query.comments
+          .findMany({
+            where: eq(comments.status, "approved"),
+            orderBy: [desc(comments.createdAt)],
+            limit: 10,
+            columns: { id: true, authorName: true, content: true, postId: true, pageId: true, createdAt: true },
+          })
           .catch(() => [])
       : Promise.resolve([]),
   ]);
@@ -155,6 +179,50 @@ async function renderSidebar({
             >
               {t.name}
             </Link>
+          ))}
+        </div>
+      )}
+
+      {widget.type === "archives" && (
+        <ul className="space-y-2 text-sm">
+          {archiveMonths.slice(0, widget.count ?? 12).map((a) => {
+            const d = new Date(Number(a.year), Number(a.month) - 1, 1);
+            const label = d.toLocaleDateString(language, { month: "long", year: "numeric" });
+            return (
+              <li key={`${a.year}-${a.month}`}>
+                <Link href={`/${language}/archive/${a.year}/${String(a.month).padStart(2, "0")}`} className="opacity-80 hover:opacity-100 hover:underline">
+                  {label} <span className="text-xs opacity-60">({a.count})</span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      {widget.type === "comments" && (
+        <ul className="space-y-3 text-sm">
+          {recentComments.slice(0, widget.count ?? 5).map((c) => (
+            <li key={c.id} className="opacity-80">
+              <span className="font-medium">{c.authorName}</span>
+              <span className="opacity-60"> on </span>
+              <span className="italic line-clamp-2">{c.content.slice(0, 80)}{c.content.length > 80 ? "…" : ""}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {widget.type === "social" && (
+        <div className="flex flex-wrap gap-2">
+          {(widget.social ?? []).filter((s) => s.url).map((s, i) => (
+            <a
+              key={i}
+              href={s.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-full border border-black/10 px-3 py-1.5 text-xs font-medium opacity-80 transition-opacity hover:opacity-100 capitalize"
+            >
+              {s.network || "Link"}
+            </a>
           ))}
         </div>
       )}

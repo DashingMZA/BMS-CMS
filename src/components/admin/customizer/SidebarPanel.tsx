@@ -21,7 +21,7 @@ type SetFn = (k: keyof CustomizerSettings, v: string) => void;
 const inputCls =
   "w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500/40";
 
-const HAS_COUNT = new Set(["recent", "categories", "tags"]);
+const HAS_COUNT = new Set(["recent", "categories", "tags", "archives", "comments"]);
 
 export function SidebarPanel({ s, set }: { s: CustomizerSettings; set: SetFn }) {
   const widgets = parseSidebarWidgets(s.sidebar_widgets);
@@ -135,6 +135,47 @@ export function SidebarPanel({ s, set }: { s: CustomizerSettings; set: SetFn }) 
                       className="text-[11px] font-medium text-brand-600 hover:text-brand-700"
                     >
                       + Add link
+                    </button>
+                  </div>
+                )}
+
+                {w.type === "social" && (
+                  <div className="space-y-2">
+                    {(w.social ?? []).map((s, si) => (
+                      <div key={si} className="flex gap-1.5">
+                        <input
+                          className={cn(inputCls, "text-xs")}
+                          value={s.network}
+                          placeholder="Network (e.g. Twitter)"
+                          onChange={(e) => {
+                            const social = [...(w.social ?? [])];
+                            social[si] = { ...social[si], network: e.target.value };
+                            patch(id, { social });
+                          }}
+                        />
+                        <input
+                          className={cn(inputCls, "text-xs")}
+                          value={s.url}
+                          placeholder="https://…"
+                          onChange={(e) => {
+                            const social = [...(w.social ?? [])];
+                            social[si] = { ...social[si], url: e.target.value };
+                            patch(id, { social });
+                          }}
+                        />
+                        <button
+                          onClick={() => patch(id, { social: (w.social ?? []).filter((_, x) => x !== si) })}
+                          className="shrink-0 px-1 text-slate-400 hover:text-red-600"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      onClick={() => patch(id, { social: [...(w.social ?? []), { network: "", url: "" }] })}
+                      className="text-[11px] font-medium text-brand-600 hover:text-brand-700"
+                    >
+                      + Add profile
                     </button>
                   </div>
                 )}

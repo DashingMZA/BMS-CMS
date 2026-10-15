@@ -1079,9 +1079,11 @@ export type FooterWidget = {
  */
 export type SidebarWidget = {
   title?: string;
-  type: "text" | "links" | "search" | "recent" | "categories" | "tags";
+  type: "text" | "links" | "search" | "recent" | "categories" | "tags" | "archives" | "comments" | "social";
   text?: string;
   links?: FooterLink[];
+  /** Social profiles: network name + URL. */
+  social?: { network: string; url: string }[];
   /** How many items the dynamic types show. */
   count?: number;
 };
@@ -1093,7 +1095,10 @@ export const SIDEBAR_WIDGET_TYPES: { id: SidebarWidget["type"]; label: string }[
   { id: "recent",     label: "Recent Posts" },
   { id: "categories", label: "Categories" },
   { id: "tags",       label: "Tag Cloud" },
+  { id: "archives",   label: "Archives" },
+  { id: "comments",   label: "Recent Comments" },
   { id: "links",      label: "Link List" },
+  { id: "social",     label: "Social Links" },
   { id: "text",       label: "Text" },
 ];
 
