@@ -26,6 +26,11 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `ea71834` — Test infra + pinned deps (audit follow-up)
+- `tests/ads.test.mjs`: unit tests for ad targeting logic (Node built-in runner, no new deps) — covers the parseAdBlocks missing-key bug and blocksFor filtering. `pnpm test` runs them.
+- Pinned critical deps exactly (no `^`): `next-auth@5.0.0-beta.32`, `@blocknote/*@0.56.0`, `drizzle-orm@0.45.4`, `next@16.4.0`.
+- CI now runs `test` + `build` (was typecheck+lint only).
+
 ### 2026-10-15 — `9c452ed` — Log CLAUDE.md creation in MEMORY.md
 Bookkeeping entry for the CLAUDE.md commit, per the AGENTS.md rule (log every change).
 
