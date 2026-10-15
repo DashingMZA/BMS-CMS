@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `24c0e62` — Sticky ad contract tests
+Added 2 contract tests to tests/ads.test.mjs: old blocks without `sticky` default to false; sticky class only applies to sidebar position. 6/6 pass. (User's `fcbac98` "/" commit added startup.log — no code impact.)
+
 ### 2026-10-15 — `508d701` — Fix lint errors/warnings
 ShareButtons: moved the `react-hooks/set-state-in-effect` disable comment to the call site inside the effect (v7 plugin requires it there). Removed unused `label` prop (SidebarPanel) and unused imports `headers`, `newTabProps` (SiteLayout). `pnpm lint` clean.
 
