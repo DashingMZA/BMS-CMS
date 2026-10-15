@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `3e02a6e` — Settings: per-tab dirty dots + warn once
+Fixed the tab-switch loop: amber dot now marks the tab(s) that actually hold unsaved changes (via TAB_KEYS mapping), not the active tab. The unsaved-changes confirm appears once per dirty session — after OK, switching tabs freely no longer re-prompts. Save clears all dots and resets the warning.
+
 ### 2026-10-15 — `05af400` — Settings: tabbed layout
 Settings page split into 5 tabs (General, Language & Region, Permalink Settings, Sitemap & robots.txt, Export/Import). Each tab has its own Save Settings button — all save the same changed-keys set, so any tab's button saves everything. Tab switch warns on unsaved changes; amber dot marks the dirty tab.
 
