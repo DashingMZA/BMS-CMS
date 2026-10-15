@@ -1111,10 +1111,14 @@ async function renderSiteLayout({ children, hideHeader, hideFooter, transparentH
       {/* Speed helpers, Customizer → Speed. Both tiny, both inline so they
           cost no request; neither runs in the customizer preview. */}
       {!customizerMode && on(speed.perf_video_facade) && (
-        <script dangerouslySetInnerHTML={{ __html: FACADE_SCRIPT }} />
+        <Script id="bms-video-facade" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: FACADE_SCRIPT }} />
       )}
       {!customizerMode && prefetchMode !== "off" && (
-        <script dangerouslySetInnerHTML={{ __html: prefetchScript(prefetchMode, parseList(speed.prefetch_exclude)) }} />
+        <Script
+          id="bms-prefetch"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{ __html: prefetchScript(prefetchMode, parseList(speed.prefetch_exclude)) }}
+        />
       )}
       {/* Customizer → General → Scroll to Top / Reading Experience. */}
       {scrollTopEnabled(settings) && <ScrollTopButton offset={parseInt(settings.scroll_top_offset || "400", 10) || 400} label={uiText(docLanguage).backToTop} />}
