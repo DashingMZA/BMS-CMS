@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `3192bbd` — PanelKit everywhere
+HeaderPanel, FooterPanel, SidebarPanel now import shared controls from PanelKit instead of local duplicates: SidebarPanel's `inputCls`, HeaderPanel's `Switch`, FooterPanel's `Switch` (+ `defaultOn={false}` for opt-in settings `footer_toprow_enabled`/`footer_mobile_dock`). Visual behavior unchanged; TSC clean.
+
 ### 2026-10-15 — `db2e82b` — Footer mobile dock
 New opt-in mobile dock: a fixed bottom navigation bar for ≤767px. Settings `footer_mobile_dock` ("false" default) and `footer_dock_items` (JSON, max 5 items with icon/label/href). New `MobileDock.tsx` component; CSS reserves 64px body padding on mobile so content isn't covered. Configured in Customizer → Footer → Mobile dock with add/remove/edit per item.
 
