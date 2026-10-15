@@ -249,13 +249,17 @@ export default function AdsPage() {
                         <div>
                           <label className="label">Sidebar</label>
                           <select
-                            className="input text-sm mb-2"
+                            className="input text-sm"
                             value={b.sidebarId ?? 1}
                             onChange={(e) => patchBlock(b.id, { sidebarId: parseInt(e.target.value) === 2 ? 2 : 1 })}
                           >
                             <option value={1}>Sidebar 1</option>
                             <option value={2}>Sidebar 2</option>
                           </select>
+                        </div>
+                      )}
+                      {b.position === "sidebar" && (
+                        <div>
                           <label className="label">Sidebar position</label>
                           <select
                             className="input text-sm"
@@ -277,26 +281,6 @@ export default function AdsPage() {
                           </label>
                         </div>
                       )}
-                      {/* Schedule — show the block only within a date window. */}
-                      <div>
-                        <label className="label">Schedule (optional)</label>
-                        <div className="grid grid-cols-2 gap-2">
-                          <input
-                            type="datetime-local"
-                            className="input text-sm"
-                            value={b.startAt ? b.startAt.slice(0, 16) : ""}
-                            onChange={(e) => patchBlock(b.id, { startAt: e.target.value ? new Date(e.target.value).toISOString() : null })}
-                            title="Show from"
-                          />
-                          <input
-                            type="datetime-local"
-                            className="input text-sm"
-                            value={b.endAt ? b.endAt.slice(0, 16) : ""}
-                            onChange={(e) => patchBlock(b.id, { endAt: e.target.value ? new Date(e.target.value).toISOString() : null })}
-                            title="Show until"
-                          />
-                        </div>
-                      </div>
                       {b.position === "sidebar" && b.sidebarPosition === "custom" && (() => {
                         const count = (b.sidebarId ?? 1) === 2 ? widgetCount2 : widgetCount;
                         return (
@@ -317,6 +301,19 @@ export default function AdsPage() {
                         </div>
                         );
                       })()}
+                      {pos?.needsCount && (
+                        <div>
+                          <label className="label">{pos.label.replace("Before ", "").replace("After ", "")} number</label>
+                          <input
+                            type="number"
+                            min={1}
+                            max={50}
+                            className="input text-sm"
+                            value={b.count}
+                            onChange={(e) => patchBlock(b.id, { count: Math.max(1, parseInt(e.target.value, 10) || 1) })}
+                          />
+                        </div>
+                      )}
                       <div>
                         <label className="label">Alignment</label>
                         <select
@@ -341,19 +338,26 @@ export default function AdsPage() {
                           <option value="mobile">Mobile only — small screens</option>
                         </select>
                       </div>
-                      {pos?.needsCount && (
-                        <div>
-                          <label className="label">{pos.label.replace("Before ", "").replace("After ", "")} number</label>
+                      {/* Schedule — show the block only within a date window. */}
+                      <div>
+                        <label className="label">Schedule (optional)</label>
+                        <div className="grid grid-cols-2 gap-2">
                           <input
-                            type="number"
-                            min={1}
-                            max={50}
+                            type="datetime-local"
                             className="input text-sm"
-                            value={b.count}
-                            onChange={(e) => patchBlock(b.id, { count: Math.max(1, parseInt(e.target.value, 10) || 1) })}
+                            value={b.startAt ? b.startAt.slice(0, 16) : ""}
+                            onChange={(e) => patchBlock(b.id, { startAt: e.target.value ? new Date(e.target.value).toISOString() : null })}
+                            title="Show from"
+                          />
+                          <input
+                            type="datetime-local"
+                            className="input text-sm"
+                            value={b.endAt ? b.endAt.slice(0, 16) : ""}
+                            onChange={(e) => patchBlock(b.id, { endAt: e.target.value ? new Date(e.target.value).toISOString() : null })}
+                            title="Show until"
                           />
                         </div>
-                      )}
+                      </div>
                     </div>
 
                     <label className="label">Show on</label>
