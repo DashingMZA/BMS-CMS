@@ -127,6 +127,7 @@ export default async function TagPage({
       // The tag's own slug, not the URL segment: that one arrives
       // percent-encoded, and `segment()` stripped the `%` signs out of it.
       base={tagPath(tag.slug, lang, settings)}
+      pageKind="archive"
     />
   );
 }

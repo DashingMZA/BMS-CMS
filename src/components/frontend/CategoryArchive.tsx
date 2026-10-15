@@ -144,6 +144,7 @@ export default async function CategoryArchive({ category, lang, settings, page =
       }
       term={category}
       base={categoryPath(category.slug, lang, settings)}
+      pageKind="category"
     />
   );
 }

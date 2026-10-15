@@ -265,6 +265,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
       base={lang === defaultContentLanguage(settings) ? "/" : `/${lang}`}
       language={lang}
       pageType="front"
+      pageKind="homepage"
     />
   );
 }

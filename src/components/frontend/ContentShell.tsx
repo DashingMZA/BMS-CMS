@@ -49,6 +49,7 @@ export default async function ContentShell({
   customCss,
   pageType,
   documentContent,
+  adPageKind,
 }: {
   design: ContentDesign;
   /** Which set of site-wide defaults applies when a value is "default". */
@@ -85,6 +86,12 @@ export default async function ContentShell({
    */
   pageType?: PageType;
   /**
+   * Ad targeting kind for the sidebar, when it differs from `kind`.
+   * BlogArchive passes its specific kind ("homepage", "category", "archive")
+   * so sidebar ads match the "Show on" checkboxes.
+   */
+  adPageKind?: string;
+  /**
    * The document's blocks as stored, passed straight through to SiteLayout so
    * the inlined stylesheet can leave out the blocks this page does not use.
    * Omitting it is safe: the page then gets the whole stylesheet.
@@ -112,6 +119,7 @@ export default async function ContentShell({
       // the feature looked broken rather than unwired.
       pageType: pageType ?? pageTypeFor(kind),
       documentContent,
+      adPageKind,
     });
   } catch (err) {
     console.error("[ContentShell]", err);
@@ -133,6 +141,7 @@ async function renderContentShell({
   customCss,
   pageType,
   documentContent,
+  adPageKind,
 }: {
   design: ContentDesign;
   kind?: "page" | "post" | "archive";
@@ -146,6 +155,7 @@ async function renderContentShell({
   customCss?: string | null;
   pageType?: PageType;
   documentContent?: string;
+  adPageKind?: string;
   children: ReactNode;
 }) {
   // Read here rather than passed in: every caller would otherwise have to load
@@ -221,7 +231,7 @@ async function renderContentShell({
           </article>
           {showSidebar && (
             <aside className="content-sidebar">
-              <Sidebar settings={settings} language={language ?? defaultContentLanguage(settings)} pageKind={adKindFor(kind)} />
+              <Sidebar settings={settings} language={language ?? defaultContentLanguage(settings)} pageKind={adPageKind ?? adKindFor(kind)} />
             </aside>
           )}
         </div>

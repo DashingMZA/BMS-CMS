@@ -513,6 +513,7 @@ export default async function BlogArchive({
       design={design ?? {}}
       kind="archive"
       pageType={pageType}
+      adPageKind={pageKind}
       currentPath={base}
       language={language}
       direction={direction}
