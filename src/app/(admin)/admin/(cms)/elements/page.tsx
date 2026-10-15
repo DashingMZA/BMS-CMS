@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/admin/Header";
 import { cn } from "@/lib/utils";
@@ -17,6 +18,7 @@ interface ElementRow {
 }
 
 export default function ElementsPage() {
+  const router = useRouter();
   const [rows, setRows] = useState<ElementRow[] | null>(null);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
@@ -41,7 +43,7 @@ export default function ElementsPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Could not create the element");
-      window.location.href = `${window.location.origin}/admin/elements/${data.element.id}`;
+      router.push(`/admin/elements/${data.element.id}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not create the element");
       setCreating(false);
