@@ -330,6 +330,8 @@ export default async function BlogArchive({
     archiveCardStyle?: string | null;
     /** This term's own archive colours as JSON — see categories.archiveDesign. */
     archiveDesign?: string | null;
+    /** `default` follows the global sidebar_choice. */
+    sidebarChoice?: string | null;
   } | null;
   base: string;
   /** Header rules and Elements target this; the front page's listing is "front". */
@@ -534,6 +536,7 @@ export default async function BlogArchive({
       design={design ?? {}}
       kind="archive"
       archiveKind={archiveKind}
+      sidebarId={term?.sidebarChoice === "sidebar2" ? "sidebar2" : term?.sidebarChoice === "sidebar1" ? "sidebar1" : undefined}
       pageType={pageType}
       adPageKind={pageKind}
       currentPath={base}

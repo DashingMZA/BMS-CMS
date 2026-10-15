@@ -173,6 +173,13 @@ export const categories = pgTable("categories", {
    */
   archiveDesign: text("archive_design"),
 
+  /**
+   * Which sidebar this category's archive uses — "default" follows the
+   * Customizer's global `sidebar_choice`, "sidebar1"/"sidebar2" override it.
+   * Same tri-state pattern as `archiveColumns` above.
+   */
+  sidebarChoice: varchar("sidebar_choice", { length: 10 }).notNull().default("default"),
+
   // SEO. Named to match the columns on `posts` and `pages` so one reader works
   // for all three.
   seoTitle: text("seo_title"),
@@ -222,6 +229,8 @@ export const tags = pgTable("tags", {
   archiveCardStyle: varchar("archive_card_style", { length: 12 }).notNull().default("default"),
   /** Per-term design overrides as JSON, same keys as the Customizer. Null = follow the site. */
   archiveDesign: text("archive_design"),
+  /** default | sidebar1 | sidebar2 — "default" follows the global sidebar_choice. */
+  sidebarChoice: varchar("sidebar_choice", { length: 10 }).notNull().default("default"),
 
   // SEO. Named to match the columns on `posts`, `pages` and `categories`
   // so one reader works for all.

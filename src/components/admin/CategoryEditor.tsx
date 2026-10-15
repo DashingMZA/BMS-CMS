@@ -30,6 +30,7 @@ export interface CategoryRecord {
   headerImage: string | null;
   archiveColumns: string;
   archiveCardStyle: string;
+  sidebarChoice: string;
   archiveDesign: string | null;
   seoTitle: string | null;
   seoDescription: string | null;
@@ -84,6 +85,7 @@ export default function CategoryEditor({
     headerImage: category.headerImage ?? "",
     archiveColumns: category.archiveColumns || "default",
     archiveCardStyle: category.archiveCardStyle || "default",
+    sidebarChoice: category.sidebarChoice || "default",
     // The colour overrides, held as a plain object while editing and sent as
     // JSON — the column stores only the keys that were actually given a value.
     archiveDesign: parseDesign(category.archiveDesign),
@@ -318,6 +320,30 @@ export default function CategoryEditor({
                   How the post cards look in this category&apos;s listing. Default follows
                   Appearance &rarr; Archive. List is always one card per row, so it ignores the
                   column count below.
+                </p>
+              </div>
+
+              <div>
+                <label className="label">Sidebar</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {["default", "sidebar1", "sidebar2"].map((v) => (
+                    <button
+                      key={v}
+                      type="button"
+                      onClick={() => set("sidebarChoice", v)}
+                      className={`rounded-lg border py-2 text-[11px] font-medium capitalize transition-colors ${
+                        f.sidebarChoice === v
+                          ? "border-brand-600 bg-brand-600 text-white"
+                          : "border-slate-300 bg-white text-slate-600 hover:border-brand-400"
+                      }`}
+                    >
+                      {v === "default" ? "Default" : v === "sidebar1" ? "Sidebar 1" : "Sidebar 2"}
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-1 text-[11px] text-slate-400">
+                  Which sidebar this category&apos;s archive shows. Default follows the
+                  Customizer&apos;s sidebar choice.
                 </p>
               </div>
 

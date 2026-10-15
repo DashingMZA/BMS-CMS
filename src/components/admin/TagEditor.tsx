@@ -24,6 +24,7 @@ export interface TagRecord {
   headerImage: string | null;
   archiveColumns: string;
   archiveCardStyle: string;
+  sidebarChoice: string;
   seoTitle: string | null;
   seoDescription: string | null;
   focusKeyword: string | null;
@@ -58,6 +59,7 @@ export default function TagEditor({ tag }: { tag: TagRecord }) {
     headerImage: tag.headerImage ?? "",
     archiveColumns: tag.archiveColumns ?? "default",
     archiveCardStyle: tag.archiveCardStyle ?? "default",
+    sidebarChoice: tag.sidebarChoice ?? "default",
     seoTitle: tag.seoTitle ?? "",
     seoDescription: tag.seoDescription ?? "",
     focusKeyword: tag.focusKeyword ?? "",
@@ -89,6 +91,7 @@ export default function TagEditor({ tag }: { tag: TagRecord }) {
           headerImage: form.headerImage || null,
           archiveColumns: form.archiveColumns,
           archiveCardStyle: form.archiveCardStyle,
+          sidebarChoice: form.sidebarChoice,
           seoTitle: form.seoTitle || null,
           seoDescription: form.seoDescription || null,
           focusKeyword: form.focusKeyword || null,
@@ -172,6 +175,13 @@ export default function TagEditor({ tag }: { tag: TagRecord }) {
               <option value="overlay">Overlay</option>
               <option value="list">List</option>
               <option value="minimal">Minimal</option>
+            </select>
+          </Field>
+          <Field label="Sidebar" hint="Default follows the Customizer's sidebar choice.">
+            <select className={inputCls} value={form.sidebarChoice} onChange={(e) => set("sidebarChoice", e.target.value)}>
+              <option value="default">Default</option>
+              <option value="sidebar1">Sidebar 1</option>
+              <option value="sidebar2">Sidebar 2</option>
             </select>
           </Field>
         </div>

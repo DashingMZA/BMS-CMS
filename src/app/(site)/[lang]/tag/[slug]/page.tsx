@@ -138,6 +138,7 @@ export default async function TagPage({
         archiveColumns: tag.archiveColumns,
         archiveCardStyle: tag.archiveCardStyle,
         archiveDesign: tag.archiveDesign,
+        sidebarChoice: tag.sidebarChoice,
       }}
     />
   );

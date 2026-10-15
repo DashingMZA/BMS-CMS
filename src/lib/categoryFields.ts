@@ -35,6 +35,12 @@ const cardStyle = (v: unknown): string => {
   return ["classic", "elevated", "bordered", "overlay", "list", "minimal"].includes(s) ? s : "default";
 };
 
+/** default | sidebar1 | sidebar2 — anything else falls back to default. */
+const sidebarChoice = (v: unknown): string => {
+  const s = String(v ?? "default");
+  return ["sidebar1", "sidebar2"].includes(s) ? s : "default";
+};
+
 /**
  * The colour keys a category may override, and how each is checked.
  *
@@ -119,6 +125,7 @@ export function categorySettingsFrom(body: Record<string, unknown>) {
 
   if (has("archiveColumns")) out.archiveColumns = columns(body.archiveColumns);
   if (has("archiveCardStyle")) out.archiveCardStyle = cardStyle(body.archiveCardStyle);
+  if (has("sidebarChoice")) out.sidebarChoice = sidebarChoice(body.sidebarChoice);
   if (has("archiveDesign")) out.archiveDesign = archiveDesign(body.archiveDesign);
   // "ltr" / "rtl", or null for "follow the language" — anything else is null.
   if (has("direction")) out.direction = body.direction === "ltr" || body.direction === "rtl" ? body.direction : null;

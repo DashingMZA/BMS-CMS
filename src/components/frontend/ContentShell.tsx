@@ -39,6 +39,7 @@ export default async function ContentShell({
   design,
   kind = "page",
   archiveKind,
+  sidebarId,
   currentPath,
   children,
   language,
@@ -95,6 +96,11 @@ export default async function ContentShell({
    */
   adPageKind?: string;
   /**
+   * Which sidebar to render, overriding the global `sidebar_choice`.
+   * Category/tag archives pass their term's choice here.
+   */
+  sidebarId?: "sidebar1" | "sidebar2";
+  /**
    * The document's blocks as stored, passed straight through to SiteLayout so
    * the inlined stylesheet can leave out the blocks this page does not use.
    * Omitting it is safe: the page then gets the whole stylesheet.
@@ -107,6 +113,7 @@ export default async function ContentShell({
       design,
       kind,
       archiveKind,
+      sidebarId,
       currentPath,
       children,
       language,
@@ -135,6 +142,7 @@ async function renderContentShell({
   design,
   kind = "page",
   archiveKind,
+  sidebarId,
   currentPath,
   children,
   language,
@@ -151,6 +159,7 @@ async function renderContentShell({
   design: ContentDesign;
   kind?: "page" | "post" | "archive";
   archiveKind?: "category" | "tag" | "author";
+  sidebarId?: "sidebar1" | "sidebar2";
   currentPath?: string;
   language?: string;
   direction?: string | null;
@@ -241,7 +250,7 @@ async function renderContentShell({
                 settings={settings}
                 language={language ?? defaultContentLanguage(settings)}
                 pageKind={adPageKind ?? adKindFor(kind)}
-                sidebarId={settings.sidebar_choice === "sidebar2" ? "sidebar2" : "sidebar1"}
+                sidebarId={sidebarId ?? (settings.sidebar_choice === "sidebar2" ? "sidebar2" : "sidebar1")}
               />
             </aside>
           )}
