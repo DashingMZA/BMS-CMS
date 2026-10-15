@@ -251,6 +251,15 @@ export default function AdsPage() {
                               <option key={s.id} value={s.id}>{s.label}</option>
                             ))}
                           </select>
+                          <label className="flex items-center gap-2 mt-2 text-xs text-slate-600 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              className="w-3.5 h-3.5 rounded border-slate-300"
+                              checked={!!b.sticky}
+                              onChange={(e) => patchBlock(b.id, { sticky: e.target.checked })}
+                            />
+                            Sticky — stay visible while scrolling
+                          </label>
                         </div>
                       )}
                       {b.position === "sidebar" && b.sidebarPosition === "custom" && (

@@ -100,6 +100,8 @@ export interface AdBlock {
   alignment: string;
   /** For the sidebar position: top, middle, or bottom of the sidebar. */
   sidebarPosition: AdSidebarPosition;
+  /** For the sidebar position: keep the ad visible while scrolling (CSS sticky). */
+  sticky: boolean;
   pages: Record<AdPageKind, boolean>;
 }
 
@@ -117,6 +119,7 @@ export function newAdBlock(index: number): AdBlock {
     count: 2,
     alignment: "center",
     sidebarPosition: "top",
+    sticky: false,
     pages: defaultPages(),
   };
 }
@@ -156,6 +159,7 @@ export function parseAdBlocks(raw: string | null | undefined): AdBlock[] {
         sidebarPosition: typeof r.sidebarPosition === "string" && AD_SIDEBAR_POSITIONS.some((s) => s.id === r.sidebarPosition)
           ? (r.sidebarPosition as AdSidebarPosition)
           : "top",
+        sticky: !!r.sticky,
         pages,
       } as AdBlock;
     });

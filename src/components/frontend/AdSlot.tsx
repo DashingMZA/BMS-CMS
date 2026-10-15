@@ -12,7 +12,7 @@ export function AdBlockView({ block }: { block: AdBlock }) {
   const align = adAlignmentClass(block.alignment);
   return (
     <div
-      className={["bms-adblock", align].filter(Boolean).join(" ")}
+      className={["bms-adblock", align, block.sticky && block.position === "sidebar" ? "bms-adblock-sticky" : ""].filter(Boolean).join(" ")}
       data-ad-block={block.id}
       data-bms-html={htmlSig(block.code)}
       dangerouslySetInnerHTML={{ __html: block.code }}

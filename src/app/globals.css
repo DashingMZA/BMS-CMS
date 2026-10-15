@@ -106,3 +106,5 @@
 .bms-ad-no-wrap { overflow: hidden; }
 /* Ad images never overflow their slot, however wide the creative is. */
 .bms-adblock img { max-width: 100%; height: auto; }
+/* Sticky sidebar ad: stays visible at the viewport bottom while the page scrolls. */
+.bms-adblock-sticky { position: sticky; bottom: 1rem; z-index: 10; }
