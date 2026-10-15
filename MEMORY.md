@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `a408752` — Sidebar stack-below option for mobile/tablet
+New `sidebar_mobile_layout` / `sidebar_tablet_layout` settings: "default" | "hide" | "stack". "Stack below content" shows the sidebar under the article in a single column on small screens (the gap the responsive review flagged). Old `sidebar_hide_*` booleans still honored as "hide" for saved sites. Customizer → Sidebar → "Responsive behavior" dropdowns per device.
+
 ### 2026-10-15 — `7e58b90` — Theme preset import/export in customizer
 Export (Download icon) saves the current draft as `theme-preset-YYYY-MM-DD.json` ({name, exportedAt, settings}). Import (Upload icon) reads a preset file, applies only known CustomizerSettings keys, marks them changed, and prompts to Publish. Invalid files show an error. TSC/ESLint clean.
 
