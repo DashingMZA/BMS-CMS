@@ -106,6 +106,13 @@ export function PageLayoutGeneral({ s, set }: { s: CustomizerSettings; set: SetF
         onChange={(v) => set("page_comments_show", v)}
         defaultOn={false}
       />
+
+      <Switch
+        label="Show share buttons"
+        value={s.page_share_show}
+        onChange={(v) => set("page_share_show", v)}
+        defaultOn={false}
+      />
       <p className="-mt-1 mb-3 text-[11px] text-slate-400">
         Off by default: most pages are not conversations. Any page can still override this from its own
         Discussion panel.

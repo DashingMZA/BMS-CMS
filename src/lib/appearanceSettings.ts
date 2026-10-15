@@ -307,6 +307,7 @@ export interface AppearanceSettings {
   page_sidebar: string;
   page_feature_show: string;
   page_comments_show: string;
+  page_share_show: string;
   page_title_font: string;
   page_title_size: string;
   page_title_weight: string;
@@ -779,6 +780,7 @@ export const defaults: AppearanceSettings = {
   page_sidebar: "sidebar1",
   page_feature_show: "true",
   page_comments_show: "false",
+  page_share_show: "false",
   page_title_font: "",
   page_title_size: "",
   page_title_weight: "",

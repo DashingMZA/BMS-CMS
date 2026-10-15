@@ -44,6 +44,7 @@ import { siteUrl } from "@/lib/siteUrl";
 import { absoluteUrl, autoOgImage, deriveDescription, lookupImageSize, ogImageDescriptor, ogLocale, publisherSchema, robotsDirectives, schemaId, schemaUrl, twitterImage } from "@/lib/seoMeta";
 import OgProperties from "@/components/frontend/OgProperties";
 import AdBlocks from "@/components/frontend/AdSlot";
+import ShareButtons from "@/components/frontend/ShareButtons";
 import { injectContentAds, parseAdBlocks } from "@/lib/ads";
 import { isLive, isLiveNow } from "@/lib/publishState";
 import { breadcrumbId, breadcrumbIsVisible, breadcrumbSchema, pageCrumbs, postCrumbs } from "@/lib/breadcrumbSchema";
@@ -644,6 +645,12 @@ export default async function ContentRoute({ params }: Params) {
         </div>
         <AdBlocks position="after_content" pageKind="static" />
         <AdBlocks position="after_post" pageKind="static" />
+
+        {settings.page_share_show === "true" && (
+          <div className="mt-10">
+            <ShareButtons title={page.title} />
+          </div>
+        )}
 
         {/* Same precedence as a post: the page's own setting wins, and the
             Customizer default decides only when the page has not chosen.
