@@ -253,6 +253,10 @@ export interface AppearanceSettings {
   footer_cols: string;          // JSON: FooterCol[] — legacy, migrated into footer_widgets
   footer_bottom_links: string;  // JSON: FooterLink[]
   footer_bottom_text: string;
+  /** Show the mobile dock (fixed bottom bar) on small screens: "true" | "false". */
+  footer_mobile_dock: string;
+  /** JSON: { icon: string; label: string; href: string }[] — dock items. */
+  footer_dock_items: string;
   // Button styles — base, secondary and outline
   btn_bg: string; btn_text: string; btn_bg_hover: string; btn_text_hover: string;
   btn_radius: string; btn_pad_y: string; btn_pad_x: string; btn_font_size: string; btn_font_weight: string;
@@ -766,6 +770,12 @@ export const defaults: AppearanceSettings = {
   footer_bottomrow_right_center: "[]",
   footer_bottomrow_left_center: "[]",
   footer_widgets: "{}",
+  footer_mobile_dock: "false",
+  footer_dock_items: JSON.stringify([
+    { icon: "home", label: "Home", href: "/" },
+    { icon: "search", label: "Search", href: "/search" },
+    { icon: "menu", label: "Menu", href: "#" },
+  ]),
   footer_cols: JSON.stringify([
     { type: "about", wide: true, text: "Welcome to our site." },
     { type: "links", title: "Important Links", links: [] },

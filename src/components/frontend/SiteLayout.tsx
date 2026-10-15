@@ -13,6 +13,7 @@ import OffCanvas from "./OffCanvas";
 import StickyHeader from "./StickyHeader";
 import ElementSlot from "./ElementSlot";
 import SocialIcons from "./SocialIcons";
+import MobileDock, { parseDockItems } from "./MobileDock";
 import { headers } from "next/headers";
 
 /**
@@ -1106,6 +1107,11 @@ async function renderSiteLayout({ children, hideHeader, hideFooter, transparentH
           const kind = adPageKind(pageType);
           return kind ? <AdBlocks position="after_footer" pageKind={kind} /> : null;
         })()}
+
+        {/* Mobile dock — fixed bottom bar, opt-in via Footer → Mobile dock. */}
+        {!customizerMode && settings.footer_mobile_dock === "true" && (
+          <MobileDock items={parseDockItems(settings.footer_dock_items)} />
+        )}
       </div>
 
       {settings.script_body_end && <div dangerouslySetInnerHTML={{ __html: delay ? delayScriptsIn(settings.script_body_end, delayExclude) : settings.script_body_end }} />}

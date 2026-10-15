@@ -1120,6 +1120,10 @@ export function stickyHeaderCss(s: Record<string, string>): string {
 /** Per-row footer colours and padding. */
 export function footerRowCss(s: Record<string, string>): string {
   const out: string[] = [];
+  // Mobile dock: reserve space at the bottom so the fixed dock never covers content.
+  if (s.footer_mobile_dock === "true") {
+    out.push(`@media(max-width:767px){body{padding-bottom:64px}.mobile-dock{display:block}}`);
+  }
   for (const row of ["toprow", "main", "bottomrow"]) {
     const sel = `[data-bms-row="ftr:${row}"]`;
     const bg = s[`footer_${row}_bg`];
