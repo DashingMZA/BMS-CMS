@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `4c23536` — Archive chip row: cap at N most-used tags/categories
+The chip row rendered ALL tags (hundreds of pills burying posts on category/tag archives). Tags now ordered by post count desc; row capped at `archive_chips_limit` (default 30, configurable in Customizer → Archive → "Max chips"). Same cap applies to categories.
+
 ### 2026-10-15 — `3e02a6e` — Settings: per-tab dirty dots + warn once
 Fixed the tab-switch loop: amber dot now marks the tab(s) that actually hold unsaved changes (via TAB_KEYS mapping), not the active tab. The unsaved-changes confirm appears once per dirty session — after OK, switching tabs freely no longer re-prompts. Save clears all dots and resets the warning.
 
