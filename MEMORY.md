@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `88b7cc8` — Sidebar slot drag reorder
+SidebarSlots in the Customizer are now draggable: drag a slot header to reorder widgets. The widgets move between slots (slot ids stay fixed, so saved configs and ad "after widget N" positions keep working). Works for both Sidebar 1 and Sidebar 2.
+
 ### 2026-10-15 — `b5578a1` — Device-specific sidebar hide
 New `sidebar_hide_mobile` (≤767px) and `sidebar_hide_tablet` (≤1024px) settings. CSS hides `.content-sidebar` and collapses the grid to one column at those breakpoints. Toggles in Customizer → Sidebar → "Hide on devices".
 
