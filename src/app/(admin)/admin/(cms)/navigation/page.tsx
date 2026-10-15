@@ -622,13 +622,18 @@ export default function MenusPage() {
                                 Mega menu
                               </label>
                               {item.megaMenu && (
-                                <label className="flex items-center gap-2 text-xs text-slate-600">
-                                  Columns
-                                  <select className="input py-1 w-16" value={String(item.megaColumns ?? 2)}
-                                    onChange={(e) => updateItem(item.key, { megaColumns: parseInt(e.target.value) })}>
-                                    {[1, 2, 3, 4].map((n) => <option key={n} value={n}>{n}</option>)}
-                                  </select>
-                                </label>
+                                <>
+                                  <label className="flex items-center gap-2 text-xs text-slate-600">
+                                    Columns
+                                    <select className="input py-1 w-16" value={String(item.megaColumns ?? 2)}
+                                      onChange={(e) => updateItem(item.key, { megaColumns: parseInt(e.target.value) })}>
+                                      {[1, 2, 3, 4].map((n) => <option key={n} value={n}>{n}</option>)}
+                                    </select>
+                                  </label>
+                                  <p className="w-full text-[11px] text-slate-400">
+                                    Each submenu item becomes a column heading — add sub-items under it for the column links.
+                                  </p>
+                                </>
                               )}
                             </div>
                           )}

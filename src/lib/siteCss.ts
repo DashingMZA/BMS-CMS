@@ -628,6 +628,8 @@ export function headerNavCss(s: Record<string, string>): string {
   out.push(`.hnav-dd.is-mega.is-open{transform:translateX(-50%) translateY(0)}`);
   out.push(`.hnav-item:hover > .hnav-dd.is-mega{transform:translateX(-50%) translateY(0)}`);
   out.push(`.hnav-dd.is-mega .hnav-dd-item{border-radius:.5rem}`);
+  out.push(`.hnav-mega-col{min-width:0}`);
+  out.push(`.hnav-mega-head{color:inherit;text-transform:uppercase;letter-spacing:.04em;font-size:.78rem}`);
   out.push(`@media(max-width:767px){.hnav-dd.is-mega{grid-template-columns:1fr}}`);
 
   // Icons, badges and highlighted items

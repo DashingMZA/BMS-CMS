@@ -80,29 +80,76 @@ export default function NavList({
                 className={`hnav-dd absolute top-full z-50 py-2 shadow-lg${isOpen ? " is-open" : ""}${item.megaMenu ? " is-mega" : " left-0"}`}
                 style={item.megaMenu ? { ["--mega-cols" as string]: String(item.megaColumns || 2) } : undefined}
               >
-                {item.children.map((child) => {
-                  const childActive = activeIds.has(child.id);
-                  return (
-                    <Link
-                      key={child.id}
-                      href={child.url}
-                      target={child.target || "_self"}
-                      aria-current={childActive ? "page" : undefined}
-                      className={`hnav-dd-item block px-4 py-2 text-sm transition-colors hover:opacity-70${
-                        childActive ? " is-active" : ""
-                      }`}
-                    >
-                      <span className="flex items-center gap-2">
-                        {child.icon && <span className="hnav-icon" aria-hidden="true">{child.icon}</span>}
-                        <span className="font-medium">{child.label}</span>
-                        {child.badge && <span className="hnav-badge">{child.badge}</span>}
-                      </span>
-                      {child.description && (
-                        <span className="hnav-dd-desc block text-xs opacity-60 mt-0.5">{child.description}</span>
-                      )}
-                    </Link>
-                  );
-                })}
+                {item.megaMenu ? (
+                  // Mega menu: each direct child is a column heading; its own
+                  // children (grandchildren) render as the column's links.
+                  item.children.map((child) => {
+                    const childActive = activeIds.has(child.id);
+                    return (
+                      <div key={child.id} className="hnav-mega-col px-4 py-2">
+                        <Link
+                          href={child.url}
+                          target={child.target || "_self"}
+                          aria-current={childActive ? "page" : undefined}
+                          className={`hnav-mega-head flex items-center gap-2 text-sm font-semibold mb-1 transition-colors hover:opacity-70${
+                            childActive ? " is-active" : ""
+                          }`}
+                        >
+                          {child.icon && <span className="hnav-icon" aria-hidden="true">{child.icon}</span>}
+                          <span>{child.label}</span>
+                          {child.badge && <span className="hnav-badge">{child.badge}</span>}
+                        </Link>
+                        {child.description && (
+                          <span className="hnav-dd-desc block text-xs opacity-60 mb-2">{child.description}</span>
+                        )}
+                        {child.children.map((grand) => {
+                          const grandActive = activeIds.has(grand.id);
+                          return (
+                            <Link
+                              key={grand.id}
+                              href={grand.url}
+                              target={grand.target || "_self"}
+                              aria-current={grandActive ? "page" : undefined}
+                              className={`hnav-dd-item block py-1.5 text-sm transition-colors hover:opacity-70${
+                                grandActive ? " is-active" : ""
+                              }`}
+                            >
+                              <span className="flex items-center gap-2">
+                                {grand.icon && <span className="hnav-icon" aria-hidden="true">{grand.icon}</span>}
+                                <span>{grand.label}</span>
+                                {grand.badge && <span className="hnav-badge">{grand.badge}</span>}
+                              </span>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    );
+                  })
+                ) : (
+                  item.children.map((child) => {
+                    const childActive = activeIds.has(child.id);
+                    return (
+                      <Link
+                        key={child.id}
+                        href={child.url}
+                        target={child.target || "_self"}
+                        aria-current={childActive ? "page" : undefined}
+                        className={`hnav-dd-item block px-4 py-2 text-sm transition-colors hover:opacity-70${
+                          childActive ? " is-active" : ""
+                        }`}
+                      >
+                        <span className="flex items-center gap-2">
+                          {child.icon && <span className="hnav-icon" aria-hidden="true">{child.icon}</span>}
+                          <span className="font-medium">{child.label}</span>
+                          {child.badge && <span className="hnav-badge">{child.badge}</span>}
+                        </span>
+                        {child.description && (
+                          <span className="hnav-dd-desc block text-xs opacity-60 mt-0.5">{child.description}</span>
+                        )}
+                      </Link>
+                    );
+                  })
+                )}
               </div>
             )}
           </div>
