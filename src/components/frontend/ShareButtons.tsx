@@ -13,8 +13,8 @@ export default function ShareButtons({ title }: { title: string }) {
   const [url, setUrl] = useState("");
 
   // Read once on mount — the URL is stable for the page's lifetime.
-  // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: one-time URL capture on mount
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: one-time URL capture on mount (SSR-safe DOM read)
     setUrl(window.location.href);
   }, []);
 

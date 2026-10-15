@@ -27,12 +27,10 @@ function SidebarSlots({
   ids,
   widgets,
   save,
-  label,
 }: {
   ids: readonly string[];
   widgets: Record<string, SidebarWidget>;
   save: (next: Record<string, SidebarWidget>) => void;
-  label: string;
 }) {
   const [dragId, setDragId] = useState<string | null>(null);
 
@@ -299,14 +297,12 @@ export function SidebarPanel({ s, set }: { s: CustomizerSettings; set: SetFn }) 
           ids={SIDEBAR_WIDGET_IDS}
           widgets={widgets1}
           save={(next) => set("sidebar_widgets", JSON.stringify(next))}
-          label="Sidebar 1"
         />
       ) : (
         <SidebarSlots
           ids={SIDEBAR2_WIDGET_IDS}
           widgets={widgets2}
           save={(next) => set("sidebar2_widgets", JSON.stringify(next))}
-          label="Sidebar 2"
         />
       )}
     </div>

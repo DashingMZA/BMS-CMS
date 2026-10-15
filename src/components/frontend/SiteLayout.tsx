@@ -15,7 +15,6 @@ import ElementSlot from "./ElementSlot";
 import SocialIcons from "./SocialIcons";
 import MobileDock, { parseDockItems } from "./MobileDock";
 import MobileHeaderDock, { parseHeaderDockItems } from "./MobileHeaderDock";
-import { headers } from "next/headers";
 
 /**
  * The stuck state can't be detected in CSS, so it needs a scroll observer.
@@ -74,7 +73,6 @@ import LanguageSwitcher, { type SwitcherTarget } from "@/components/frontend/Lan
 import { lookupImageSize, siteSchemas } from "@/lib/seoMeta";
 import { siteUrl } from "@/lib/siteUrl";
 import { jsonLd } from "@/lib/seo";
-import { newTabProps } from "@/lib/linkRel";
 import { turnstileEnabled, turnstileSiteKey } from "@/lib/turnstile";
 import { resolveNavUrls } from "@/lib/navLinks";
 
