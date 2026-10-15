@@ -26,7 +26,10 @@
 
 ## Work log (newest first)
 
-### 2026-10-15 — `00730e0` — Search panel improvements
+### 2026-10-15 — `c8b899f` — HTML widget + 6 sidebar slots
+- New "Custom HTML" widget type (raw HTML, admin-configured)
+- Sidebar slots 4 → 6 (footer parity)
+- Note: the audit's "type drift" item was already fixed earlier (9 types now)
 - Fixed label bug: "Category Pages Default Sidebar" → "Search Results Default Sidebar"
 - New `search_excerpt_length` setting (words, 0 = hide) + Customizer control
 - New `search_empty_title` / `search_empty_text` for the no-results state + Customizer controls
