@@ -45,7 +45,7 @@ export const AD_BLOCK_POSITIONS: AdBlockPositionDef[] = [
   { id: "before_comments",  label: "Before comments" },
   { id: "between_comments", label: "Between comments" },
   { id: "after_comments",   label: "After comments" },
-  { id: "footer",           label: "Footer" },
+  { id: "footer",           label: "Before footer" },
   { id: "after_footer",     label: "After footer" },
   { id: "sidebar",          label: "Sidebar" },
 ];
