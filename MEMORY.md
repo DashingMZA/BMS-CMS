@@ -26,7 +26,11 @@
 
 ## Work log (newest first)
 
-### 2026-10-15 — `89792d2` — Sidebar ads without widgets
+### 2026-10-15 — `4de8e8e` — Tag/author page types
+- New "tag" and "author" page types in PAGE_TYPES
+- ContentShell accepts `archiveKind` (category/tag/author); pageTypeFor uses it
+- BlogArchive passes archiveKind through; tag pages pass archiveKind="tag"
+- Elements and header rules now target tag/author archives correctly
 Fixed: empty widget config hid top/middle/bottom sidebar ads too. Sidebar now renders when sidebar ads exist, even with zero widgets. "After widget N" UI already clear.
 - New URL conditions (show/hide on path prefixes) in ElementConditions
 - New `startAt`/`endAt` schedule columns + `inSchedule()` check
