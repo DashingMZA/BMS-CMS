@@ -1,14 +1,14 @@
 "use client";
 
+import { useState } from "react";
+
 // The sidebar widget editor.
 //
-// Four slots, each either empty or holding one widget. Kept deliberately flat
-// rather than drag-and-drop: a sidebar is short, and reordering is a matter of
-// changing two slots' types.
+// Six slots, each either empty or holding one widget. Slots reorder by drag:
+// the widgets move, the slot ids stay put, so saved configs keep working.
 
 import { cn } from "@/lib/utils";
 import { Trash2 } from "lucide-react";
-import { useState } from "react";
 import {
   SIDEBAR_WIDGET_IDS,
   SIDEBAR2_WIDGET_IDS,
@@ -36,6 +36,8 @@ function SidebarSlots({
   save: (next: Record<string, SidebarWidget>) => void;
   label: string;
 }) {
+  const [dragId, setDragId] = useState<string | null>(null);
+
   const patch = (id: string, changes: Partial<SidebarWidget>) =>
     save({ ...widgets, [id]: { ...(widgets[id] ?? { type: "text" }), ...changes } as SidebarWidget });
   const clear = (id: string) => {
@@ -43,14 +45,41 @@ function SidebarSlots({
     delete next[id];
     save(next);
   };
+  // Drag a slot to reorder: the widgets move, the slot ids stay put.
+  const moveSlot = (fromId: string, toIndex: number) => {
+    const fromIndex = ids.indexOf(fromId);
+    if (fromIndex < 0 || fromIndex === toIndex) return;
+    const ordered = ids.map((id) => widgets[id]);
+    const [moved] = ordered.splice(fromIndex, 1);
+    ordered.splice(toIndex, 0, moved);
+    const next: Record<string, SidebarWidget> = {};
+    ids.forEach((id, i) => {
+      if (ordered[i]) next[id] = ordered[i];
+    });
+    save(next);
+  };
 
   return (
     <div>
+      <p className="mb-2 text-[11px] text-slate-400">Drag a slot by its header to reorder the widgets.</p>
       {ids.map((id, i) => {
         const w = widgets[id];
         return (
-          <div key={id} className="mb-4 rounded-lg border border-slate-200 p-3">
-            <div className="mb-2 flex items-center justify-between">
+          <div
+            key={id}
+            draggable
+            onDragStart={() => setDragId(id)}
+            onDragEnd={() => setDragId(null)}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={() => {
+              if (dragId && dragId !== id) moveSlot(dragId, i);
+              setDragId(null);
+            }}
+            className={`mb-4 rounded-lg border p-3 transition-colors ${
+              dragId === id ? "border-brand-400 bg-brand-50" : "border-slate-200"
+            }`}
+          >
+            <div className="mb-2 flex cursor-grab items-center justify-between active:cursor-grabbing">
               <span className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Slot {i + 1}</span>
               {w && (
                 <button onClick={() => clear(id)} className="text-slate-400 hover:text-red-600" title="Remove widget">
