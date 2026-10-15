@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `7e2a45c` — Panel-local reading time toggle
+New `post_reading_time` setting (default/show/hide) in the Single Post panel. `readingTimeFromWords` in siteExtras.ts honours it: show/hide override the global Reading time toggle, default follows it. Archive cards untouched.
+
 ### 2026-10-15 — `be9d4d7` — Post meta ordering
 New `post_meta_order` setting (JSON `{id, visible}[]`). PostTitleBlock renders the meta row (date, author, reading-time) in the configured order with per-item visibility. Customizer → Single Post → "Meta order" uses ElementList (drag-reorder + toggles). `parsePostMetaOrder` + `POST_META_LABELS` in appearanceSettings.ts.
 
