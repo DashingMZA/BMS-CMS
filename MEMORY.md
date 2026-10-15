@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `09d2107` — WP media auto-pull + footer mobile builder
+Media auto-pull: new `downloadMedia` checkbox on WP import; `wpMediaPull.ts` downloads remote images to `public/uploads/`, updates media rows, and rewrites old URLs in post/page content. Footer mobile builder: 9 `footer_m_*` zone settings + `footer_mobile_enabled` toggle; FooterPanel has Desktop/Mobile device tabs with a chip-based zone editor; SiteLayout renders the mobile footer on ≤767px when enabled (CSS hides desktop footer there).
+
 ### 2026-10-15 — `7609a75` — WP import/export: category parents + language selector
 Import: categories now wire `parentId` via a second pass (WP `category_parent` nicename → id), so hierarchies survive. Export: `wp:category_parent` now carries the parent's slug instead of empty. Import UI has a Language dropdown (en/ur/ar/es); the API accepts `language` (validated 2-letter) and `wxrToSiteExport` applies it to posts/pages/categories/tags instead of hardcoded "en".
 
