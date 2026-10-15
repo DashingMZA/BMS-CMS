@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `482b60a` — Mega menu: nested columns with grandchildren
+Mega menus now render true multi-column structure: each submenu item becomes a column heading, with its own sub-items (grandchildren) as the column links — icons, badges, descriptions supported at both levels. New `.hnav-mega-col`/`.hnav-mega-head` CSS. Admin navigation editor explains the column structure ("Each submenu item becomes a column heading"). Mobile stacks to one column (existing CSS). DB fields `mega_menu`/`mega_columns` and the admin checkbox already existed; the missing piece was nested rendering.
+
 ### 2026-10-15 — `b9a77d6` — Header mobile dock
 New opt-in mobile header dock: a compact fixed top bar for ≤767px that replaces the normal header when enabled. Settings `header_mobile_dock` ("false" default) and `header_dock_items` (JSON, max 5 items with icon/label/href). New `MobileHeaderDock.tsx`; CSS hides the regular header and adds 56px body top padding on mobile. Configured in Customizer → Header → Mobile dock. Footer mobile dock already had its own "Show dock on mobile" enable/disable toggle (shipped in db2e82b) — both docks are opt-in.
 
