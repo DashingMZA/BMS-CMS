@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `db2e82b` — Footer mobile dock
+New opt-in mobile dock: a fixed bottom navigation bar for ≤767px. Settings `footer_mobile_dock` ("false" default) and `footer_dock_items` (JSON, max 5 items with icon/label/href). New `MobileDock.tsx` component; CSS reserves 64px body padding on mobile so content isn't covered. Configured in Customizer → Footer → Mobile dock with add/remove/edit per item.
+
 ### 2026-10-15 — `88b7cc8` — Sidebar slot drag reorder
 SidebarSlots in the Customizer are now draggable: drag a slot header to reorder widgets. The widgets move between slots (slot ids stay fixed, so saved configs and ad "after widget N" positions keep working). Works for both Sidebar 1 and Sidebar 2.
 
