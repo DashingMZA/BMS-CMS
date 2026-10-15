@@ -30,6 +30,11 @@ export default function TagsPage() {
   const [form, setForm] = useState({ name: "", slug: "", description: "", language: "" });
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState({ name: "", slug: "", description: "" });
+  // Bulk selection + client-side pagination (20 per page, like every list).
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [tagPage, setTagPage] = useState(1);
+  const TAG_PAGE_SIZE = 20;
 
   async function fetchTags() {
     const res = await fetch("/api/tags");
@@ -119,6 +124,42 @@ export default function TagsPage() {
     fetchTags();
   }
 
+  /** Bulk delete for the checked rows. Terms have no publish/draft — delete is the only bulk action. */
+  async function handleBulkDelete() {
+    const ids = [...selected];
+    if (!ids.length) return;
+    if (!confirm(`Delete ${ids.length} tag${ids.length === 1 ? "" : "s"}? They are removed from every post that uses them.`)) return;
+    setBulkBusy(true);
+    setError("");
+    let failed = 0;
+    for (const id of ids) {
+      try {
+        await check(await fetch(`/api/tags/${id}`, { method: "DELETE" }), "Could not delete the tag.");
+      } catch {
+        failed++;
+      }
+    }
+    setBulkBusy(false);
+    setSelected(new Set());
+    if (failed) setError(`${failed} of ${ids.length} could not be deleted. The others were.`);
+    fetchTags();
+  }
+
+  const toggle = (id: number) =>
+    setSelected((s) => {
+      const next = new Set(s);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
+  // Pagination: the tag list used to render every row at once.
+  const totalTagPages = Math.max(1, Math.ceil(tags.length / TAG_PAGE_SIZE));
+  const safeTagPage = Math.min(tagPage, totalTagPages);
+  const pageTags = tags.slice((safeTagPage - 1) * TAG_PAGE_SIZE, safeTagPage * TAG_PAGE_SIZE);
+  const pageIds = pageTags.map((t) => t.id);
+  const allOnPage = pageIds.length > 0 && pageIds.every((id) => selected.has(id));
+
   return (
     <>
       <Header title="Tags" />
@@ -200,8 +241,21 @@ export default function TagsPage() {
 
           {/* Tag list */}
           <div className="card overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-100">
+            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">
               <h2 className="font-semibold text-slate-900 text-sm">All Tags ({tags.length})</h2>
+              {selected.size > 0 && (
+                <div className="flex items-center gap-2 text-xs text-slate-500">
+                  <span>{selected.size} selected</span>
+                  <button
+                    type="button"
+                    disabled={bulkBusy}
+                    onClick={handleBulkDelete}
+                    className="rounded px-2 py-1 font-medium ring-1 ring-slate-200 bg-white hover:bg-slate-50 disabled:opacity-50 text-red-600"
+                  >
+                    {bulkBusy ? "Deleting…" : "Delete selected"}
+                  </button>
+                </div>
+              )}
             </div>
             {loading ? (
               <div className="p-8 text-center text-slate-400 text-sm">Loading…</div>
@@ -211,6 +265,14 @@ export default function TagsPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-100">
+                    <th className="px-5 py-3 w-10">
+                      <input
+                        type="checkbox"
+                        checked={allOnPage}
+                        onChange={() => setSelected(allOnPage ? new Set() : new Set(pageIds))}
+                        aria-label="Select every tag on this page"
+                      />
+                    </th>
                     <th className="text-left px-5 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Name</th>
                     <th className="text-left px-5 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide hidden md:table-cell">Slug</th>
                     {languages.length > 1 && (
@@ -224,8 +286,16 @@ export default function TagsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {tags.map((cat) => (
+                  {pageTags.map((cat) => (
                     <tr key={cat.id} className="hover:bg-slate-50">
+                      <td className="px-5 py-3">
+                        <input
+                          type="checkbox"
+                          checked={selected.has(cat.id)}
+                          onChange={() => toggle(cat.id)}
+                          aria-label={`Select ${cat.name}`}
+                        />
+                      </td>
                       <td className="px-5 py-3">
                         {editingId === cat.id ? (
                           <input
@@ -319,6 +389,31 @@ export default function TagsPage() {
                   ))}
                 </tbody>
               </table>
+            )}
+            {totalTagPages > 1 && (
+              <div className="flex items-center justify-between px-5 py-3 border-t border-slate-100 text-sm">
+                <span className="text-slate-500 text-xs">
+                  Page {safeTagPage} of {totalTagPages}
+                </span>
+                <div className="flex gap-1">
+                  <button
+                    type="button"
+                    disabled={safeTagPage <= 1}
+                    onClick={() => setTagPage(safeTagPage - 1)}
+                    className="btn-secondary text-xs px-3 py-1 disabled:opacity-50"
+                  >
+                    ← Prev
+                  </button>
+                  <button
+                    type="button"
+                    disabled={safeTagPage >= totalTagPages}
+                    onClick={() => setTagPage(safeTagPage + 1)}
+                    className="btn-secondary text-xs px-3 py-1 disabled:opacity-50"
+                  >
+                    Next →
+                  </button>
+                </div>
+              </div>
             )}
           </div>
         </div>

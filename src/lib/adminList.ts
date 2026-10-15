@@ -9,7 +9,7 @@
 
 import type { DocGroup } from "@/components/admin/DocumentRows";
 
-export const ADMIN_PAGE_SIZE = 50;
+export const ADMIN_PAGE_SIZE = 20;
 
 export interface ListQuery {
   q: string;
