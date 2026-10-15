@@ -13,6 +13,7 @@ import {
   parseAdBlocks,
   serializeAdBlocks,
   type AdBlock,
+  type AdDevice,
   type AdPageKind,
   type AdSidebarPosition,
 } from "@/lib/ads";
@@ -326,6 +327,18 @@ export default function AdsPage() {
                           {AD_ALIGNMENTS.map((a) => (
                             <option key={a.id} value={a.id}>{a.label}</option>
                           ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="label">Device</label>
+                        <select
+                          className="input text-sm"
+                          value={b.device ?? "auto"}
+                          onChange={(e) => patchBlock(b.id, { device: e.target.value as AdDevice })}
+                        >
+                          <option value="auto">Auto — all screens</option>
+                          <option value="desktop">Desktop only — big screens</option>
+                          <option value="mobile">Mobile only — small screens</option>
                         </select>
                       </div>
                       {pos?.needsCount && (

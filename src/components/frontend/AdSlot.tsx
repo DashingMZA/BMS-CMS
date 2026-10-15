@@ -10,9 +10,10 @@ import { htmlSig } from "@/lib/htmlSig";
  */
 export function AdBlockView({ block }: { block: AdBlock }) {
   const align = adAlignmentClass(block.alignment);
+  const deviceCls = block.device === "desktop" ? "bms-ad-desktop" : block.device === "mobile" ? "bms-ad-mobile" : "";
   return (
     <div
-      className={["bms-adblock", align, block.sticky && block.position === "sidebar" ? "bms-adblock-sticky" : ""].filter(Boolean).join(" ")}
+      className={["bms-adblock", align, deviceCls, block.sticky && block.position === "sidebar" ? "bms-adblock-sticky" : ""].filter(Boolean).join(" ")}
       data-ad-block={block.id}
       data-bms-html={htmlSig(block.code)}
       dangerouslySetInnerHTML={{ __html: block.code }}

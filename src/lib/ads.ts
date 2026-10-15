@@ -89,6 +89,8 @@ export const AD_PAGE_KINDS = [
 
 export type AdPageKind = (typeof AD_PAGE_KINDS)[number]["id"];
 
+export type AdDevice = "auto" | "desktop" | "mobile";
+
 export interface AdBlock {
   id: string;
   name: string;
@@ -98,6 +100,8 @@ export interface AdBlock {
   /** For before/after paragraph/image: which one (1-based). */
   count: number;
   alignment: string;
+  /** Device targeting: auto = all screens, desktop = big screens, mobile = small screens. */
+  device: AdDevice;
   /** For the sidebar position: top, middle, or bottom of the sidebar. */
   sidebarPosition: AdSidebarPosition;
   /** For the sidebar "custom" position: which sidebar (1 or 2). */
@@ -123,6 +127,7 @@ export function newAdBlock(index: number): AdBlock {
     position: "disabled",
     count: 2,
     alignment: "center",
+    device: "auto",
     sidebarPosition: "top",
     sidebarId: 1,
     sticky: false,
@@ -169,6 +174,7 @@ export function parseAdBlocks(raw: string | null | undefined): AdBlock[] {
         position: typeof r.position === "string" && AD_BLOCK_POSITIONS.some((p) => p.id === r.position) ? r.position : "disabled",
         count: typeof r.count === "number" && r.count > 0 ? Math.trunc(r.count) : 2,
         alignment: typeof r.alignment === "string" && AD_ALIGNMENTS.some((a) => a.id === r.alignment) ? r.alignment : "center",
+        device: r.device === "desktop" || r.device === "mobile" ? (r.device as AdDevice) : "auto",
         sidebarPosition: typeof r.sidebarPosition === "string" && AD_SIDEBAR_POSITIONS.some((s) => s.id === r.sidebarPosition)
           ? (r.sidebarPosition as AdSidebarPosition)
           : "top",
