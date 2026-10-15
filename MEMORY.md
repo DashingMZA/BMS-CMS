@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `8bc13dd` — Sticky sidebar ad (CSS-only)
+New per-block `sticky` flag for sidebar-positioned ad blocks. When on, the ad gets `position: sticky; bottom: 1rem` and stays visible while scrolling. Toggle in Admin → Ads → block → "Sticky — stay visible while scrolling". Old blocks default to non-sticky via parseAdBlocks.
+
 ### 2026-10-15 — `a408752` — Sidebar stack-below option for mobile/tablet
 New `sidebar_mobile_layout` / `sidebar_tablet_layout` settings: "default" | "hide" | "stack". "Stack below content" shows the sidebar under the article in a single column on small screens (the gap the responsive review flagged). Old `sidebar_hide_*` booleans still honored as "hide" for saved sites. Customizer → Sidebar → "Responsive behavior" dropdowns per device.
 
