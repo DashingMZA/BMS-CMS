@@ -18,6 +18,8 @@ interface Category {
   language: string;
   /** Shared by a term and the same term in another language. */
   translationGroup: number | null;
+  /** Manual sort order; lower sorts first. */
+  sortOrder: number;
 }
 
 export default function CategoriesPage() {
@@ -31,7 +33,7 @@ export default function CategoriesPage() {
 
   const [form, setForm] = useState({ name: "", slug: "", description: "", language: "" });
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [editForm, setEditForm] = useState({ name: "", slug: "", description: "" });
+  const [editForm, setEditForm] = useState({ name: "", slug: "", description: "", sortOrder: 0 });
   // Bulk selection + client-side pagination (20 per page, like every list).
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [bulkBusy, setBulkBusy] = useState(false);
@@ -276,6 +278,7 @@ export default function CategoriesPage() {
                       />
                     </th>
                     <th className="text-left px-5 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Name</th>
+                    <th className="text-left px-5 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide w-20">Order</th>
                     <th className="text-left px-5 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide hidden md:table-cell">Slug</th>
                     {languages.length > 1 && (
                       <>
@@ -308,6 +311,20 @@ export default function CategoriesPage() {
                           />
                         ) : (
                           <span className="font-medium text-slate-800">{cat.name}</span>
+                        )}
+                      </td>
+                      <td className="px-5 py-3">
+                        {editingId === cat.id ? (
+                          <input
+                            type="number"
+                            min={0}
+                            className="input py-1 text-xs w-16"
+                            value={editForm.sortOrder}
+                            onChange={(e) => setEditForm({ ...editForm, sortOrder: parseInt(e.target.value) || 0 })}
+                            title="Lower sorts first"
+                          />
+                        ) : (
+                          <span className="text-slate-500 text-xs">{cat.sortOrder ?? 0}</span>
                         )}
                       </td>
                       <td className="px-5 py-3 hidden md:table-cell">
@@ -378,7 +395,7 @@ export default function CategoriesPage() {
                                   edit and worth one click. Everything else the
                                   term carries lives on its own screen. */}
                               <button
-                                onClick={() => { setEditingId(cat.id); setEditForm({ name: cat.name, slug: cat.slug, description: cat.description ?? "" }); }}
+                                onClick={() => { setEditingId(cat.id); setEditForm({ name: cat.name, slug: cat.slug, description: cat.description ?? "", sortOrder: cat.sortOrder ?? 0 }); }}
                                 className="btn-ghost p-1.5"
                                 title="Quick rename"
                               >

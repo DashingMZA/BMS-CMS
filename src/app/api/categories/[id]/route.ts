@@ -92,6 +92,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       description: body.description,
       ...(reparenting ? { parentId } : {}),
       ...(home ? { language: home, parentId: null, translationGroup: null } : {}),
+      // Manual sort order: only when the request carries it.
+      ...(body.sortOrder !== undefined ? { sortOrder: Math.max(0, parseInt(String(body.sortOrder), 10) || 0) } : {}),
       ...categorySettingsFrom(body),
     }).where(eq(categories.id, numId)).returning();
 

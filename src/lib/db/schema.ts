@@ -149,6 +149,9 @@ export const categories = pgTable("categories", {
    */
   parentId: integer("parent_id"),
 
+  /** Manual sort order. Lower sorts first; ties fall back to name. */
+  sortOrder: integer("sort_order").notNull().default(0),
+
   // Archive appearance, overriding the Customizer's archive defaults.
   archiveColor: text("archive_color"),
   archiveHoverColor: text("archive_hover_color"),

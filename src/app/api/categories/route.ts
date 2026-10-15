@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
     const language = req.nextUrl.searchParams.get("language");
     const result = await db.query.categories.findMany({
       where: language ? eq(categories.language, language) : undefined,
-      orderBy: [asc(categories.name)],
+      orderBy: [asc(categories.sortOrder), asc(categories.name)],
     });
     return NextResponse.json({ categories: result });
   } catch {

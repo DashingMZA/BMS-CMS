@@ -16,7 +16,7 @@ export default async function NewPostPage({
 }) {
   const [{ lang }, cats, settings] = await Promise.all([
     searchParams,
-    db.query.categories.findMany({ orderBy: [asc(categories.name)] }),
+    db.query.categories.findMany({ orderBy: [asc(categories.sortOrder), asc(categories.name)] }),
     getSiteSettings(),
   ]);
 

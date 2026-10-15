@@ -53,7 +53,7 @@ export default async function PostsPage({
   });
   const allCategories = await db.query.categories.findMany({
     columns: { id: true, name: true, language: true },
-    orderBy: [asc(categories.name)],
+    orderBy: [asc(categories.sortOrder), asc(categories.name)],
   });
 
   const toVersion = (p: (typeof allPosts)[number]): DocVersion => ({

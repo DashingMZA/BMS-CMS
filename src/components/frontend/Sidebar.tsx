@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Fragment } from "react";
 import { uiText } from "@/lib/uiText";
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { posts, tags, postTags, categories, comments } from "@/lib/db/schema";
 import { parseSidebarWidgets, SIDEBAR_WIDGET_IDS, type SidebarWidget } from "@/lib/appearanceSettings";
@@ -65,6 +65,7 @@ async function renderSidebar({
       ? db.query.categories
           .findMany({
             where: eq(categories.language, language),
+            orderBy: [asc(categories.sortOrder), asc(categories.name)],
             columns: { id: true, name: true, slug: true },
           })
           .catch(() => [])

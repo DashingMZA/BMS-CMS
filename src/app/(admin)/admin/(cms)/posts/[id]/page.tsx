@@ -21,7 +21,7 @@ export default async function EditPostPage({ params }: { params: Promise<{ id: s
 
   const [post, cats, tags, settings] = await Promise.all([
     db.query.posts.findFirst({ where: eq(posts.id, numId), with: { category: true } }),
-    db.query.categories.findMany({ orderBy: [asc(categories.name)] }),
+    db.query.categories.findMany({ orderBy: [asc(categories.sortOrder), asc(categories.name)] }),
     tagsForPost(numId),
     getSiteSettings(),
   ]);
