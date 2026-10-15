@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `26aa684` — Per-category/tag sidebar choice
+New `sidebar_choice` column on categories + tags (migration 0023). Values: default/sidebar1/sidebar2; default follows the Customizer's global `sidebar_choice`. ContentShell accepts a `sidebarId` override; BlogArchive passes the term's choice through. CategoryEditor + TagEditor UI added; `categorySettingsFrom` validates the value. Note: migration 0023 needs applying on the database.
+
 ### 2026-10-15 — `f56ffde` — Card style presets for search results
 SearchResults now renders archive-card markup (`archive-card`, `archive-card-*` classes, `archive-items is-<style>` wrapper). searchCss emits the shared `archiveCardStyleCss` presets scoped to `.search-items`, so search honours the Card design setting. SearchPanel's boxed/unboxed Content Style replaced with the 6 card presets. Search keeps its own `data-search-el` ordering — no conflict with archive card ordering.
 
