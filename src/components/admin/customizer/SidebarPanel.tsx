@@ -256,28 +256,27 @@ export function SidebarPanel({ s, set }: { s: CustomizerSettings; set: SetFn }) 
         </select>
       </div>
 
-      <div className="mb-4 space-y-2">
+      <div className="mb-4 space-y-3">
         <span className="block text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-          Hide on devices
+          Responsive behavior
         </span>
-        <label className="flex items-center gap-2 text-sm text-slate-600">
-          <input
-            type="checkbox"
-            checked={s.sidebar_hide_tablet === "true"}
-            onChange={(e) => set("sidebar_hide_tablet", e.target.checked ? "true" : "false")}
-            className="h-4 w-4 rounded border-slate-300"
-          />
-          Hide on tablet (≤1024px)
-        </label>
-        <label className="flex items-center gap-2 text-sm text-slate-600">
-          <input
-            type="checkbox"
-            checked={s.sidebar_hide_mobile === "true"}
-            onChange={(e) => set("sidebar_hide_mobile", e.target.checked ? "true" : "false")}
-            className="h-4 w-4 rounded border-slate-300"
-          />
-          Hide on mobile (≤767px)
-        </label>
+        {([
+          ["sidebar_tablet_layout", "Tablet (≤1024px)"],
+          ["sidebar_mobile_layout", "Mobile (≤767px)"],
+        ] as const).map(([key, label]) => (
+          <div key={key}>
+            <label className="block text-xs text-slate-500 mb-1">{label}</label>
+            <select
+              className={inputCls}
+              value={s[key] || "default"}
+              onChange={(e) => set(key, e.target.value)}
+            >
+              <option value="default">Default — same as desktop</option>
+              <option value="hide">Hide sidebar</option>
+              <option value="stack">Stack below content</option>
+            </select>
+          </div>
+        ))}
       </div>
 
       <div className="mb-4 flex gap-1 rounded-lg bg-slate-100 p-1">

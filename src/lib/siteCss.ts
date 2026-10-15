@@ -933,13 +933,24 @@ export function contentCss(s: Record<string, string>): string {
   out.push(`.content-shell[data-layout="right-sidebar"] .content-sidebar{display:block;order:2}`);
   out.push(`.content-article{order:1;min-width:0}`);
 
-  // Device-specific sidebar visibility. Hiding collapses the grid to a single
-  // column so the content takes the full width.
-  if (s.sidebar_hide_tablet === "true") {
+  // Device-specific sidebar behavior. "hide" removes the sidebar and collapses
+  // the grid; "stack" keeps it visible below the content in a single column.
+  // The old sidebar_hide_* booleans are honored as "hide" for saved sites.
+  const mobileBehavior = s.sidebar_mobile_layout && s.sidebar_mobile_layout !== "default"
+    ? s.sidebar_mobile_layout
+    : s.sidebar_hide_mobile === "true" ? "hide" : "default";
+  const tabletBehavior = s.sidebar_tablet_layout && s.sidebar_tablet_layout !== "default"
+    ? s.sidebar_tablet_layout
+    : s.sidebar_hide_tablet === "true" ? "hide" : "default";
+  if (tabletBehavior === "hide") {
     out.push(`@media(max-width:1024px){.content-sidebar{display:none!important}.content-shell .content-grid{grid-template-columns:1fr!important}}`);
+  } else if (tabletBehavior === "stack") {
+    out.push(`@media(max-width:1024px){.content-shell .content-grid{grid-template-columns:1fr!important}.content-sidebar{display:block!important;order:3!important}}`);
   }
-  if (s.sidebar_hide_mobile === "true") {
+  if (mobileBehavior === "hide") {
     out.push(`@media(max-width:767px){.content-sidebar{display:none!important}.content-shell .content-grid{grid-template-columns:1fr!important}}`);
+  } else if (mobileBehavior === "stack") {
+    out.push(`@media(max-width:767px){.content-shell .content-grid{grid-template-columns:1fr!important}.content-sidebar{display:block!important;order:3!important}}`);
   }
 
   // Title / meta / featured image visibility

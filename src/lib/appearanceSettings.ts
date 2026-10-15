@@ -417,10 +417,14 @@ export interface AppearanceSettings {
   sidebar2_widgets: string;
   /** Which sidebar a left/right layout shows: sidebar1 | sidebar2. */
   sidebar_choice: string;
-  /** Hide the sidebar on mobile (≤767px): "true" | "false". */
+  /** Hide the sidebar on mobile (≤767px): "true" | "false". Legacy — prefer sidebar_mobile_layout. */
   sidebar_hide_mobile: string;
-  /** Hide the sidebar on tablet (≤1024px): "true" | "false". */
+  /** Hide the sidebar on tablet (≤1024px): "true" | "false". Legacy — prefer sidebar_tablet_layout. */
   sidebar_hide_tablet: string;
+  /** Mobile sidebar behavior: "default" | "hide" | "stack". */
+  sidebar_mobile_layout: string;
+  /** Tablet sidebar behavior: "default" | "hide" | "stack". */
+  sidebar_tablet_layout: string;
   archive_layout: string;
   archive_content_style: string;
   archive_spacing: string;
@@ -940,6 +944,8 @@ export const defaults: AppearanceSettings = {
   sidebar_choice: "sidebar1",
   sidebar_hide_mobile: "false",
   sidebar_hide_tablet: "false",
+  sidebar_mobile_layout: "default",
+  sidebar_tablet_layout: "default",
   archive_layout: "normal",
   // "unboxed", matching what the site actually renders: siteCss falls back to
   // unboxed for a kind whose content style was never saved, so a fresh site's
