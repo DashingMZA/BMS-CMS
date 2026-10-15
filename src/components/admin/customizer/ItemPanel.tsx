@@ -377,6 +377,17 @@ function LayoutDesign({
           />
           {s.archive_chips_show !== "false" && (
             <>
+              <Field label="Chip source">
+                <select
+                  className={inputCls}
+                  value={s.archive_chips_source || "categories"}
+                  onChange={(e) => set("archive_chips_source", e.target.value)}
+                >
+                  <option value="categories">Categories</option>
+                  <option value="tags">Tags</option>
+                  <option value="both">Categories + Tags</option>
+                </select>
+              </Field>
               <Field label="Chip text"><Swatch k="archive_chip_color" s={s} set={set} /></Field>
               <Field label="Chip background" help="Left empty, chips take a faint tint of the text colour around them, which suits a light and a dark theme alike.">
                 <Swatch k="archive_chip_bg" s={s} set={set} />

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { cache, Fragment } from "react";
 import { db } from "@/lib/db";
 import { lookupImageSizes, schemaId, schemaUrl } from "@/lib/seoMeta";
-import { posts, postTags, categories as categoriesTable } from "@/lib/db/schema";
+import { posts, postTags, categories as categoriesTable, tags as tagsTable } from "@/lib/db/schema";
 import { and, count, desc, eq, exists, inArray, sql } from "drizzle-orm";
 import { loadMoreLabel, paginationStyle, readingTimeFromWords } from "@/lib/siteExtras";
 import { LoadMore } from "@/components/frontend/SiteExtras";
@@ -15,7 +15,7 @@ import Pagination from "@/components/frontend/Pagination";
 import { AdBlockView } from "@/components/frontend/AdSlot";
 import { blocksFor, parseAdBlocks } from "@/lib/ads";
 import { getSiteSettings } from "@/lib/settings";
-import { absoluteUrlFor, authorPath, categoryPath, postPath, postUrl } from "@/lib/permalinks";
+import { absoluteUrlFor, authorPath, categoryPath, postPath, postUrl, tagPath } from "@/lib/permalinks";
 import { postsPagePath } from "@/lib/postsPage";
 import type { PageType } from "@/lib/headerConditions";
 import { documentDir, formatSiteDate, isoDate } from "@/lib/locale";
@@ -360,7 +360,7 @@ export default async function BlogArchive({
         ? and(inLanguage, eq(posts.authorId, authorId))
         : inLanguage;
 
-  const [list, [totals], allCategories, settings] = await Promise.all([
+  const [list, [totals], allCategories, allTags, settings] = await Promise.all([
     db.query.posts.findMany({
       where,
       orderBy: [desc(posts.publishedAt), desc(posts.id)],
@@ -423,6 +423,24 @@ export default async function BlogArchive({
               .select({ one: sql`1` })
               .from(posts)
               .where(and(inLanguage, eq(posts.categoryId, categoriesTable.id)))
+          )
+        )
+      )
+      .catch(() => []),
+    // Tags with posts, for the chip row when it includes tags.
+    // Same "only terms that have something to show" rule as categories.
+    db
+      .select({ id: tagsTable.id, name: tagsTable.name, slug: tagsTable.slug })
+      .from(tagsTable)
+      .where(
+        and(
+          eq(tagsTable.language, language),
+          exists(
+            db
+              .select({ one: sql`1` })
+              .from(postTags)
+              .innerJoin(posts, eq(posts.id, postTags.postId))
+              .where(and(inLanguage, eq(postTags.tagId, tagsTable.id)))
           )
         )
       )
@@ -619,7 +637,7 @@ export default async function BlogArchive({
 
         {/* The second band: everything below the introduction sits on it. */}
         <div className="archive-body">
-        {settings.archive_chips_show !== "false" && allCategories.length > 0 && (
+        {settings.archive_chips_show !== "false" && (allCategories.length > 0 || allTags.length > 0) && (
           // A landmark, because this is how a reader moves between sections —
           // and `aria-current` so the one they are already in says so. The
           // colours live in `.archive-chip` (contentCss): `bg-black/5` is
@@ -636,14 +654,23 @@ export default async function BlogArchive({
                 {t.all}
               </Link>
             )}
-            {allCategories.map((cat) => (
+            {(settings.archive_chips_source === "tags" ? [] : allCategories).map((cat) => (
               <Link
-                key={cat.id}
+                key={`c${cat.id}`}
                 href={categoryPath(cat.slug, language, settings)}
                 aria-current={cat.id === categoryId ? "page" : undefined}
                 className={`archive-chip px-3 py-1 rounded-full text-xs font-medium${cat.id === categoryId ? " is-active" : ""}`}
               >
                 {cat.name}
+              </Link>
+            ))}
+            {(settings.archive_chips_source === "categories" ? [] : allTags).map((tag) => (
+              <Link
+                key={`t${tag.id}`}
+                href={tagPath(tag.slug, language, settings)}
+                className="archive-chip px-3 py-1 rounded-full text-xs font-medium"
+              >
+                #{tag.name}
               </Link>
             ))}
           </nav>
