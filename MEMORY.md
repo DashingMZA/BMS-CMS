@@ -26,7 +26,8 @@
 
 ## Work log (newest first)
 
-### 2026-10-15 — `e92e484` — Category manual sort order
+### 2026-10-15 — `fd29476` — Tag term parity with categories
+Tags now have the same per-term fields as categories: archive design (color, hover, header image, columns, card style, design JSON) + SEO (title, description, focus keyword, canonical, OG, robots flags). Migration `0021_tag_term_parity.sql`. New TagEditor + `/admin/tags/[id]` page. Tag archives respect design overrides and SEO fields.
 New `sortOrder` column (migration `0020_category_sort.sql`), admin UI number input in the inline editor, API PATCH support. All category listings now order by sortOrder then name (admin, API, sidebar widget).
 Same ShareButtons component reused. New `page_share_show` setting (default off) + Page Layout panel toggle. Renders below content on pages.
 New `post_share_show` setting (default off) + Customizer toggle. ShareButtons component: X, Facebook, LinkedIn, WhatsApp, copy-link. Renders in PostAfterContent below tags.
