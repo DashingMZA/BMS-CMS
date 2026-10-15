@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `9d1aad3` — Ads: reorder block fields
+Field order now: Insertion → Sidebar # → Sidebar position (+ Sticky) → After widget → Alignment → Device → Schedule (optional). Same pattern for non-sidebar positions (Insertion → count → Alignment → Device → Schedule).
+
 ### 2026-10-15 — `dc4784e` — Docs: CLAUDE.md + AGENTS.md updated
 CLAUDE.md: `mediaFolders` table added to DB map; Media admin row lists bulk delete/move, pagination, meta editing; Ads §9 updated with new AdBlock fields (device, sidebarId, sticky, startAt/endAt), Sidebar 2 filtering, and device-targeting CSS pattern. AGENTS.md: new §5 hard-won lessons (device targeting pattern, shared delete helper, bulk API shape, DB column checklist, folder-delete UX).
 
