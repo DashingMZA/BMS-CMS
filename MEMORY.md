@@ -26,7 +26,11 @@
 
 ## Work log (newest first)
 
-### 2026-10-15 — `ff51e22` — Footer: Custom HTML widget type
+### 2026-10-15 — `b808096` — Elements: URL targeting + schedule
+- New URL conditions (show/hide on path prefixes) in ElementConditions
+- New `startAt`/`endAt` schedule columns + `inSchedule()` check
+- Admin UI: URLs card + Schedule card on element edit page
+- Migration `0022_element_schedule.sql`
 "Text / HTML" split into explicit Text + Custom HTML options. HTML renders raw (admin-configured).
 New `archive_chips_source` setting (categories/tags/both) + Customizer dropdown. Tag chips link to tag archives. CLAUDE.md paths verified correct (audit claim was wrong).
 - New "Custom HTML" widget type (raw HTML, admin-configured)
