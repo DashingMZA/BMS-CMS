@@ -210,6 +210,36 @@ export const tags = pgTable("tags", {
   direction: varchar("direction", { length: 4 }),
   /** Links this tag to the same tag in another language. */
   translationGroup: integer("translation_group"),
+
+  // Archive appearance, overriding the Customizer's archive defaults.
+  // Same set as categories — a tag archive is a term archive too.
+  archiveColor: text("archive_color"),
+  archiveHoverColor: text("archive_hover_color"),
+  headerImage: text("header_image"),
+  /** default | 1 | 2 | 3 | 4 — `default` follows the site-wide setting. */
+  archiveColumns: varchar("archive_columns", { length: 10 }).notNull().default("default"),
+  /** default | classic | elevated | bordered | overlay | list | minimal */
+  archiveCardStyle: varchar("archive_card_style", { length: 12 }).notNull().default("default"),
+  /** Per-term design overrides as JSON, same keys as the Customizer. Null = follow the site. */
+  archiveDesign: text("archive_design"),
+
+  // SEO. Named to match the columns on `posts`, `pages` and `categories`
+  // so one reader works for all.
+  seoTitle: text("seo_title"),
+  seoDescription: text("seo_description"),
+  focusKeyword: text("focus_keyword"),
+  canonicalUrl: text("canonical_url"),
+  ogTitle: text("og_title"),
+  ogDescription: text("og_description"),
+  ogImage: text("og_image"),
+
+  // Robots directives combine, so each is its own flag.
+  noIndex: boolean("no_index").notNull().default(false),
+  noFollow: boolean("no_follow").notNull().default(false),
+  noArchive: boolean("no_archive").notNull().default(false),
+  noImageIndex: boolean("no_image_index").notNull().default(false),
+  noSnippet: boolean("no_snippet").notNull().default(false),
+
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 }, (t) => [
   uniqueIndex("tags_language_slug_key").on(t.language, t.slug),

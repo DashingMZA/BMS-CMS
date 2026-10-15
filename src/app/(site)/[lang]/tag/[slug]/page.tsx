@@ -72,11 +72,11 @@ export async function generateMetadata({
   // The same template pair every other listing has; tags had a bare name.
   const seo = readSeo(settings);
   const vars = { term: tag.name, term_description: tag.description || "", sitename: settings.site_name || "", sitedesc: settings.site_description || "" };
-  const title = renderTemplate(seo.seo_tag_title, vars, seo.seo_separator) || tag.name;
-  // The same chain a category has — template, the tag's own text, then the
-  // site's. The English "Posts tagged …" fallback is gone: it was the one
-  // untranslated sentence on an otherwise Arabic (or French) site.
+  // The tag's own SEO title wins over the template — same as categories.
+  const title = tag.seoTitle || renderTemplate(seo.seo_tag_title, vars, seo.seo_separator) || tag.name;
+  // The same chain a category has — the tag's own text, template, description, then the site's.
   const description = deriveDescription(
+    tag.seoDescription,
     renderTemplate(seo.seo_tag_description, vars, seo.seo_separator),
     tag.description,
     settings.site_description
@@ -86,11 +86,12 @@ export async function generateMetadata({
   // Graph and no Twitter card at all, so a tag shared anywhere came back as a
   // bare link while the category beside it had a picture and a summary. It is
   // a listing like that category and is built by the same helper.
-  const shareImage = autoOgImage(tag.name, settings, "Tag");
+  // The tag's own OG image wins, like categories.
+  const shareImage = tag.ogImage || autoOgImage(tag.name, settings, "Tag");
   const meta = pageMetadata({
     settings,
     language: lang,
-    path: tagPath(tag.slug, lang, settings),
+    path: tag.canonicalUrl || tagPath(tag.slug, lang, settings),
     title,
     description,
     // Linked tags in other languages — the same `hreflang` a document gets.
@@ -128,6 +129,15 @@ export default async function TagPage({
       // percent-encoded, and `segment()` stripped the `%` signs out of it.
       base={tagPath(tag.slug, lang, settings)}
       pageKind="archive"
+      // Per-tag design overrides, same as categories.
+      term={{
+        archiveColor: tag.archiveColor,
+        archiveHoverColor: tag.archiveHoverColor,
+        headerImage: tag.headerImage,
+        archiveColumns: tag.archiveColumns,
+        archiveCardStyle: tag.archiveCardStyle,
+        archiveDesign: tag.archiveDesign,
+      }}
     />
   );
 }

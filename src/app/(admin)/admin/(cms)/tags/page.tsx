@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { capSlug, toSlug } from "@/lib/utils";
 import Header from "@/components/admin/Header";
-import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
+import { Plus, Pencil, Trash2, Check, X, Settings2 } from "lucide-react";
+import Link from "next/link";
 import { contentLanguages, defaultContentLanguage, languageName } from "@/lib/locale";
 import TermTranslationCell from "@/components/admin/TermTranslationCell";
 
@@ -372,9 +373,17 @@ export default function TagsPage() {
                             </>
                           ) : (
                             <>
+                              <Link
+                                href={`/admin/tags/${cat.id}`}
+                                className="btn-ghost p-1.5"
+                                title="Full edit (design + SEO)"
+                              >
+                                <Settings2 size={14} />
+                              </Link>
                               <button
                                 onClick={() => { setEditingId(cat.id); setEditForm({ name: cat.name, slug: cat.slug, description: cat.description ?? "" }); }}
                                 className="btn-ghost p-1.5"
+                                title="Quick rename"
                               >
                                 <Pencil size={14} />
                               </button>

@@ -10,6 +10,7 @@ import { tagPath } from "@/lib/permalinks";
 import { getSiteSettings } from "@/lib/settings";
 import { numericId } from "@/lib/routeParams";
 import { revalidatePublicSite } from "@/lib/revalidateSite";
+import { categorySettingsFrom } from "@/lib/categoryFields";
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -46,6 +47,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       name: body.name,
       slug,
       description: body.description,
+      // Per-term design + SEO, same fields as categories (see categoryFields.ts).
+      ...categorySettingsFrom(body),
     }).where(eq(tags.id, numId)).returning();
 
     // Posts, pages and categories keep their old address answering when the
