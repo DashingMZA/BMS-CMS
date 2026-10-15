@@ -67,4 +67,18 @@ describe("blocksFor pageKind filtering", () => {
   });
 });
 
+describe("sticky sidebar ad", () => {
+  it("old blocks without sticky default to false", () => {
+    const saved = { id: "block-1", position: "sidebar" };
+    const sticky = !!saved.sticky;
+    assert.equal(sticky, false);
+  });
+
+  it("sticky only applies to sidebar position", () => {
+    const block = { sticky: true, position: "before_post" };
+    const cssClass = block.sticky && block.position === "sidebar" ? "bms-adblock-sticky" : "";
+    assert.equal(cssClass, "");
+  });
+});
+
 console.log("\nAll ads logic contract tests passed.");
