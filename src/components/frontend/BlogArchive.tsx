@@ -731,17 +731,11 @@ export default async function BlogArchive({
                     </>
                   )}
                 </p>
-                {beforeExcerptBlocks.map((b) => (
-                  <AdBlockView key={`before-excerpt-${b.id}`} block={b} />
-                ))}
                 {post.excerpt && (
                   <p className="archive-card-excerpt mt-3 line-clamp-6 text-[13.5px] leading-[1.65] opacity-75">
                     {post.excerpt}
                   </p>
                 )}
-                {afterExcerptBlocks.map((b) => (
-                  <AdBlockView key={`after-excerpt-${b.id}`} block={b} />
-                ))}
                 {/* Pushed to the bottom so cards of different text lengths still
                     line their actions up along one row.
 
