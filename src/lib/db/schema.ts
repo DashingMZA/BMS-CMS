@@ -173,6 +173,9 @@ export const categories = pgTable("categories", {
    */
   archiveDesign: text("archive_design"),
 
+  /** Featured category — highlighted in lists and available to widgets. */
+  isFeatured: boolean("is_featured").notNull().default(false),
+
   /**
    * Which sidebar this category's archive uses — "default" follows the
    * Customizer's global `sidebar_choice`, "sidebar1"/"sidebar2" override it.

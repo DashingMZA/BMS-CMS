@@ -20,6 +20,7 @@ interface Category {
   translationGroup: number | null;
   /** Manual sort order; lower sorts first. */
   sortOrder: number;
+  isFeatured: boolean;
 }
 
 export default function CategoriesPage() {
@@ -310,7 +311,14 @@ export default function CategoriesPage() {
                             onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
                           />
                         ) : (
-                          <span className="font-medium text-slate-800">{cat.name}</span>
+                          <span className="font-medium text-slate-800">
+                            {cat.name}
+                            {cat.isFeatured && (
+                              <span className="ml-2 inline-block rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+                                Featured
+                              </span>
+                            )}
+                          </span>
                         )}
                       </td>
                       <td className="px-5 py-3">

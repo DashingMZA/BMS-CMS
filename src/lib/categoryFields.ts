@@ -126,6 +126,7 @@ export function categorySettingsFrom(body: Record<string, unknown>) {
   if (has("archiveColumns")) out.archiveColumns = columns(body.archiveColumns);
   if (has("archiveCardStyle")) out.archiveCardStyle = cardStyle(body.archiveCardStyle);
   if (has("sidebarChoice")) out.sidebarChoice = sidebarChoice(body.sidebarChoice);
+  if (has("isFeatured")) out.isFeatured = flag(body.isFeatured);
   if (has("archiveDesign")) out.archiveDesign = archiveDesign(body.archiveDesign);
   // "ltr" / "rtl", or null for "follow the language" — anything else is null.
   if (has("direction")) out.direction = body.direction === "ltr" || body.direction === "rtl" ? body.direction : null;

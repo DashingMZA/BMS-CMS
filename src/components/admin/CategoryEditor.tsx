@@ -22,6 +22,7 @@ export interface CategoryRecord {
   name: string;
   slug: string;
   description: string | null;
+  isFeatured: boolean;
   language: string;
   direction: string | null;
   parentId: number | null;
@@ -77,6 +78,7 @@ export default function CategoryEditor({
     name: category.name,
     slug: category.slug,
     description: category.description ?? "",
+    isFeatured: category.isFeatured ?? false,
     language: category.language,
     direction: category.direction ?? "",
     parentId: category.parentId ? String(category.parentId) : "",
@@ -265,6 +267,21 @@ export default function CategoryEditor({
                   be several paragraphs.
                 </p>
               </div>
+
+              <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 p-4">
+                <input
+                  type="checkbox"
+                  checked={f.isFeatured}
+                  onChange={(e) => set("isFeatured", e.target.checked)}
+                  className="h-4 w-4 rounded border-slate-300"
+                />
+                <span>
+                  <span className="block text-sm font-semibold text-slate-700">Featured category</span>
+                  <span className="block text-[11px] text-slate-400">
+                    Highlighted in category lists and available to widgets that show featured categories.
+                  </span>
+                </span>
+              </label>
             </>
           )}
 
