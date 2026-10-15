@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `2a82882` — Sidebar: default widget titles
+Widgets with blank admin titles now fall back to type defaults (Search, Recent Posts, Categories, Tags, Archives, Recent Comments, Follow Us) instead of rendering as anonymous blocks. Search label is translated via uiText.
+
 ### 2026-10-15 — `4c23536` — Archive chip row: cap at N most-used tags/categories
 The chip row rendered ALL tags (hundreds of pills burying posts on category/tag archives). Tags now ordered by post count desc; row capped at `archive_chips_limit` (default 30, configurable in Customizer → Archive → "Max chips"). Same cap applies to categories.
 
