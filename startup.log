@@ -7,3 +7,21 @@
 [2026-10-15T17:18:41.494Z] tailwind trim off: no bms-css/tw-safelist.json in the build
 [2026-10-15T17:18:42.680Z] ready on http://DESKTOP-FBFSK3A:3999
 [2026-10-15T17:18:45.094Z] migrations: up to date (19 in place, checked via pg)
+[2026-10-15T17:25:45.105Z] starting — node v24.21.0, cwd D:\github\zaheer\bms-cms, NODE_ENV=production
+[2026-10-15T17:25:46.564Z] repaired permissions on 2365 entries under .next/
+[2026-10-15T17:25:46.566Z] repaired permissions on 2 entries under public/
+[2026-10-15T17:25:46.603Z] repaired permissions on 186 entries under src/
+[2026-10-15T17:25:46.605Z] repaired permissions on 1 entries under drizzle/
+[2026-10-15T17:25:46.607Z] repaired permissions on 1 entries under scripts/
+[2026-10-15T17:25:46.608Z] tailwind trim off: no bms-css/tw-safelist.json in the build
+[2026-10-15T17:25:47.727Z] ready on http://DESKTOP-FBFSK3A:3999
+[2026-10-15T17:25:50.104Z] migrations: up to date (19 in place, checked via pg)
+[2026-10-15T21:21:53.433Z] starting — node v24.21.0, cwd D:\github\zaheer\bms-cms, NODE_ENV=production
+[2026-10-15T21:21:54.510Z] repaired permissions on 1445 entries under .next/
+[2026-10-15T21:21:54.513Z] repaired permissions on 2 entries under public/
+[2026-10-15T21:21:54.551Z] repaired permissions on 189 entries under src/
+[2026-10-15T21:21:54.554Z] repaired permissions on 1 entries under drizzle/
+[2026-10-15T21:21:54.555Z] repaired permissions on 1 entries under scripts/
+[2026-10-15T21:21:54.557Z] tailwind trim off: no bms-css/tw-safelist.json in the build
+[2026-10-15T21:21:55.653Z] ready on http://DESKTOP-FBFSK3A:3999
+[2026-10-15T21:21:58.108Z] migrations: up to date (25 in place, checked via pg)
