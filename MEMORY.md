@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `a8a5979` — Media library: bulk delete, pagination, folder choice, title/alt/caption
+Bulk delete: new `DELETE /api/media` accepts `{ids, force}` with per-file in-use guard; selection bar has a red "Delete selected" button. Pagination: 50/page with Prev/Next (replaces load-more); API default limit 60→50. Folder delete: dialog asks "Move files to Unfiled" vs "Delete files too" (`?mode=delete`). Detail panel: editable Title (new `media.title` column, migration 0026), Alt text, Caption with Save. Shared `mediaDelete.ts`/`mediaUsage.ts` helpers; single delete refactored to use them.
+
 ### 2026-10-15 — `7323eb4` — P2/P3: scheduled ads, element device targeting, sidebar stack default
 Scheduled ads: `AdBlock` gains `startAt`/`endAt`; `isBlockLive` respects the window; admin has datetime-local inputs. Element device targeting: migration `0025_element_device.sql` adds `device` column; ElementSlot adds `bms-el-desktop`/`bms-el-mobile` classes with CSS hiding per breakpoint; editor has a Device card. P3: `sidebar_mobile_layout` default changed to "stack".
 
