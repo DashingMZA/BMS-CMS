@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `b9a77d6` — Header mobile dock
+New opt-in mobile header dock: a compact fixed top bar for ≤767px that replaces the normal header when enabled. Settings `header_mobile_dock` ("false" default) and `header_dock_items` (JSON, max 5 items with icon/label/href). New `MobileHeaderDock.tsx`; CSS hides the regular header and adds 56px body top padding on mobile. Configured in Customizer → Header → Mobile dock. Footer mobile dock already had its own "Show dock on mobile" enable/disable toggle (shipped in db2e82b) — both docks are opt-in.
+
 ### 2026-10-15 — `3192bbd` — PanelKit everywhere
 HeaderPanel, FooterPanel, SidebarPanel now import shared controls from PanelKit instead of local duplicates: SidebarPanel's `inputCls`, HeaderPanel's `Switch`, FooterPanel's `Switch` (+ `defaultOn={false}` for opt-in settings `footer_toprow_enabled`/`footer_mobile_dock`). Visual behavior unchanged; TSC clean.
 
