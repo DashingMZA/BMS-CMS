@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `ea85d27` — Archive card drag ordering + image position
+New `archive_card_order` (JSON `{id, visible}[]`) and `archive_card_image_position` (above/below-content). BlogArchive card elements carry `data-card-el`; new `archiveCardOrderCss` in siteCss.ts reorders via CSS `order` (live in Customizer preview). Customizer → Archive → "Card elements" uses ElementList (drag + toggles). Image is structurally separate so it moves above/below the whole block; overlay card keeps its text-on-image design.
+
 ### 2026-10-15 — `7e2a45c` — Panel-local reading time toggle
 New `post_reading_time` setting (default/show/hide) in the Single Post panel. `readingTimeFromWords` in siteExtras.ts honours it: show/hide override the global Reading time toggle, default follows it. Archive cards untouched.
 
