@@ -11,6 +11,7 @@ import { authorPath, postPath, tagPath } from "@/lib/permalinks";
 import { formatSiteDate, isoDate } from "@/lib/locale";
 import { isLive } from "@/lib/publishState";
 import AdBlocks from "@/components/frontend/AdSlot";
+import ShareButtons from "@/components/frontend/ShareButtons";
 
 /** One settled result, or a fallback if that query failed. */
 function settled<T>(result: PromiseSettledResult<T>, fallback: T): T {
@@ -87,6 +88,7 @@ async function renderAfter({
   const showAuthor = settings.post_author_box_show === "true";
   const showNav = settings.post_nav_show !== "false";
   const showRelated = settings.post_related_show !== "false";
+  const showShare = settings.post_share_show === "true";
   const t = archiveText(post.language);
   const u = uiText(post.language);
   // The related grid is `post_related_count` across inside the post column,
@@ -183,6 +185,12 @@ async function renderAfter({
       )}
       {/* Ad blocks with the "After post" position — below the tags. */}
       <AdBlocks position="after_post" pageKind="posts" />
+
+      {showShare && (
+        <div className="mt-10">
+          <ShareButtons title={post.title} />
+        </div>
+      )}
 
       {showAuthor && (
       <div className="post-author-box mt-14 items-center gap-4 rounded-xl border border-black/10 p-5">

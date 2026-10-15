@@ -342,6 +342,7 @@ export interface AppearanceSettings {
   post_related_orderby: string;     // random | date | title
   post_related_order: string;       // asc | desc
   post_related_count: string;       // 1..6
+  post_share_show: string;
   post_title_font: string;
   post_title_size: string;
   post_title_weight: string;
@@ -818,6 +819,7 @@ export const defaults: AppearanceSettings = {
   post_related_orderby: "random",
   post_related_order: "desc",
   post_related_count: "3",
+  post_share_show: "false",
   post_title_font: "",
   post_title_size: "",
   post_title_weight: "",

@@ -117,6 +117,7 @@ export function SinglePostGeneral({ s, set }: { s: CustomizerSettings; set: SetF
           )}
           <Switch label="Show post navigation" value={s.post_nav_show} onChange={(v) => set("post_nav_show", v)} />
           <Switch label="Show related posts" value={s.post_related_show} onChange={(v) => set("post_related_show", v)} />
+          <Switch label="Show share buttons" value={s.post_share_show} onChange={(v) => set("post_share_show", v)} defaultOn={false} />
 
           <Switch label="Show comments" value={s.post_comments_show} onChange={(v) => set("post_comments_show", v)} />
           {s.post_comments_show !== "false" && (
