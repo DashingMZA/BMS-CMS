@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `4303604` — Ads: device targeting (auto/desktop/mobile)
+`AdBlock` gains `device: "auto"|"desktop"|"mobile"` (default auto). Admin has a Device dropdown per block. Frontend `AdBlockView` adds `bms-ad-desktop`/`bms-ad-mobile` classes; globals.css hides desktop-only on ≤767px and mobile-only on ≥768px. Auto shows on all screens.
+
 ### 2026-10-15 — `348968b` — Ads: Sidebar 2 support for sidebar ad slots
 `AdBlock` gains `sidebarId` (1|2). Admin shows a Sidebar 1/2 selector for all sidebar positions; "After widget N" counts the selected sidebar's real widgets (s2widget1-6 for Sidebar 2). Frontend `AdSlot` accepts `sidebarId` and filters; `Sidebar.tsx` passes its own sidebar number so top/middle/bottom/custom ads only render in their target sidebar.
 
