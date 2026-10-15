@@ -3,7 +3,7 @@ import { asc, eq } from "drizzle-orm";
 import BlockRenderer from "@/components/frontend/BlockRenderer";
 import { db } from "@/lib/db";
 import { elements } from "@/lib/db/schema";
-import { matchesPage, parseConditions, type ElementHook, type SiteElement } from "@/lib/elements";
+import { matchesPage, parseConditions, inSchedule, type ElementHook, type SiteElement } from "@/lib/elements";
 import type { PageType } from "@/lib/headerConditions";
 
 /**
@@ -20,7 +20,7 @@ export const getElements = cache(async (): Promise<SiteElement[]> => {
       // only to drop them here. Drafts are the elements most likely to be
       // half-finished and large.
       where: eq(elements.status, "published"),
-      columns: { id: true, name: true, content: true, hook: true, status: true, priority: true, conditions: true },
+      columns: { id: true, name: true, content: true, hook: true, status: true, priority: true, conditions: true, startAt: true, endAt: true },
       orderBy: [asc(elements.priority), asc(elements.id)],
     });
     return rows
@@ -32,6 +32,8 @@ export const getElements = cache(async (): Promise<SiteElement[]> => {
         status: r.status,
         priority: r.priority,
         conditions: parseConditions(r.conditions),
+        startAt: r.startAt,
+        endAt: r.endAt,
       }));
   } catch {
     // A missing table shouldn't take the whole site down before the migration
@@ -55,6 +57,7 @@ export default async function ElementSlot({
   language,
   contentLanguage,
   direction,
+  path,
 }: {
   hook: ElementHook;
   pageType: PageType;
@@ -76,9 +79,13 @@ export default async function ElementSlot({
    */
   contentLanguage?: string;
   direction?: string | null;
+  /** Request path for URL-targeted elements. */
+  path?: string;
 }) {
   const all = await getElements();
-  const matching = all.filter((el) => el.hook === hook && matchesPage(el, pageType, contentLanguage ?? language));
+  const matching = all.filter(
+    (el) => el.hook === hook && inSchedule(el) && matchesPage(el, pageType, contentLanguage ?? language, path)
+  );
   if (matching.length === 0) return null;
 
   return (

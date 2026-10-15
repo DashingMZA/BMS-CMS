@@ -22,6 +22,8 @@ interface ElementData {
   status: string;
   priority: number;
   conditions: ElementConditions;
+  startAt: string | null;
+  endAt: string | null;
   content: Block[];
 }
 
@@ -70,7 +72,11 @@ export default function ElementEditorPage() {
           include: element.conditions?.include ?? [],
           exclude: element.conditions?.exclude ?? [],
           languages: element.conditions?.languages ?? [],
+          urls: element.conditions?.urls ?? [],
+          excludeUrls: element.conditions?.excludeUrls ?? [],
         },
+        startAt: element.startAt ? new Date(element.startAt).toISOString() : null,
+        endAt: element.endAt ? new Date(element.endAt).toISOString() : null,
         content,
       });
     })();
@@ -248,6 +254,48 @@ export default function ElementEditorPage() {
               </div>
             </Card>
           )}
+
+          <Card title="URLs">
+            <p className="text-[11px] text-slate-400 mb-2.5 leading-snug">
+              Path prefixes, one per line. Empty = every URL. Exclude wins.
+            </p>
+            <Label className="mt-2">Show on URLs</Label>
+            <textarea
+              rows={2}
+              value={(data.conditions.urls ?? []).join("\n")}
+              onChange={(e) => set("conditions", { ...data.conditions, urls: e.target.value.split("\n").map((s) => s.trim()).filter(Boolean) })}
+              className={field}
+              placeholder="/en/blog"
+            />
+            <Label className="mt-3">Hide on URLs</Label>
+            <textarea
+              rows={2}
+              value={(data.conditions.excludeUrls ?? []).join("\n")}
+              onChange={(e) => set("conditions", { ...data.conditions, excludeUrls: e.target.value.split("\n").map((s) => s.trim()).filter(Boolean) })}
+              className={field}
+              placeholder="/en/checkout"
+            />
+          </Card>
+
+          <Card title="Schedule">
+            <p className="text-[11px] text-slate-400 mb-2.5 leading-snug">
+              Empty = always on when published.
+            </p>
+            <Label>Start</Label>
+            <input
+              type="datetime-local"
+              value={data.startAt ? new Date(data.startAt).toISOString().slice(0, 16) : ""}
+              onChange={(e) => set("startAt", e.target.value ? new Date(e.target.value).toISOString() : null)}
+              className={field}
+            />
+            <Label className="mt-3">End</Label>
+            <input
+              type="datetime-local"
+              value={data.endAt ? new Date(data.endAt).toISOString().slice(0, 16) : ""}
+              onChange={(e) => set("endAt", e.target.value ? new Date(e.target.value).toISOString() : null)}
+              className={field}
+            />
+          </Card>
 
           <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
             <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-100 text-[10px] font-bold text-slate-400 uppercase tracking-widest">

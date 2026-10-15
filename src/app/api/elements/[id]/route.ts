@@ -76,9 +76,13 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
                 include: list((body.conditions as { include?: unknown })?.include),
                 exclude: list((body.conditions as { exclude?: unknown })?.exclude),
                 languages: list((body.conditions as { languages?: unknown })?.languages),
+                urls: list((body.conditions as { urls?: unknown })?.urls),
+                excludeUrls: list((body.conditions as { excludeUrls?: unknown })?.excludeUrls),
               },
             }
           : {}),
+        ...(body.startAt !== undefined ? { startAt: body.startAt ? new Date(String(body.startAt)) : null } : {}),
+        ...(body.endAt !== undefined ? { endAt: body.endAt ? new Date(String(body.endAt)) : null } : {}),
         updatedAt: now,
       })
       .where(eq(elements.id, eid));

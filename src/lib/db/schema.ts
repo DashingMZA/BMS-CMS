@@ -679,8 +679,12 @@ export const elements = pgTable("elements", {
   status: varchar("status", { length: 20 }).notNull().default("draft"),
   /** Lower renders first when several elements share a hook. */
   priority: integer("priority").notNull().default(10),
-  /** JSON: { include: PageType[], exclude: PageType[] }. Empty include = everywhere. */
+  /** JSON: { include: PageType[], exclude: PageType[], urls: string[], excludeUrls: string[] }.
+   *  Empty include = everywhere. URLs match path prefixes. */
   conditions: json("conditions"),
+  /** Optional schedule: element only renders within this window. */
+  startAt: timestamp("start_at", { withTimezone: true }),
+  endAt: timestamp("end_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });

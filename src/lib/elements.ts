@@ -43,6 +43,13 @@ export interface ElementConditions {
    * migration on a live database.
    */
   languages?: string[];
+  /**
+   * URL path prefixes this element appears on; empty means no URL filter.
+   * Matched against the request path (e.g. "/en/blog" matches "/en/blog/post-1").
+   */
+  urls?: string[];
+  /** URL path prefixes to exclude. Always wins over urls. */
+  excludeUrls?: string[];
 }
 
 export interface SiteElement {
@@ -53,6 +60,8 @@ export interface SiteElement {
   status: string;
   priority: number;
   conditions: ElementConditions;
+  startAt?: Date | string | null;
+  endAt?: Date | string | null;
 }
 
 export function parseConditions(raw: unknown): ElementConditions {
@@ -62,6 +71,8 @@ export function parseConditions(raw: unknown): ElementConditions {
     include: Array.isArray(v.include) ? v.include.filter((x) => typeof x === "string") : [],
     exclude: Array.isArray(v.exclude) ? v.exclude.filter((x) => typeof x === "string") : [],
     languages: Array.isArray(v.languages) ? v.languages.filter((x) => typeof x === "string") : [],
+    urls: Array.isArray(v.urls) ? v.urls.filter((x) => typeof x === "string") : [],
+    excludeUrls: Array.isArray(v.excludeUrls) ? v.excludeUrls.filter((x) => typeof x === "string") : [],
   };
 }
 
@@ -71,13 +82,35 @@ export function parseConditions(raw: unknown): ElementConditions {
  * Exclude beats include, so "everywhere except the front page" is one rule
  * rather than a list of every other page type.
  */
-export function matchesPage(el: SiteElement, pageType: PageType, language?: string): boolean {
-  const { include = [], exclude = [], languages = [] } = el.conditions;
+export function matchesPage(el: SiteElement, pageType: PageType, language?: string, path?: string): boolean {
+  const { include = [], exclude = [], languages = [], urls = [], excludeUrls = [] } = el.conditions;
   // An element aimed at some languages stays off pages whose language is
   // unknown, rather than guessing — a French banner on an English page is
   // the mistake this exists to prevent.
   if (languages.length > 0 && !(language && languages.includes(language))) return false;
   if (exclude.includes(pageType)) return false;
+  // URL rules: exclude wins, then include must match if set.
+  if (path) {
+    if (excludeUrls.some((u) => path === u || path.startsWith(u.endsWith("/") ? u : u + "/") || path.startsWith(u))) return false;
+    if (urls.length > 0 && !urls.some((u) => path === u || path.startsWith(u))) return false;
+  } else if (urls.length > 0) {
+    // URL-targeted element on a page whose path is unknown: stay off.
+    return false;
+  }
   if (include.length === 0) return true;
   return include.includes(pageType);
+}
+
+/**
+ * Is this element inside its schedule window?
+ *
+ * No dates = always on. A start in the future hides it until then;
+ * an end in the past retires it. Both set = a campaign window.
+ */
+export function inSchedule(el: { startAt?: Date | string | null; endAt?: Date | string | null }, now: Date = new Date()): boolean {
+  const start = el.startAt ? new Date(el.startAt) : null;
+  const end = el.endAt ? new Date(el.endAt) : null;
+  if (start && now < start) return false;
+  if (end && now > end) return false;
+  return true;
 }

@@ -12,6 +12,7 @@ import NavList, { type NavNode } from "./NavList";
 import OffCanvas from "./OffCanvas";
 import StickyHeader from "./StickyHeader";
 import ElementSlot from "./ElementSlot";
+import { headers } from "next/headers";
 
 /**
  * The stuck state can't be detected in CSS, so it needs a scroll observer.
@@ -940,7 +941,7 @@ async function renderSiteLayout({ children, hideHeader, hideFooter, transparentH
             {uiText(langOverride || docLanguage).skipToContent}
           </a>
         )}
-        <ElementSlot hook="before_header" pageType={pageType} language={langOverride || docLanguage} contentLanguage={docLanguage} direction={direction} />
+        <ElementSlot hook="before_header" pageType={pageType} language={langOverride || docLanguage} contentLanguage={docLanguage} direction={direction} path={currentPath} />
 
         {/* Header — a desktop set and a mobile set, swapped at the configured
             breakpoint by CSS. Built row by row (top, main, bottom): a row whose
@@ -1021,7 +1022,7 @@ async function renderSiteLayout({ children, hideHeader, hideFooter, transparentH
           );
         })()}
 
-        <ElementSlot hook="after_header" pageType={pageType} language={langOverride || docLanguage} contentLanguage={docLanguage} direction={direction} />
+        <ElementSlot hook="after_header" pageType={pageType} language={langOverride || docLanguage} contentLanguage={docLanguage} direction={direction} path={currentPath} />
 
         {/* tabIndex so the skip link moves focus here, not just the scroll. */}
         <main id="bms-main" tabIndex={-1} className="flex-1 outline-none">{children}</main>
@@ -1034,7 +1035,7 @@ async function renderSiteLayout({ children, hideHeader, hideFooter, transparentH
           return kind ? <AdBlocks position="footer" pageKind={kind} /> : null;
         })()}
 
-        <ElementSlot hook="before_footer" pageType={pageType} language={langOverride || docLanguage} contentLanguage={docLanguage} direction={direction} />
+        <ElementSlot hook="before_footer" pageType={pageType} language={langOverride || docLanguage} contentLanguage={docLanguage} direction={direction} path={currentPath} />
 
         {/* Footer — same zone model as the header: three rows, each split
             left/center/right, filled with configurable widgets. */}
@@ -1094,7 +1095,7 @@ async function renderSiteLayout({ children, hideHeader, hideFooter, transparentH
           </footer>
         )}
 
-        <ElementSlot hook="after_footer" pageType={pageType} language={langOverride || docLanguage} contentLanguage={docLanguage} direction={direction} />
+        <ElementSlot hook="after_footer" pageType={pageType} language={langOverride || docLanguage} contentLanguage={docLanguage} direction={direction} path={currentPath} />
 
         {/* Ad blocks with the "After footer" position. Skipped in the customizer
             preview, like the footer position. */}
