@@ -47,7 +47,15 @@ async function renderSidebar({
     .map((id) => ({ id: id as string, widget: configured[id] as SidebarWidget | undefined }))
     .filter((w): w is { id: string; widget: SidebarWidget } => !!w.widget);
 
-  if (widgets.length === 0) return null;
+  // Sidebar ads need a sidebar even with no widgets: an empty widget config
+  // used to hide top/middle/bottom ad slots too, since this returned null
+  // before the AdBlocks below ever rendered.
+  const adBlocks = parseAdBlocks(settings.ads_blocks);
+  const hasSidebarAds = sidebarBlocksFor(adBlocks, "top", pageKind).length > 0 ||
+    sidebarBlocksFor(adBlocks, "middle", pageKind).length > 0 ||
+    sidebarBlocksFor(adBlocks, "bottom", pageKind).length > 0 ||
+    sidebarBlocksFor(adBlocks, "custom", pageKind).length > 0;
+  if (widgets.length === 0 && !hasSidebarAds) return null;
 
   const needs = (type: SidebarWidget["type"]) => widgets.some((w) => w.widget.type === type);
 
