@@ -26,7 +26,8 @@
 
 ## Work log (newest first)
 
-### 2026-10-15 — `a83c225` — Archive chips: tags source
+### 2026-10-15 — `ff51e22` — Footer: Custom HTML widget type
+"Text / HTML" split into explicit Text + Custom HTML options. HTML renders raw (admin-configured).
 New `archive_chips_source` setting (categories/tags/both) + Customizer dropdown. Tag chips link to tag archives. CLAUDE.md paths verified correct (audit claim was wrong).
 - New "Custom HTML" widget type (raw HTML, admin-configured)
 - Sidebar slots 4 → 6 (footer parity)
