@@ -26,7 +26,8 @@
 
 ## Work log (newest first)
 
-### 2026-10-15 — `6214799` — Second sidebar (P1 from scorecard)
+### 2026-10-15 — `e8dac29` — adPageKind: tag/author → archive
+Fixed: new "tag"/"author" page types fell through to null in adPageKind, so menu/footer ads targeting "Tag / Archive pages" never showed on tag/author archives.
 - New `sidebar2_widgets` setting + 6 slots (s2widget1-6)
 - New `sidebar_choice` setting (sidebar1/sidebar2)
 - Sidebar component accepts `sidebarId` prop
