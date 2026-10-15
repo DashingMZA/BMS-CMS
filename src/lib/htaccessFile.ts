@@ -90,7 +90,9 @@ export async function findDocroot(): Promise<Docroot | null> {
   const candidates = [
     ...(override ? [override] : []),
     // A domain folder has a dot in it; the primary domain is public_html.
-    ...siblings.filter((name) => name.includes(".") || name === "public_html").map((name) => path.join(parent, name)),
+    // turbopackIgnore: this runs only on shared hosting (cPanel), never in the
+    // Vercel/serverless build — don't trace the whole project for it.
+    ...siblings.filter((name) => name.includes(".") || name === "public_html").map((name) => path.join(/*turbopackIgnore: true*/ parent, name)),
   ];
 
   const seen = new Set<string>();
