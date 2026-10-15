@@ -108,7 +108,8 @@ PostgreSQL tables:
 | `tags` | Tags (multi-language) |
 | `postTags` | Post↔tag join |
 | `comments` | Comments (threaded, moderated) |
-| `media` | Media library (files, metadata) |
+| `media` | Media library (files, metadata, title/alt/caption, blur preview) |
+| `mediaFolders` | Media library folders (hierarchy via parentId) |
 | `site_settings` | **Key-value store — almost all configuration lives here** (ads blocks, sidebar widgets, Customizer values, SEO, scripts) |
 | `menus` / `nav_items` | Navigation menus |
 | `revisions` | Post/page revision history |
@@ -116,7 +117,7 @@ PostgreSQL tables:
 | `not_found_log` | 404 monitor |
 | `plugins` | Plugin registry |
 | `error_log` | Error log viewer |
-| `elements` | Reusable Elements (hooks: before/after content, header/footer) |
+| `elements` | Reusable Elements (hooks: before/after content, header/footer; schedule + device targeting) |
 | `form_submissions` | Form entries |
 
 **Important:** there are almost no dedicated config tables. Ads (`ads_blocks`, `ads_txt`),
@@ -186,7 +187,7 @@ admin-gated via `proxy.ts` + `authz.ts`.
 | Posts | `/admin/posts` | List, `/new`, `/[id]` edit (BlockNote editor), `/stale` |
 | Pages | `/admin/pages` | Same pattern as posts |
 | Categories / Tags | `/admin/categories`, `/admin/tags` | Taxonomy managers (+ per-category archive design) |
-| Media | `/admin/media` | Media library (upload, `sharp` processing) |
+| Media | `/admin/media` | Media library: upload (`sharp` processing), folders, **bulk delete**, **bulk move**, 50/page pagination, title/alt/caption editing |
 | Comments | `/admin/comments` | Moderation queue |
 | Ads | `/admin/ads` | **Ad Blocks manager** (see §9) + ads.txt editor + header/footer scripts |
 | Appearance → Customize | `/admin/customize` | **Customizer** with live preview: site identity, colors, fonts, layouts, header/footer builder, sidebar widgets, homepage sections |
@@ -248,10 +249,14 @@ REST endpoints for the admin UI and public features. Notable:
 `script_head` / `script_body_end` (same keys the Customizer's Custom Scripts edits).
 
 **Core:** `src/lib/ads.ts`
-- `AdBlock` type: `{ id, name, code, enabled, position, count, alignment, sidebarPosition, widgetNumber, pages }`
-- `newAdBlock(i)` — defaults: all `pages` true, `sidebarPosition: "top"`
-- `parseAdBlocks(raw)` — defensive parse; **missing page-kind keys keep default `true`** (never `!!undefined` → false)
-- `isBlockLive(b)` — enabled + position ≠ disabled
+- `AdBlock` type: `{ id, name, code, enabled, position, count, alignment, device, sidebarPosition, sidebarId, sticky, startAt, endAt, pages }`
+  - `device`: `"auto"` (all screens) | `"desktop"` (≥768px) | `"mobile"` (≤767px)
+  - `sidebarId`: `1` | `2` — which sidebar the block targets
+  - `sticky`: sidebar-only CSS sticky
+  - `startAt`/`endAt`: schedule window (ISO strings)
+- `newAdBlock(i)` — defaults: all `pages` true, `sidebarPosition: "top"`, `sidebarId: 1`, `device: "auto"`
+- `parseAdBlocks(raw)` — defensive parse; **missing page-kind keys keep default `true`** (never `!!undefined` → false); old blocks get `sticky: false`, `device: "auto"`, `sidebarId: 1`
+- `isBlockLive(b)` — enabled + position ≠ disabled + non-empty code + **inside schedule window**
 - `blocksFor(blocks, position, pageKind)` — filter by position + `pages[pageKind]`
 - `sidebarBlocksFor(blocks, slot, pageKind)` — sidebar slots: `top` / `middle` / `bottom` / `custom` (After widget N)
 - `injectContentAds(blocks, pageKind)` — structured blocks (paragraph N / image N)
@@ -281,9 +286,10 @@ prop so **sidebar** ads target the same kind as content ads.
 - `between_posts` — after every 3rd card (front/archive); after related posts (single post)
 - `before_excerpt` / `after_excerpt` — around prev/next nav (posts/pages) or pagination (front/archive); never inside archive cards
 - `before_comments` / `between_comments` — comment section placement
-- `sidebar` — slots Top / Middle (after middle widget) / Bottom / After widget N (dropdown lists only real configured widget numbers)
+- `sidebar` — slots Top / Middle (after middle widget) / Bottom / After widget N (dropdown lists only real configured widget numbers **for the selected sidebar**); **Sidebar 1/2 selector** per block; frontend filters by `sidebarId` so ads only render in their target sidebar
 - `after_footer` — after `</footer>`
 - Shortcodes render manually inside article paragraphs even when auto-position is Disabled
+- **Device targeting:** `AdBlockView` adds `bms-ad-desktop` / `bms-ad-mobile` classes; `globals.css` hides desktop-only on ≤767px and mobile-only on ≥768px (`auto` shows everywhere)
 
 **Admin UI:** `src/app/(admin)/admin/(cms)/ads/page.tsx` — block list with status badge
 (green/red driven by the Insertion dropdown; Disabled = off), code editor, position/alignment/

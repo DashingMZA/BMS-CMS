@@ -46,3 +46,11 @@ Do this **before** you tell the user the work is done. Writing the entry is part
 - Run targeted `tsc --noEmit` and `eslint` on every changed file before committing.
 - Inspect the complete diff before pushing.
 - Never describe a batch as deployed or user-verified unless that separately happened. The user pulls and tests on localhost:3000 — pushed ≠ verified.
+
+## 5. Hard-won lessons (2026-10-15)
+
+- **Device targeting pattern:** for per-device visibility (ads, Elements), add a `device` field (`auto`/`desktop`/`mobile`), render a CSS class (`bms-ad-desktop`/`bms-ad-mobile`), and hide via media queries in `globals.css`. Server-render both variants; CSS decides. No JS device detection needed.
+- **Shared delete logic:** when single and bulk endpoints need the same steps (permission, in-use check, file cleanup, cache purge), extract to `src/lib/<thing>Delete.ts` and have both routes call it. Keeps behavior identical.
+- **Bulk API pattern:** `DELETE /api/<resource>` with `{ids: number[], force?: boolean}` body; return `{deleted, blocked, failed}` per-item so partial failures don't silently drop the rest. Cap at 200 ids.
+- **New DB columns need:** migration SQL in `drizzle/NNNN_*.sql`, schema.ts update, API read/write support, and client UI. The user applies migrations on their machine (`pnpm db:migrate`).
+- **Folder delete UX:** never silently delete contained files. Ask: "Move to Unfiled" vs "Delete files too" (with a second confirm for the destructive choice).
