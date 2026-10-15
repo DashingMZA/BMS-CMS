@@ -2,6 +2,14 @@
 
 Instructions for any AI agent working on this repository.
 
+## 0. Start here: `CLAUDE.md`
+
+**New to this project? Read [`CLAUDE.md`](./CLAUDE.md) first.** It maps the entire
+project: what BMS-CMS is, every page and route, all admin sections, the database
+tables, every major component and function, how the ads system works, and how
+features connect. One file — after reading it you know what exists, what it does,
+and where things live.
+
 ## 1. Read `MEMORY.md` first — always
 
 `MEMORY.md` (repo root) is the **single source of truth** for this project.
