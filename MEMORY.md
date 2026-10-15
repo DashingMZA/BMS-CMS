@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `b5578a1` — Device-specific sidebar hide
+New `sidebar_hide_mobile` (≤767px) and `sidebar_hide_tablet` (≤1024px) settings. CSS hides `.content-sidebar` and collapses the grid to one column at those breakpoints. Toggles in Customizer → Sidebar → "Hide on devices".
+
 ### 2026-10-15 — `361014c` — Featured category flag
 New `is_featured` boolean on categories (migration 0024). Toggle in CategoryEditor General tab, "Featured" badge in the admin category list, saved via `categorySettingsFrom`. Note: migration 0024 needs applying on the database.
 
