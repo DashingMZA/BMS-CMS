@@ -99,7 +99,11 @@ export default async function SearchPage({
   return (
     <SiteLayout pageType="search" currentPath={searchPath(lang, settings)} language={lang}>
       <div className="content-shell-outer">
-        <div className="content-shell" data-kind="search" data-layout={showSidebar ? dataLayout : "fullwidth"}>
+        <div
+          className="content-shell mx-auto px-4"
+          data-kind="search"
+          data-layout={showSidebar ? dataLayout : "fullwidth"}
+        >
           <div className="content-grid">
             <div className="content-article">
               <SearchResults
