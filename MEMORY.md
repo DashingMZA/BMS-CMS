@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `dc4784e` — Docs: CLAUDE.md + AGENTS.md updated
+CLAUDE.md: `mediaFolders` table added to DB map; Media admin row lists bulk delete/move, pagination, meta editing; Ads §9 updated with new AdBlock fields (device, sidebarId, sticky, startAt/endAt), Sidebar 2 filtering, and device-targeting CSS pattern. AGENTS.md: new §5 hard-won lessons (device targeting pattern, shared delete helper, bulk API shape, DB column checklist, folder-delete UX).
+
 ### 2026-10-15 — `4303604` — Ads: device targeting (auto/desktop/mobile)
 `AdBlock` gains `device: "auto"|"desktop"|"mobile"` (default auto). Admin has a Device dropdown per block. Frontend `AdBlockView` adds `bms-ad-desktop`/`bms-ad-mobile` classes; globals.css hides desktop-only on ≤767px and mobile-only on ≥768px. Auto shows on all screens.
 
