@@ -26,6 +26,12 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `8e056f5` — Media folders
+Full folder system for the media library:
+- Schema: new `media_folders` table (id, name, parentId for nesting) + `folderId` on `media` (migration `0019_media_folders.sql`)
+- API: `GET/POST /api/media/folders`, `PATCH/DELETE /api/media/folders/[id]` (rename/move with cycle guard; delete moves files to parent, never deletes them); `GET /api/media?folderId=` filter; `POST /api/media` accepts `folderId`; `PATCH /api/media/[id]` accepts `folderId` (validated)
+- UI: folder sidebar (All files / Unfiled / folders), create/rename/delete, upload into open folder, checkbox multi-select + bulk move to folder
+
 ### 2026-10-15 — `b5477a5` — Silence Turbopack filesystem-tracing warning
 `src/lib/htaccessFile.ts` does dynamic `path.join(parent, name)` for shared-hosting (cPanel) domain detection. Added `/*turbopackIgnore: true*/` so the build doesn't trace the whole project.
 
