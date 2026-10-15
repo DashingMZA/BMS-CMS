@@ -84,7 +84,13 @@ export function countWords(text: string | null | undefined): number {
  * 3,000-word post, a dozen per listing, all allocated to be split apart again.
  */
 export function readingTimeFromWords(s: S, words: number, where: "post" | "card", language = "en"): string | null {
-  if (where === "post" && s.reading_time_post === "false") return null;
+  if (where === "post") {
+    // Panel-local override (Customizer → Single Post → Reading time):
+    // "show"/"hide" win, "default" falls through to the global toggle.
+    const local = (s as Record<string, string | undefined>).post_reading_time;
+    if (local === "hide") return null;
+    if (local !== "show" && s.reading_time_post === "false") return null;
+  }
   if (where === "card" && s.reading_time_cards !== "true") return null;
   const rate = px(s.reading_time_wpm, 220, 60, 1000);
   const n = Math.max(1, Math.round(Math.max(0, words) / rate));

@@ -339,6 +339,8 @@ export interface AppearanceSettings {
   post_spacing: string;
   post_title_show: string;
   post_meta_show: string;
+  /** Reading time on the single post: default | show | hide. "default" follows the global Reading time setting. */
+  post_reading_time: string;
   /** JSON: { id: string; visible: boolean }[] — order + visibility of the meta row items (date, author, reading-time). */
   post_meta_order: string;
   post_feature_show: string;
@@ -838,6 +840,7 @@ export const defaults: AppearanceSettings = {
   post_spacing: "default",
   post_title_show: "true",
   post_meta_show: "true",
+  post_reading_time: "default",
   post_meta_order: JSON.stringify([
     { id: "date", visible: true },
     { id: "author", visible: true },

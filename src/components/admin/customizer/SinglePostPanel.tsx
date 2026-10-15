@@ -158,6 +158,13 @@ export function SinglePostGeneral({ s, set }: { s: CustomizerSettings; set: SetF
                   onChange={(next) => set("post_meta_order", JSON.stringify(next))}
                 />
               </Field>
+              <Field label="Reading time" help="Overrides the global Reading time setting for single posts.">
+                <select className={inputCls} value={s.post_reading_time || "default"} onChange={(e) => set("post_reading_time", e.target.value)}>
+                  <option value="default">Follow global setting</option>
+                  <option value="show">Always show</option>
+                  <option value="hide">Always hide</option>
+                </select>
+              </Field>
             </div>
           )}
           <Switch label="Show post tags" value={s.post_tags_show} onChange={(v) => set("post_tags_show", v)} />
