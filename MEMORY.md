@@ -26,7 +26,8 @@
 
 ## Work log (newest first)
 
-### 2026-10-15 — `e8dac29` — adPageKind: tag/author → archive
+### 2026-10-15 — `c2bc10a` — SVG social icons
+New shared `SocialIcons` component with brand SVGs (Facebook, X, Instagram, LinkedIn, YouTube). Replaces text labels in header social item, footer social item, and sidebar social widget. currentColor fill inherits surrounding text color.
 Fixed: new "tag"/"author" page types fell through to null in adPageKind, so menu/footer ads targeting "Tag / Archive pages" never showed on tag/author archives.
 - New `sidebar2_widgets` setting + 6 slots (s2widget1-6)
 - New `sidebar_choice` setting (sidebar1/sidebar2)
