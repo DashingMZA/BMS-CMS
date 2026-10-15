@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `f56ffde` — Card style presets for search results
+SearchResults now renders archive-card markup (`archive-card`, `archive-card-*` classes, `archive-items is-<style>` wrapper). searchCss emits the shared `archiveCardStyleCss` presets scoped to `.search-items`, so search honours the Card design setting. SearchPanel's boxed/unboxed Content Style replaced with the 6 card presets. Search keeps its own `data-search-el` ordering — no conflict with archive card ordering.
+
 ### 2026-10-15 — `ea85d27` — Archive card drag ordering + image position
 New `archive_card_order` (JSON `{id, visible}[]`) and `archive_card_image_position` (above/below-content). BlogArchive card elements carry `data-card-el`; new `archiveCardOrderCss` in siteCss.ts reorders via CSS `order` (live in Customizer preview). Customizer → Archive → "Card elements" uses ElementList (drag + toggles). Image is structurally separate so it moves above/below the whole block; overlay card keeps its text-on-image design.
 
