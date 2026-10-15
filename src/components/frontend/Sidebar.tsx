@@ -36,6 +36,25 @@ export default async function Sidebar(props: {
   }
 }
 
+/**
+ * Default heading for a widget type when the admin left the title blank.
+ * Keeps every widget labelled — an untitled "recent posts" list is just
+ * orphan links. English fallbacks; the configured title always wins.
+ */
+function defaultWidgetTitle(type: SidebarWidget["type"], language: string): string {
+  const t = uiText(language);
+  switch (type) {
+    case "search": return t.search;
+    case "recent": return "Recent Posts";
+    case "categories": return "Categories";
+    case "tags": return "Tags";
+    case "archives": return "Archives";
+    case "comments": return "Recent Comments";
+    case "social": return "Follow Us";
+    default: return "";
+  }
+}
+
 async function renderSidebar({
   settings,
   language,
@@ -153,7 +172,13 @@ async function renderSidebar({
           same rank as a footer widget's. At h3 it jumped a level from the
           document's `<h1>` whenever the content itself had no headings —
           which is most short posts. */}
-      {widget.title && <h2 className="mb-3 text-sm font-bold uppercase tracking-wide">{widget.title}</h2>}
+      {(() => {
+        // A widget with no explicit title used to render as an anonymous
+        // block — links with no heading, which is what the archive pages
+        // showed. Fall back to the type's default heading.
+        const title = widget.title || defaultWidgetTitle(widget.type, language);
+        return title ? <h2 className="mb-3 text-sm font-bold uppercase tracking-wide">{title}</h2> : null;
+      })()}
 
       {widget.type === "search" && (
         <form action={searchPath(language, settings)} className="flex">
