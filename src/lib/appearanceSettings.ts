@@ -420,6 +420,10 @@ export interface AppearanceSettings {
   // were whatever the code said and nothing could change them. The rest is
   // the card design: one preset for the whole grid, then a colour per part.
   archive_card_style: string;     // classic | elevated | overlay | list | minimal
+  /** above-content | below-content */
+  archive_card_image_position: string;
+  /** JSON: { id: string; visible: boolean }[] — order + visibility of archive card elements. */
+  archive_card_order: string;
   archive_header_bg: string;
   archive_body_bg: string;
   archive_title_color: string;
@@ -922,6 +926,15 @@ export const defaults: AppearanceSettings = {
   // Every colour defaults to empty: unset means "whatever the theme already
   // did", so an existing site looks exactly as it did until someone picks one.
   archive_card_style: "classic",
+  /** above-content | below-content — the featured image sits outside the reorderable content block. */
+  archive_card_image_position: "above-content",
+  archive_card_order: JSON.stringify([
+    { id: "term", visible: true },
+    { id: "title", visible: true },
+    { id: "meta", visible: true },
+    { id: "excerpt", visible: true },
+    { id: "readmore", visible: true },
+  ]),
   archive_header_bg: "",
   archive_body_bg: "",
   archive_title_color: "",
@@ -1276,6 +1289,21 @@ export function parsePageElements(raw: string): SearchElement[] {
 
 export function parseSearchElements(raw: string): SearchElement[] {
   return mergeElements(raw, Object.keys(SEARCH_ELEMENT_LABELS).map((id) => ({ id, visible: true })));
+}
+
+/** The elements inside an archive card's content block, in draw order.
+ * The featured image is structurally separate (a direct child of the card,
+ * for the overlay/list styles) so it gets its own position control. */
+export const ARCHIVE_CARD_LABELS: Record<string, string> = {
+  term: "Category label",
+  title: "Title",
+  meta: "Meta (author/date)",
+  excerpt: "Excerpt",
+  readmore: "Read more link",
+};
+
+export function parseArchiveCardOrder(raw: string): SearchElement[] {
+  return mergeElements(raw, Object.keys(ARCHIVE_CARD_LABELS).map((id) => ({ id, visible: true })));
 }
 
 function mergeElements(raw: string, fallback: SearchElement[]): SearchElement[] {

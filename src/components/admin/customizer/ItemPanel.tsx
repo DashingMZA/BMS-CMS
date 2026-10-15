@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { ChevronRight } from "lucide-react";
 import {
   GOOGLE_FONTS, LOGO_LAYOUTS, parseWidgets, resolveLogoLayout,
+  parseArchiveCardOrder, ARCHIVE_CARD_LABELS,
   type CustomizerSettings, type FooterWidget, type FooterLink,
 } from "@/lib/appearanceSettings";
 import {
@@ -17,7 +18,7 @@ import { SinglePostGeneral, SinglePostDesign } from "./SinglePostPanel";
 import { PageLayoutGeneral, PageLayoutDesign } from "./PageLayoutPanel";
 import { SidebarPanel } from "./SidebarPanel";
 import {
-  ColorPair, DeviceTabs, Field, LabelChoice, SectionHead, Slider, SpacingBox,
+  ColorPair, DeviceTabs, ElementList, Field, LabelChoice, SectionHead, Slider, SpacingBox,
   Swatch, Toggle, inputCls, smallCls, type Device, type SetFn,
 } from "./PanelKit";
 
@@ -337,6 +338,24 @@ function LayoutGeneral({
             ))}
           </div>
         </Field>
+      )}
+
+      {kind === "archive" && (
+        <>
+          <Field label="Card elements" help="Drag to reorder. Toggle an item off to hide it. The overlay card keeps its text-on-image design.">
+            <ElementList
+              elements={parseArchiveCardOrder(s.archive_card_order)}
+              labels={ARCHIVE_CARD_LABELS}
+              onChange={(next) => set("archive_card_order", JSON.stringify(next))}
+            />
+          </Field>
+          <Field label="Featured image position" help="The image sits outside the reorderable elements, so it moves above or below the whole content block.">
+            <select className={inputCls} value={s.archive_card_image_position || "above-content"} onChange={(e) => set("archive_card_image_position", e.target.value)}>
+              <option value="above-content">Above content</option>
+              <option value="below-content">Below content</option>
+            </select>
+          </Field>
+        </>
       )}
     </>
   );

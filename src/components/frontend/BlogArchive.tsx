@@ -698,7 +698,7 @@ export default async function BlogArchive({
                 className="archive-card group flex flex-col"
               >
               {post.featuredImage && (
-                <Link href={postPath(post, settings)} className="block overflow-hidden">
+                <Link href={postPath(post, settings)} data-card-el="image" className="block overflow-hidden">
                   {/* Through the optimiser, which matters most here: an archive
                       renders up to twelve of these at once, so they are the
                       largest block of image bytes on the site. `sizes` is the
@@ -727,18 +727,19 @@ export default async function BlogArchive({
                 {post.category && (
                   <Link
                     href={categoryPath(post.category.slug, language, settings)}
+                    data-card-el="term"
                     className="archive-card-term text-[11px] font-bold uppercase tracking-[0.08em]"
                     style={{ color: "var(--color-primary)" }}
                   >
                     {post.category.name}
                   </Link>
                 )}
-                <h2 className="archive-card-title mt-2.5 text-[21px] font-bold leading-[1.3]">
+                <h2 data-card-el="title" className="archive-card-title mt-2.5 text-[21px] font-bold leading-[1.3]">
                   <Link href={postPath(post, settings)} className="transition-opacity hover:opacity-70">
                     {post.title}
                   </Link>
                 </h2>
-                <p className="archive-card-meta mt-2 flex flex-wrap items-center gap-x-2 text-xs opacity-50">
+                <p data-card-el="meta" className="archive-card-meta mt-2 flex flex-wrap items-center gap-x-2 text-xs opacity-50">
                   {post.author?.name && (
                     <span>
                       {t.by}{" "}
@@ -764,7 +765,7 @@ export default async function BlogArchive({
                   )}
                 </p>
                 {post.excerpt && (
-                  <p className="archive-card-excerpt mt-3 line-clamp-6 text-[13.5px] leading-[1.65] opacity-75">
+                  <p data-card-el="excerpt" className="archive-card-excerpt mt-3 line-clamp-6 text-[13.5px] leading-[1.65] opacity-75">
                     {post.excerpt}
                   </p>
                 )}
@@ -778,6 +779,7 @@ export default async function BlogArchive({
                 <Link
                   href={postPath(post, settings)}
                   aria-label={`${t.readMore}: ${post.title}`}
+                  data-card-el="readmore"
                   className="archive-card-more mt-auto pt-5 text-[11px] font-bold uppercase tracking-[0.08em]"
                 >
                   {t.readMore} <span aria-hidden>{dir === "rtl" ? "←" : "→"}</span>

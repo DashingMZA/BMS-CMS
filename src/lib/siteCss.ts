@@ -9,7 +9,7 @@ import { DOWNLOAD_BOX_CSS } from "@/lib/downloadBox";
 import { blockCss } from "./blockCss";
 import { trimSiteCss } from "./cssTrim";
 
-import { resolveLogoLayout, parsePostElements, parsePageElements } from "./appearanceSettings";
+import { resolveLogoLayout, parsePostElements, parsePageElements, parseArchiveCardOrder } from "./appearanceSettings";
 
 export const PALETTE_SLOTS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15] as const;
 
@@ -742,6 +742,34 @@ export function archiveCardStyleCss(style: string): string {
 }
 
 /**
+ * Archive card element order, visibility, and image position.
+ *
+ * The card's content elements (term, title, meta, excerpt, readmore) are flex
+ * children of the content block, so `order` reorders them live in the
+ * Customizer preview without a re-render — the same technique `titleOrderCss`
+ * uses for the title area. The featured image is a direct child of the card
+ * (the overlay and list styles position it structurally), so it only moves
+ * above or below the content block.
+ *
+ * The overlay style is text-on-image by design: reordering would break its
+ * absolute positioning, so the order rules skip it.
+ */
+function archiveCardOrderCss(s: Record<string, string>): string[] {
+  const out: string[] = [];
+  const list = parseArchiveCardOrder(s.archive_card_order || "");
+  list.forEach((el, i) => {
+    out.push(
+      `.archive-items:not(.is-overlay) .archive-card [data-card-el="${el.id}"]{order:${i}${el.visible === false ? ";display:none" : ""}}`
+    );
+  });
+  // Featured image above or below the content block.
+  if (s.archive_card_image_position === "below-content") {
+    out.push(`.archive-items:not(.is-overlay):not(.is-list) .archive-card > [data-card-el="image"]{order:99}`);
+  }
+  return out;
+}
+
+/**
  * A colour as written by an administrator, or "" when it is not one.
  *
  * Exported because the archive renderer needs the identical rule for a term's
@@ -968,6 +996,7 @@ export function contentCss(s: Record<string, string>): string {
   );
   out.push(`.archive-card-image{border-radius:0}`);
   out.push(archiveCardStyleCss(style));
+  out.push(...archiveCardOrderCss(s));
 
   // ── Archive colours ─────────────────────────────────────────────────────
   //
