@@ -26,7 +26,11 @@
 
 ## Work log (newest first)
 
-### 2026-10-15 — `4de8e8e` — Tag/author page types
+### 2026-10-15 — `6214799` — Second sidebar (P1 from scorecard)
+- New `sidebar2_widgets` setting + 6 slots (s2widget1-6)
+- New `sidebar_choice` setting (sidebar1/sidebar2)
+- Sidebar component accepts `sidebarId` prop
+- Customizer: tabbed Sidebar 1 / Sidebar 2 editor + layout choice dropdown
 - New "tag" and "author" page types in PAGE_TYPES
 - ContentShell accepts `archiveKind` (category/tag/author); pageTypeFor uses it
 - BlogArchive passes archiveKind through; tag pages pass archiveKind="tag"
