@@ -927,6 +927,15 @@ export function contentCss(s: Record<string, string>): string {
   out.push(`.content-shell[data-layout="right-sidebar"] .content-sidebar{display:block;order:2}`);
   out.push(`.content-article{order:1;min-width:0}`);
 
+  // Device-specific sidebar visibility. Hiding collapses the grid to a single
+  // column so the content takes the full width.
+  if (s.sidebar_hide_tablet === "true") {
+    out.push(`@media(max-width:1024px){.content-sidebar{display:none!important}.content-shell .content-grid{grid-template-columns:1fr!important}}`);
+  }
+  if (s.sidebar_hide_mobile === "true") {
+    out.push(`@media(max-width:767px){.content-sidebar{display:none!important}.content-shell .content-grid{grid-template-columns:1fr!important}}`);
+  }
+
   // Title / meta / featured image visibility
   out.push(`.content-shell[data-kind="page"] .content-title{display:${s.page_title_show === "false" ? "none" : "block"}}`);
   out.push(`.content-shell[data-kind="post"] .content-title{display:${s.post_title_show === "false" ? "none" : "block"}}`);

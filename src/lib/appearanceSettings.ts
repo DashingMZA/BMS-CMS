@@ -409,6 +409,10 @@ export interface AppearanceSettings {
   sidebar2_widgets: string;
   /** Which sidebar a left/right layout shows: sidebar1 | sidebar2. */
   sidebar_choice: string;
+  /** Hide the sidebar on mobile (≤767px): "true" | "false". */
+  sidebar_hide_mobile: string;
+  /** Hide the sidebar on tablet (≤1024px): "true" | "false". */
+  sidebar_hide_tablet: string;
   archive_layout: string;
   archive_content_style: string;
   archive_spacing: string;
@@ -914,6 +918,8 @@ export const defaults: AppearanceSettings = {
   }),
   sidebar2_widgets: JSON.stringify({}),
   sidebar_choice: "sidebar1",
+  sidebar_hide_mobile: "false",
+  sidebar_hide_tablet: "false",
   archive_layout: "normal",
   // "unboxed", matching what the site actually renders: siteCss falls back to
   // unboxed for a kind whose content style was never saved, so a fresh site's
