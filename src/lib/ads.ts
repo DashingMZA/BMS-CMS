@@ -102,6 +102,9 @@ export interface AdBlock {
   sidebarPosition: AdSidebarPosition;
   /** For the sidebar position: keep the ad visible while scrolling (CSS sticky). */
   sticky: boolean;
+  /** Optional schedule: ISO date strings. The ad only shows within this window. */
+  startAt: string | null;
+  endAt: string | null;
   pages: Record<AdPageKind, boolean>;
 }
 
@@ -120,13 +123,20 @@ export function newAdBlock(index: number): AdBlock {
     alignment: "center",
     sidebarPosition: "top",
     sticky: false,
+    startAt: null,
+    endAt: null,
     pages: defaultPages(),
   };
 }
 
 /** A block counts as live when it has code and is not on the Disabled pseudo-position. */
 export function isBlockLive(b: AdBlock): boolean {
-  return b.enabled && b.position !== "disabled" && b.code.trim().length > 0;
+  if (!b.enabled || b.position === "disabled" || b.code.trim().length === 0) return false;
+  // Schedule: the block only shows within its start/end window.
+  const now = Date.now();
+  if (b.startAt && new Date(b.startAt).getTime() > now) return false;
+  if (b.endAt && new Date(b.endAt).getTime() < now) return false;
+  return true;
 }
 
 /** The stored JSON (or null/garbage) as an array of blocks. */
@@ -160,6 +170,8 @@ export function parseAdBlocks(raw: string | null | undefined): AdBlock[] {
           ? (r.sidebarPosition as AdSidebarPosition)
           : "top",
         sticky: !!r.sticky,
+        startAt: typeof r.startAt === "string" && r.startAt ? r.startAt : null,
+        endAt: typeof r.endAt === "string" && r.endAt ? r.endAt : null,
         pages,
       } as AdBlock;
     });

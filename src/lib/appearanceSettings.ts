@@ -966,7 +966,7 @@ export const defaults: AppearanceSettings = {
   sidebar_choice: "sidebar1",
   sidebar_hide_mobile: "false",
   sidebar_hide_tablet: "false",
-  sidebar_mobile_layout: "default",
+  sidebar_mobile_layout: "stack",
   sidebar_tablet_layout: "default",
   archive_layout: "normal",
   // "unboxed", matching what the site actually renders: siteCss falls back to

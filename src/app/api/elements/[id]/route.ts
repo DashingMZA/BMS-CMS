@@ -83,6 +83,7 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
           : {}),
         ...(body.startAt !== undefined ? { startAt: body.startAt ? new Date(String(body.startAt)) : null } : {}),
         ...(body.endAt !== undefined ? { endAt: body.endAt ? new Date(String(body.endAt)) : null } : {}),
+        ...(typeof body.device === "string" && ["all", "desktop", "mobile"].includes(body.device) ? { device: body.device } : {}),
         updatedAt: now,
       })
       .where(eq(elements.id, eid));

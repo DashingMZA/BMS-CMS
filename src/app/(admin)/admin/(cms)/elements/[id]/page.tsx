@@ -24,6 +24,7 @@ interface ElementData {
   conditions: ElementConditions;
   startAt: string | null;
   endAt: string | null;
+  device: string;
   content: Block[];
 }
 
@@ -77,6 +78,7 @@ export default function ElementEditorPage() {
         },
         startAt: element.startAt ? new Date(element.startAt).toISOString() : null,
         endAt: element.endAt ? new Date(element.endAt).toISOString() : null,
+        device: element.device ?? "all",
         content,
       });
     })();
@@ -295,6 +297,21 @@ export default function ElementEditorPage() {
               onChange={(e) => set("endAt", e.target.value ? new Date(e.target.value).toISOString() : null)}
               className={field}
             />
+          </Card>
+
+          <Card title="Device">
+            <p className="text-[11px] text-slate-400 mb-2.5 leading-snug">
+              Which screens show this element.
+            </p>
+            <select
+              value={data.device}
+              onChange={(e) => set("device", e.target.value)}
+              className={field}
+            >
+              <option value="all">All devices</option>
+              <option value="desktop">Desktop only</option>
+              <option value="mobile">Mobile only</option>
+            </select>
           </Card>
 
           <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">

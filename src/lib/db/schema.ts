@@ -697,6 +697,8 @@ export const elements = pgTable("elements", {
   /** Optional schedule: element only renders within this window. */
   startAt: timestamp("start_at", { withTimezone: true }),
   endAt: timestamp("end_at", { withTimezone: true }),
+  /** Device targeting: "all" | "desktop" | "mobile". */
+  device: varchar("device", { length: 10 }).notNull().default("all"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });

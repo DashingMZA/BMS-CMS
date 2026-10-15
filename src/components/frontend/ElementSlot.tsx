@@ -90,8 +90,13 @@ export default async function ElementSlot({
 
   return (
     <>
-      {matching.map((el) => (
-        <div key={el.id} className={`bms-element bms-element-${hook}`} data-element={el.id}>
+      {matching.map((el) => {
+        const deviceCls =
+          el.device === "desktop" ? "bms-el-desktop"
+          : el.device === "mobile" ? "bms-el-mobile"
+          : "";
+        return (
+        <div key={el.id} className={`bms-element bms-element-${hook} ${deviceCls}`} data-element={el.id}>
           <BlockRenderer
             blocks={(el.content as never) ?? []}
             aboveFold={ABOVE_FOLD_HOOKS.has(hook)}
@@ -99,7 +104,8 @@ export default async function ElementSlot({
             direction={direction}
           />
         </div>
-      ))}
+        );
+      })}
     </>
   );
 }

@@ -62,6 +62,7 @@ export interface SiteElement {
   conditions: ElementConditions;
   startAt?: Date | string | null;
   endAt?: Date | string | null;
+  device?: string | null;
 }
 
 export function parseConditions(raw: unknown): ElementConditions {

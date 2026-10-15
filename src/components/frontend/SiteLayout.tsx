@@ -1176,6 +1176,8 @@ async function renderSiteLayout({ children, hideHeader, hideFooter, transparentH
         <>
           <meta name="bms-turnstile" content={turnstileEnabled() ? turnstileSiteKey() : ""} />
           {turnstileEnabled() && <style>{".cf-turnstile-slot{min-height:65px}"}</style>}
+          {/* Element device targeting: hide desktop-only elements on mobile and vice versa. */}
+          <style>{`@media(max-width:767px){.bms-el-desktop{display:none!important}}@media(min-width:768px){.bms-el-mobile{display:none!important}}`}</style>
         </>
       )}
       {delay && (settings.script_head || settings.script_body_end) && (

@@ -262,6 +262,26 @@ export default function AdsPage() {
                           </label>
                         </div>
                       )}
+                      {/* Schedule — show the block only within a date window. */}
+                      <div>
+                        <label className="label">Schedule (optional)</label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            type="datetime-local"
+                            className="input text-sm"
+                            value={b.startAt ? b.startAt.slice(0, 16) : ""}
+                            onChange={(e) => patchBlock(b.id, { startAt: e.target.value ? new Date(e.target.value).toISOString() : null })}
+                            title="Show from"
+                          />
+                          <input
+                            type="datetime-local"
+                            className="input text-sm"
+                            value={b.endAt ? b.endAt.slice(0, 16) : ""}
+                            onChange={(e) => patchBlock(b.id, { endAt: e.target.value ? new Date(e.target.value).toISOString() : null })}
+                            title="Show until"
+                          />
+                        </div>
+                      </div>
                       {b.position === "sidebar" && b.sidebarPosition === "custom" && (
                         <div>
                           <label className="label">After widget</label>
