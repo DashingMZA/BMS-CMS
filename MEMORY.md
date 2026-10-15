@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `f16a4a2` — Sidebar: explicit text color
+`.content-sidebar` now explicitly sets `color:var(--color-text)` with links inheriting (hover keeps color, underline only) — prevents invisible/white sidebar content from inherited dark-theme colors on archive/page/home.
+
 ### 2026-10-15 — `2a82882` — Sidebar: default widget titles
 Widgets with blank admin titles now fall back to type defaults (Search, Recent Posts, Categories, Tags, Archives, Recent Comments, Follow Us) instead of rendering as anonymous blocks. Search label is translated via uiText.
 
