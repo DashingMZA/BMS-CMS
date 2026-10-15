@@ -470,6 +470,7 @@ export interface AppearanceSettings {
   // its own colours rather than the theme's tint of the surrounding text.
   archive_chips_show: string;         // "false" hides the row
   archive_chips_source: string;       // categories | tags | both
+  archive_chips_limit: string;        // max chips in the row, default 30
   archive_chip_color: string;
   archive_chip_bg: string;
   archive_chip_active_color: string;
@@ -1005,6 +1006,7 @@ export const defaults: AppearanceSettings = {
   archive_card_more_color: "",
   archive_chips_show: "true",
   archive_chips_source: "categories",
+  archive_chips_limit: "30",
   archive_chip_color: "",
   archive_chip_bg: "",
   archive_chip_active_color: "",

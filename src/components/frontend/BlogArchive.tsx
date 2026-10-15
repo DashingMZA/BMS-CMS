@@ -434,21 +434,21 @@ export default async function BlogArchive({
       .catch(() => []),
     // Tags with posts, for the chip row when it includes tags.
     // Same "only terms that have something to show" rule as categories.
+    // Ordered by post count so the limit keeps the most useful tags.
     db
-      .select({ id: tagsTable.id, name: tagsTable.name, slug: tagsTable.slug })
+      .select({
+        id: tagsTable.id,
+        name: tagsTable.name,
+        slug: tagsTable.slug,
+        postCount: sql<number>`count(distinct ${posts.id})`,
+      })
       .from(tagsTable)
-      .where(
-        and(
-          eq(tagsTable.language, language),
-          exists(
-            db
-              .select({ one: sql`1` })
-              .from(postTags)
-              .innerJoin(posts, eq(posts.id, postTags.postId))
-              .where(and(inLanguage, eq(postTags.tagId, tagsTable.id)))
-          )
-        )
-      )
+      .leftJoin(postTags, eq(postTags.tagId, tagsTable.id))
+      .leftJoin(posts, and(eq(posts.id, postTags.postId), inLanguage))
+      .where(eq(tagsTable.language, language))
+      .groupBy(tagsTable.id, tagsTable.name, tagsTable.slug)
+      .having(sql`count(distinct ${posts.id}) > 0`)
+      .orderBy(sql`count(distinct ${posts.id}) desc`)
       .catch(() => []),
     getSiteSettings(),
   ]);
@@ -651,6 +651,15 @@ export default async function BlogArchive({
           // invisible on a dark theme, which is most of the reason this row
           // looked broken on one.
           <nav aria-label={t.categories} className="flex flex-wrap justify-center gap-2 mb-10">
+            {(() => {
+              // Cap the row: hundreds of tags used to render as hundreds of
+              // pills, burying the posts. Tags arrive ordered by post count,
+              // so the limit keeps the most useful ones.
+              const limit = Math.max(1, parseInt(settings.archive_chips_limit || "30", 10) || 30);
+              const cats = (settings.archive_chips_source === "tags" ? [] : allCategories).slice(0, limit);
+              const tags = (settings.archive_chips_source === "categories" ? [] : allTags).slice(0, limit);
+              return (
+                <>
             {/* "All" only when a listing of everything exists to link to. */}
             {listingPath && (
               <Link
@@ -661,7 +670,7 @@ export default async function BlogArchive({
                 {t.all}
               </Link>
             )}
-            {(settings.archive_chips_source === "tags" ? [] : allCategories).map((cat) => (
+            {cats.map((cat) => (
               <Link
                 key={`c${cat.id}`}
                 href={categoryPath(cat.slug, language, settings)}
@@ -671,7 +680,7 @@ export default async function BlogArchive({
                 {cat.name}
               </Link>
             ))}
-            {(settings.archive_chips_source === "categories" ? [] : allTags).map((tag) => (
+            {tags.map((tag) => (
               <Link
                 key={`t${tag.id}`}
                 href={tagPath(tag.slug, language, settings)}
@@ -680,6 +689,9 @@ export default async function BlogArchive({
                 #{tag.name}
               </Link>
             ))}
+                </>
+              );
+            })()}
           </nav>
         )}
 
