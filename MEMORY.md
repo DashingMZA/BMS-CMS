@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `05af400` — Settings: tabbed layout
+Settings page split into 5 tabs (General, Language & Region, Permalink Settings, Sitemap & robots.txt, Export/Import). Each tab has its own Save Settings button — all save the same changed-keys set, so any tab's button saves everything. Tab switch warns on unsaved changes; amber dot marks the dirty tab.
+
 ### 2026-10-15 — `797d11c` — Ads: "Footer" position renamed to "Before footer" (label only, id unchanged).
 
 ### 2026-10-15 — `9d1aad3` — Ads: reorder block fields
