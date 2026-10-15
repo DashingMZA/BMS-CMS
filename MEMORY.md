@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `a94c88c` — Customizer: chip controls to General tab
+Moved "Show the category filter row", "Chip source", "Max chips" from Design to General tab (functional, not visual). Design keeps only chip colours.
+
 ### 2026-10-15 — `dccfdf5` — Archive chips: default source to categories
 When `archive_chips_source` is unset, default to "categories" instead of showing both. The undefined case was rendering categories+tags despite the Customizer default being "categories".
 
