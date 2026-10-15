@@ -100,6 +100,8 @@ export interface AdBlock {
   alignment: string;
   /** For the sidebar position: top, middle, or bottom of the sidebar. */
   sidebarPosition: AdSidebarPosition;
+  /** For the sidebar "custom" position: which sidebar (1 or 2). */
+  sidebarId: 1 | 2;
   /** For the sidebar position: keep the ad visible while scrolling (CSS sticky). */
   sticky: boolean;
   /** Optional schedule: ISO date strings. The ad only shows within this window. */
@@ -122,6 +124,7 @@ export function newAdBlock(index: number): AdBlock {
     count: 2,
     alignment: "center",
     sidebarPosition: "top",
+    sidebarId: 1,
     sticky: false,
     startAt: null,
     endAt: null,
@@ -169,6 +172,7 @@ export function parseAdBlocks(raw: string | null | undefined): AdBlock[] {
         sidebarPosition: typeof r.sidebarPosition === "string" && AD_SIDEBAR_POSITIONS.some((s) => s.id === r.sidebarPosition)
           ? (r.sidebarPosition as AdSidebarPosition)
           : "top",
+        sidebarId: r.sidebarId === 2 ? 2 : 1,
         sticky: !!r.sticky,
         startAt: typeof r.startAt === "string" && r.startAt ? r.startAt : null,
         endAt: typeof r.endAt === "string" && r.endAt ? r.endAt : null,

@@ -36,6 +36,7 @@ export default function AdsPage() {
   const [saved, setSaved] = useState(false);
   const [tab, setTab] = useState<Tab>("blocks");
   const [widgetCount, setWidgetCount] = useState(0);
+  const [widgetCount2, setWidgetCount2] = useState(0);
 
   useEffect(() => {
     fetch("/api/settings")
@@ -45,13 +46,17 @@ export default function AdsPage() {
         setBlocks(parseAdBlocks(d.settings?.ads_blocks));
         setScriptHead(d.settings?.script_head ?? "");
         setScriptBodyEnd(d.settings?.script_body_end ?? "");
-        // Real sidebar widget count, so "After widget N" only offers N that exist.
+        // Real sidebar widget counts, so "After widget N" only offers N that exist.
         try {
-          const w = JSON.parse(d.settings?.sidebar_widgets ?? "{}");
-          const ids = ["swidget1", "swidget2", "swidget3", "swidget4"];
-          setWidgetCount(ids.filter((id) => w && typeof w === "object" && w[id]).length);
+          const w1 = JSON.parse(d.settings?.sidebar_widgets ?? "{}");
+          const ids1 = ["swidget1", "swidget2", "swidget3", "swidget4", "swidget5", "swidget6"];
+          setWidgetCount(ids1.filter((id) => w1 && typeof w1 === "object" && w1[id]).length);
+          const w2 = JSON.parse(d.settings?.sidebar2_widgets ?? "{}");
+          const ids2 = ["s2widget1", "s2widget2", "s2widget3", "s2widget4", "s2widget5", "s2widget6"];
+          setWidgetCount2(ids2.filter((id) => w2 && typeof w2 === "object" && w2[id]).length);
         } catch {
           setWidgetCount(0);
+          setWidgetCount2(0);
         }
         setLoading(false);
       })
@@ -241,6 +246,15 @@ export default function AdsPage() {
                       </div>
                       {b.position === "sidebar" && (
                         <div>
+                          <label className="label">Sidebar</label>
+                          <select
+                            className="input text-sm mb-2"
+                            value={b.sidebarId ?? 1}
+                            onChange={(e) => patchBlock(b.id, { sidebarId: parseInt(e.target.value) === 2 ? 2 : 1 })}
+                          >
+                            <option value={1}>Sidebar 1</option>
+                            <option value={2}>Sidebar 2</option>
+                          </select>
                           <label className="label">Sidebar position</label>
                           <select
                             className="input text-sm"
@@ -282,23 +296,26 @@ export default function AdsPage() {
                           />
                         </div>
                       </div>
-                      {b.position === "sidebar" && b.sidebarPosition === "custom" && (
+                      {b.position === "sidebar" && b.sidebarPosition === "custom" && (() => {
+                        const count = (b.sidebarId ?? 1) === 2 ? widgetCount2 : widgetCount;
+                        return (
                         <div>
                           <label className="label">After widget</label>
                           <select
                             className="input text-sm"
-                            value={Math.max(1, Math.min(b.count || 1, Math.max(1, widgetCount)))}
+                            value={Math.max(1, Math.min(b.count || 1, Math.max(1, count)))}
                             onChange={(e) => patchBlock(b.id, { count: parseInt(e.target.value) || 1 })}
                           >
-                            {Array.from({ length: Math.max(1, widgetCount) }, (_, i) => (
+                            {Array.from({ length: Math.max(1, count) }, (_, i) => (
                               <option key={i + 1} value={i + 1}>After widget {i + 1}</option>
                             ))}
                           </select>
-                          {widgetCount === 0 && (
-                            <p className="text-xs opacity-60 mt-1">No sidebar widgets configured yet.</p>
+                          {count === 0 && (
+                            <p className="text-xs opacity-60 mt-1">No widgets configured in this sidebar yet.</p>
                           )}
                         </div>
-                      )}
+                        );
+                      })()}
                       <div>
                         <label className="label">Alignment</label>
                         <select

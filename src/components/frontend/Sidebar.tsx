@@ -59,10 +59,13 @@ async function renderSidebar({
   // used to hide top/middle/bottom ad slots too, since this returned null
   // before the AdBlocks below ever rendered.
   const adBlocks = parseAdBlocks(settings.ads_blocks);
-  const hasSidebarAds = sidebarBlocksFor(adBlocks, "top", pageKind).length > 0 ||
-    sidebarBlocksFor(adBlocks, "middle", pageKind).length > 0 ||
-    sidebarBlocksFor(adBlocks, "bottom", pageKind).length > 0 ||
-    sidebarBlocksFor(adBlocks, "custom", pageKind).length > 0;
+  const mySidebar = isSecond ? 2 : 1;
+  const sidebarAdsForMe = (slot: "top" | "middle" | "bottom" | "custom") =>
+    sidebarBlocksFor(adBlocks, slot, pageKind).filter((b) => (b.sidebarId ?? 1) === mySidebar);
+  const hasSidebarAds = sidebarAdsForMe("top").length > 0 ||
+    sidebarAdsForMe("middle").length > 0 ||
+    sidebarAdsForMe("bottom").length > 0 ||
+    sidebarAdsForMe("custom").length > 0;
   if (widgets.length === 0 && !hasSidebarAds) return null;
 
   const needs = (type: SidebarWidget["type"]) => widgets.some((w) => w.widget.type === type);
@@ -130,9 +133,12 @@ async function renderSidebar({
   const secondHalf = widgets.slice(midPoint);
 
   // "After widget N" ads, keyed by their widget number (1-based). A number
-  // past the end falls back to the bottom of the sidebar.
+  // past the end falls back to the bottom of the sidebar. Only ads aimed at
+  // this sidebar (sidebarId) are interleaved here.
   const customAds = new Map<number, AdBlock[]>();
+  const mySidebarNum = isSecond ? 2 : 1;
   for (const b of sidebarBlocksFor(parseAdBlocks(settings.ads_blocks), "custom", pageKind)) {
+    if ((b.sidebarId ?? 1) !== mySidebarNum) continue;
     const n = Math.max(1, Math.min(b.count || 1, widgets.length));
     const list = customAds.get(n) ?? [];
     list.push(b);
@@ -258,7 +264,7 @@ async function renderSidebar({
   return (
     <div className="space-y-8">
       {/* Ad blocks with the "Sidebar" position, "Top" slot. */}
-      <AdBlocks position="sidebar" slot="top" pageKind={pageKind} />
+      <AdBlocks position="sidebar" slot="top" pageKind={pageKind} sidebarId={isSecond ? 2 : 1} />
       {firstHalf.map((w, i) => (
         <Fragment key={w.id}>
           {renderWidget(w)}
@@ -267,7 +273,7 @@ async function renderSidebar({
       ))}
       {/* Ad blocks with the "Sidebar" position, "Middle" slot — after the
           middle widget. */}
-      <AdBlocks position="sidebar" slot="middle" pageKind={pageKind} />
+      <AdBlocks position="sidebar" slot="middle" pageKind={pageKind} sidebarId={isSecond ? 2 : 1} />
       {secondHalf.map((w, i) => (
         <Fragment key={w.id}>
           {renderWidget(w)}
@@ -275,7 +281,7 @@ async function renderSidebar({
         </Fragment>
       ))}
       {/* Ad blocks with the "Sidebar" position, "Bottom" slot. */}
-      <AdBlocks position="sidebar" slot="bottom" pageKind={pageKind} />
+      <AdBlocks position="sidebar" slot="bottom" pageKind={pageKind} sidebarId={isSecond ? 2 : 1} />
     </div>
   );
 }

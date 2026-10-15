@@ -33,17 +33,23 @@ export default async function AdBlocks({
   pageKind,
   slot,
   className,
+  sidebarId,
 }: {
   position: string;
   pageKind: string;
   slot?: AdSidebarPosition;
   className?: string;
+  /** For sidebar slots: only show ads aimed at this sidebar (1 or 2). */
+  sidebarId?: 1 | 2;
 }) {
   const settings = await getSiteSettings();
   const parsed = parseAdBlocks(settings.ads_blocks);
-  const blocks = slot && position === "sidebar"
+  let blocks = slot && position === "sidebar"
     ? sidebarBlocksFor(parsed, slot, pageKind)
     : blocksFor(parsed, position, pageKind);
+  if (sidebarId && position === "sidebar") {
+    blocks = blocks.filter((b) => (b.sidebarId ?? 1) === sidebarId);
+  }
   if (blocks.length === 0) return null;
 
   return (
