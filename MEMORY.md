@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `080d959` — Full-page click-to-edit in customizer preview
+New `ClickToEdit.tsx`: clicks in the preview iframe find the closest `[data-bms-slot]`/`[data-bms-row]`, prevent navigation, and postMessage the section/item to the Customizer parent, which opens the matching settings screen. Hover shows a dashed outline + pointer cursor. Works for header items/rows and footer items/rows. TSC/ESLint clean.
+
 ### 2026-10-15 — `482b60a` — Mega menu: nested columns with grandchildren
 Mega menus now render true multi-column structure: each submenu item becomes a column heading, with its own sub-items (grandchildren) as the column links — icons, badges, descriptions supported at both levels. New `.hnav-mega-col`/`.hnav-mega-head` CSS. Admin navigation editor explains the column structure ("Each submenu item becomes a column heading"). Mobile stacks to one column (existing CSS). DB fields `mega_menu`/`mega_columns` and the admin checkbox already existed; the missing piece was nested rendering.
 
