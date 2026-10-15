@@ -26,6 +26,8 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `797d11c` — Ads: "Footer" position renamed to "Before footer" (label only, id unchanged).
+
 ### 2026-10-15 — `9d1aad3` — Ads: reorder block fields
 Field order now: Insertion → Sidebar # → Sidebar position (+ Sticky) → After widget → Alignment → Device → Schedule (optional). Same pattern for non-sidebar positions (Insertion → count → Alignment → Device → Schedule).
 
