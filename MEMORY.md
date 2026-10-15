@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `7609a75` — WP import/export: category parents + language selector
+Import: categories now wire `parentId` via a second pass (WP `category_parent` nicename → id), so hierarchies survive. Export: `wp:category_parent` now carries the parent's slug instead of empty. Import UI has a Language dropdown (en/ur/ar/es); the API accepts `language` (validated 2-letter) and `wxrToSiteExport` applies it to posts/pages/categories/tags instead of hardcoded "en".
+
 ### 2026-10-15 — `24c0e62` — Sticky ad contract tests
 Added 2 contract tests to tests/ads.test.mjs: old blocks without `sticky` default to false; sticky class only applies to sidebar position. 6/6 pass. (User's `fcbac98` "/" commit added startup.log — no code impact.)
 
