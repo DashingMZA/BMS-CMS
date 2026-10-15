@@ -9,6 +9,7 @@ import { categoryPath, postPath, searchPath, tagPath } from "@/lib/permalinks";
 import { isLive } from "@/lib/publishState";
 import { parseAdBlocks, sidebarBlocksFor, type AdBlock } from "@/lib/ads";
 import AdBlocks, { AdBlockView } from "./AdSlot";
+import SocialIcons from "./SocialIcons";
 
 /**
  * The real sidebar, replacing the placeholder box.
@@ -227,20 +228,10 @@ async function renderSidebar({
         </ul>
       )}
 
-      {widget.type === "social" && (
-        <div className="flex flex-wrap gap-2">
-          {(widget.social ?? []).filter((s) => s.url).map((s, i) => (
-            <a
-              key={i}
-              href={s.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-full border border-black/10 px-3 py-1.5 text-xs font-medium opacity-80 transition-opacity hover:opacity-100 capitalize"
-            >
-              {s.network || "Link"}
-            </a>
-          ))}
-        </div>
+      {widget.type === "social" && (widget.social ?? []).filter((s) => s.url).length > 0 && (
+        <SocialIcons
+          profiles={(widget.social ?? []).filter((s) => s.url).map((s) => [s.network || "Link", s.url])}
+        />
       )}
 
       {widget.type === "links" && (

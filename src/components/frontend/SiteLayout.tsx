@@ -12,6 +12,7 @@ import NavList, { type NavNode } from "./NavList";
 import OffCanvas from "./OffCanvas";
 import StickyHeader from "./StickyHeader";
 import ElementSlot from "./ElementSlot";
+import SocialIcons from "./SocialIcons";
 import { headers } from "next/headers";
 
 /**
@@ -268,13 +269,7 @@ function FooterItem({ id, settings, nav, language, logoSize, customizerMode }: {
       ["LinkedIn", settings.social_linkedin],
     ].filter(([, url]) => !!url) as [string, string][];
     if (socials.length === 0) return null;
-    return (
-      <div className="flex items-center gap-4 text-sm">
-        {socials.map(([label, url]) => (
-          <a key={label} href={url} {...newTabProps(true)} className="opacity-80 hover:opacity-100 transition-opacity">{label}</a>
-        ))}
-      </div>
-    );
+    return <SocialIcons profiles={socials} />;
   }
 
   if (id === "darkmode") return <DarkModeToggle label={uiText(language ?? "en").toggleDarkMode} />;
@@ -554,10 +549,16 @@ function renderHeaderItem(item: string, i: number, settings: Record<string, stri
             );
           case "social":
             return (
-              <div key={i} className="flex items-center gap-2">
-                {settings.social_twitter && <a href={settings.social_twitter} {...newTabProps(true)} className="text-xs hover:opacity-70 transition-opacity" style={{ color: "var(--header-text)" }}>𝕏</a>}
-                {settings.social_facebook && <a href={settings.social_facebook} {...newTabProps(true)} className="text-xs hover:opacity-70 transition-opacity" style={{ color: "var(--header-text)" }}>f</a>}
-                {settings.social_instagram && <a href={settings.social_instagram} {...newTabProps(true)} className="text-xs hover:opacity-70 transition-opacity" style={{ color: "var(--header-text)" }}>Ig</a>}
+              <div key={i} style={{ color: "var(--header-text)" }}>
+                <SocialIcons
+                  profiles={[
+                    ["Twitter", settings.social_twitter],
+                    ["Facebook", settings.social_facebook],
+                    ["Instagram", settings.social_instagram],
+                    ["LinkedIn", settings.social_linkedin],
+                  ]}
+                  size={16}
+                />
               </div>
             );
           case "trigger":
