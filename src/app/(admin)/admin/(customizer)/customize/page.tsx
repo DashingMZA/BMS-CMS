@@ -30,6 +30,7 @@ import {
   X, ChevronRight, ChevronLeft, Monitor, Tablet, Smartphone, Eye, EyeOff,
   RefreshCw, Check, Palette, Layout, PanelBottom, Settings2, FileText,
   Search, BadgeInfo, Menu as MenuIcon, Home, Code2, Braces, Loader2, Gauge,
+  Undo2, Redo2,
 } from "lucide-react";
 
 type Device = "desktop" | "tablet" | "mobile";
@@ -253,6 +254,10 @@ export default function CustomizePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
+  // Undo/redo history: snapshots of settings before each change.
+  // Capped at 50 so a long session doesn't grow memory without bound.
+  const [past, setPast] = useState<CustomizerSettings[]>([]);
+  const [future, setFuture] = useState<CustomizerSettings[]>([]);
   const [section, setSection] = useState<SectionId | null>(null);
   const [device, setDevice] = useState<Device>("desktop");
   const [hideControls, setHideControls] = useState(false);
@@ -303,13 +308,62 @@ export default function CustomizePage() {
   }, []);
 
   function set(key: keyof CustomizerSettings, value: string) {
-    setSettings((p) => ({ ...p, [key]: value }));
+    setSettings((p) => {
+      // No-op changes don't pollute the history.
+      if (p[key] === value) return p;
+      setPast((h) => [...h.slice(-49), p]);
+      setFuture([]);
+      return { ...p, [key]: value };
+    });
     changedRef.current.add(key as string);
     setDirty(true);
     if (STRUCTURAL_KEYS.has(key as string)) {
       setPendingStructural((prev) => new Set(prev).add(key as string));
     }
   }
+
+  function undo() {
+    setPast((h) => {
+      if (h.length === 0) return h;
+      const prev = h[h.length - 1]!;
+      setFuture((f) => [settings, ...f]);
+      setSettings(prev);
+      setDirty(true);
+      return h.slice(0, -1);
+    });
+  }
+
+  function redo() {
+    setFuture((f) => {
+      if (f.length === 0) return f;
+      const next = f[0]!;
+      setPast((h) => [...h, settings]);
+      setSettings(next);
+      setDirty(true);
+      return f.slice(1);
+    });
+  }
+
+  // Ctrl/Cmd+Z = undo, Ctrl/Cmd+Shift+Z or Ctrl+Y = redo.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const mod = e.ctrlKey || e.metaKey;
+      if (!mod) return;
+      const tag = (e.target as HTMLElement)?.tagName;
+      // Don't hijack typing in inputs.
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      if (e.key.toLowerCase() === "z" && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+      } else if ((e.key.toLowerCase() === "y") || (e.key.toLowerCase() === "z" && e.shiftKey)) {
+        e.preventDefault();
+        redo();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settings, past, future]);
 
   // Push the draft into the preview iframe so changes show without publishing.
   useEffect(() => {
@@ -386,6 +440,22 @@ export default function CustomizePage() {
             title="Close customizer"
           >
             <X size={18} />
+          </button>
+          <button
+            onClick={undo}
+            disabled={past.length === 0}
+            title="Undo (Ctrl+Z)"
+            className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent"
+          >
+            <Undo2 size={18} />
+          </button>
+          <button
+            onClick={redo}
+            disabled={future.length === 0}
+            title="Redo (Ctrl+Shift+Z)"
+            className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent"
+          >
+            <Redo2 size={18} />
           </button>
           <button
             onClick={publish}
