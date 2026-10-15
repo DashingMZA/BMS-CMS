@@ -391,6 +391,21 @@ export default function CustomizePage() {
     return () => window.removeEventListener("message", onReady);
   }, [settings, loading]);
 
+  // Click-to-edit: the preview reports which element was clicked; open the
+  // matching section and item settings.
+  useEffect(() => {
+    function onClickEdit(e: MessageEvent) {
+      if (e.origin !== window.location.origin || e.data?.__bms !== "click-edit") return;
+      const { section: clicked, item } = e.data as { section: string; item: string | null };
+      if (clicked === "header" || clicked === "footer") {
+        setSection(clicked);
+        setFocusItem(item);
+      }
+    }
+    window.addEventListener("message", onClickEdit);
+    return () => window.removeEventListener("message", onClickEdit);
+  }, []);
+
   async function publish() {
     setSaving(true);
     const sent = [...changedRef.current];

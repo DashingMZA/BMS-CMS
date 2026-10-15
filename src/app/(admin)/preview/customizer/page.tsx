@@ -8,6 +8,7 @@ import { formatDate } from "@/lib/utils";
 import SiteLayout from "@/components/frontend/SiteLayout";
 import SearchResults, { type SearchPost } from "@/components/frontend/SearchResults";
 import { getSiteSettings } from "@/lib/settings";
+import ClickToEdit from "@/components/admin/customizer/ClickToEdit";
 import { postPath } from "@/lib/permalinks";
 import { defaultContentLanguage } from "@/lib/locale";
 
@@ -59,13 +60,17 @@ export default async function CustomizerPreviewPage({
         }));
 
     return (
+      <>
       <SiteLayout customizerMode language={defaultContentLanguage(settings)}>
         <SearchResults query="example" posts={sample} settings={settings} language={defaultContentLanguage(settings)} />
       </SiteLayout>
+      <ClickToEdit />
+      </>
     );
   }
 
   return (
+    <>
     <SiteLayout customizerMode language={defaultContentLanguage(settings)}>
       <div className="max-w-3xl mx-auto px-4 py-12">
         <h1 className="text-4xl font-bold mb-3">Welcome</h1>
@@ -89,5 +94,7 @@ export default async function CustomizerPreviewPage({
         )}
       </div>
     </SiteLayout>
+    <ClickToEdit />
+    </>
   );
 }
