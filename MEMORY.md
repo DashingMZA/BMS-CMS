@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `7e58b90` — Theme preset import/export in customizer
+Export (Download icon) saves the current draft as `theme-preset-YYYY-MM-DD.json` ({name, exportedAt, settings}). Import (Upload icon) reads a preset file, applies only known CustomizerSettings keys, marks them changed, and prompts to Publish. Invalid files show an error. TSC/ESLint clean.
+
 ### 2026-10-15 — `080d959` — Full-page click-to-edit in customizer preview
 New `ClickToEdit.tsx`: clicks in the preview iframe find the closest `[data-bms-slot]`/`[data-bms-row]`, prevent navigation, and postMessage the section/item to the Customizer parent, which opens the matching settings screen. Hover shows a dashed outline + pointer cursor. Works for header items/rows and footer items/rows. TSC/ESLint clean.
 
