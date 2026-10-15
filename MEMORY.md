@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `3f91225` — Sidebar: exempt from content-visibility
+`.content-sidebar` and children now force `content-visibility:visible` — the Speed "render offscreen" optimization was leaving sidebar ads/images unpainted until click-drag interaction revealed them.
+
 ### 2026-10-15 — `f16a4a2` — Sidebar: explicit text color
 `.content-sidebar` now explicitly sets `color:var(--color-text)` with links inheriting (hover keeps color, underline only) — prevents invisible/white sidebar content from inherited dark-theme colors on archive/page/home.
 
