@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { isAdmin, FORBIDDEN, UNAUTHORIZED } from "@/lib/authz";
 import { importSite, ImportError } from "@/lib/importSite";
 import { parseWxr, wxrToSiteExport } from "@/lib/wordpress";
+import { pullRemoteMedia } from "@/lib/wpMediaPull";
 import { revalidatePublicSite } from "@/lib/revalidateSite";
 
 /**
@@ -24,11 +25,13 @@ export async function POST(req: NextRequest) {
 
   const contentType = req.headers.get("content-type") ?? "";
   let language = "en";
+  let downloadMedia = false;
   try {
     if (contentType.includes("multipart/form-data")) {
       const form = await req.formData();
       dryRun = form.get("dryRun") === "true";
       overwrite = form.get("overwrite") === "true";
+      downloadMedia = form.get("downloadMedia") === "true";
       const lang = form.get("language");
       if (typeof lang === "string" && /^[a-z]{2}$/.test(lang)) language = lang;
       const upload = form.get("file");
@@ -72,9 +75,17 @@ export async function POST(req: NextRequest) {
   try {
     const report = await importSite(siteExport, { dryRun, overwrite });
     if (!dryRun) revalidatePublicSite();
-    report.notes.push(
-      "Media files themselves are not in a WordPress export — copy the site's /wp-content/uploads/ directory across, or image URLs will 404."
-    );
+    if (!dryRun && downloadMedia) {
+      const pulled = await pullRemoteMedia();
+      report.notes.push(
+        `Downloaded ${pulled.downloaded} remote media files to local uploads` +
+        (pulled.failed > 0 ? ` (${pulled.failed} failed — their URLs still point remote).` : ".")
+      );
+    } else {
+      report.notes.push(
+        "Media files themselves are not in a WordPress export — copy the site's /wp-content/uploads/ directory across, or image URLs will 404."
+      );
+    }
     return NextResponse.json(report);
   } catch (e) {
     if (e instanceof ImportError) {

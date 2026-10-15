@@ -253,6 +253,18 @@ export interface AppearanceSettings {
   footer_bottomrow_right: string;
   footer_bottomrow_right_center: string;
   footer_bottomrow_left_center: string;
+  /** Mobile-specific footer zones. Empty = fall back to the desktop zones. */
+  footer_m_toprow_left: string;
+  footer_m_toprow_center: string;
+  footer_m_toprow_right: string;
+  footer_m_main_left: string;
+  footer_m_main_center: string;
+  footer_m_main_right: string;
+  footer_m_bottomrow_left: string;
+  footer_m_bottomrow_center: string;
+  footer_m_bottomrow_right: string;
+  /** Use the mobile footer zones on small screens: "true" | "false". */
+  footer_mobile_enabled: string;
   footer_widgets: string;       // JSON: Record<widgetId, FooterWidget>
   footer_cols: string;          // JSON: FooterCol[] — legacy, migrated into footer_widgets
   footer_bottom_links: string;  // JSON: FooterLink[]
@@ -783,6 +795,16 @@ export const defaults: AppearanceSettings = {
   footer_bottomrow_right: '["copyright"]',
   footer_bottomrow_right_center: "[]",
   footer_bottomrow_left_center: "[]",
+  footer_m_toprow_left: "[]",
+  footer_m_toprow_center: "[]",
+  footer_m_toprow_right: "[]",
+  footer_m_main_left: "[]",
+  footer_m_main_center: "[]",
+  footer_m_main_right: "[]",
+  footer_m_bottomrow_left: "[]",
+  footer_m_bottomrow_center: "[]",
+  footer_m_bottomrow_right: "[]",
+  footer_mobile_enabled: "false",
   footer_widgets: "{}",
   footer_mobile_dock: "false",
   footer_dock_items: JSON.stringify([

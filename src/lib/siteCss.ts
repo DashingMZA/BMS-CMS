@@ -1141,6 +1141,12 @@ export function footerRowCss(s: Record<string, string>): string {
   if (s.footer_mobile_dock === "true") {
     out.push(`@media(max-width:767px){body{padding-bottom:64px}.mobile-dock{display:block}}`);
   }
+  // Mobile footer: when enabled, the desktop footer hides on small screens and
+  // the mobile footer (footer-mobile) shows instead.
+  if (s.footer_mobile_enabled === "true") {
+    out.push(`.footer-mobile{display:none}`);
+    out.push(`@media(max-width:767px){.footer-mobile{display:block}footer:not(.footer-mobile){display:none}}`);
+  }
   for (const row of ["toprow", "main", "bottomrow"]) {
     const sel = `[data-bms-row="ftr:${row}"]`;
     const bg = s[`footer_${row}_bg`];

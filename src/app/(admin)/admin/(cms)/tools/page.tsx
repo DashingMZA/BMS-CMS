@@ -57,6 +57,7 @@ function ImportTab() {
   const [dryRun, setDryRun] = useState(true);
   const [overwrite, setOverwrite] = useState(false);
   const [language, setLanguage] = useState("en");
+  const [downloadMedia, setDownloadMedia] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [report, setReport] = useState<ImportReport | null>(null);
@@ -84,6 +85,7 @@ function ImportTab() {
       fd.set("dryRun", String(dryRun));
       fd.set("overwrite", String(overwrite));
       fd.set("language", language);
+      fd.set("downloadMedia", String(downloadMedia));
       const res = await fetch("/api/tools/import-wp", { method: "POST", body: fd });
       const data = await res.json();
       if (!res.ok) {
@@ -138,6 +140,10 @@ function ImportTab() {
           <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
             <input type="checkbox" checked={overwrite} onChange={(e) => setOverwrite(e.target.checked)} className="rounded" />
             Overwrite — put existing posts back to the file&rsquo;s version
+          </label>
+          <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer" title="Download remote images to this server during import">
+            <input type="checkbox" checked={downloadMedia} onChange={(e) => setDownloadMedia(e.target.checked)} className="rounded" />
+            Download media — fetch remote images to local uploads
           </label>
           <label className="flex items-center gap-2 text-xs text-slate-600">
             Language

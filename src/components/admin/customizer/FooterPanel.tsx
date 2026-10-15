@@ -88,6 +88,73 @@ function DockEditor({ value, onChange }: { value: string; onChange: (v: string) 
   );
 }
 
+const MOBILE_FOOTER_ZONES = [
+  ["footer_m_toprow_left", "Top row — left"],
+  ["footer_m_toprow_center", "Top row — center"],
+  ["footer_m_toprow_right", "Top row — right"],
+  ["footer_m_main_left", "Main — left"],
+  ["footer_m_main_center", "Main — center"],
+  ["footer_m_main_right", "Main — right"],
+  ["footer_m_bottomrow_left", "Bottom — left"],
+  ["footer_m_bottomrow_center", "Bottom — center"],
+  ["footer_m_bottomrow_right", "Bottom — right"],
+] as const;
+
+function MobileFooterEditor({ s, set }: { s: CustomizerSettings; set: SetFn }) {
+  const toggleItem = (zoneKey: string, itemId: string) => {
+    const current = parseZone(s[zoneKey as keyof CustomizerSettings] ?? "[]");
+    const next = current.includes(itemId)
+      ? current.filter((x) => x !== itemId)
+      : [...current, itemId];
+    set(zoneKey as keyof CustomizerSettings, JSON.stringify(next));
+  };
+
+  return (
+    <div>
+      <Switch
+        label="Use different footer on mobile"
+        value={s.footer_mobile_enabled}
+        defaultOn={false}
+        onChange={(v) => set("footer_mobile_enabled", v)}
+      />
+      {s.footer_mobile_enabled === "true" && (
+        <div className="mt-2 space-y-4">
+          <p className="text-[11px] text-slate-400">
+            Pick which items appear in each mobile footer zone. Empty zones fall back to the desktop layout.
+          </p>
+          {MOBILE_FOOTER_ZONES.map(([key, label]) => {
+            const selected = parseZone(s[key as keyof CustomizerSettings] ?? "[]");
+            return (
+              <div key={key} className="rounded-lg border border-slate-200 p-3">
+                <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500 mb-2">{label}</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {FOOTER_ITEMS.map((item) => {
+                    const on = selected.includes(item.id);
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => toggleItem(key, item.id)}
+                        className={cn(
+                          "px-2.5 py-1 rounded-full text-xs font-medium border transition-colors",
+                          on
+                            ? "bg-brand-600 text-white border-brand-600"
+                            : "bg-white text-slate-600 border-slate-200 hover:border-brand-300"
+                        )}
+                      >
+                        {item.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function FooterPanel({
   s, set, drag, setDrag, onFocusItem,
 }: {
@@ -98,6 +165,7 @@ export function FooterPanel({
   onFocusItem: (id: string | null) => void;
 }) {
   const [tab, setTab] = useState<"general" | "design">("general");
+  const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
 
 
 
@@ -127,7 +195,26 @@ export function FooterPanel({
         ))}
       </div>
 
+      {/* Device toggle for the footer builder. */}
+      <div className="flex gap-1 rounded-lg bg-slate-100 p-1 mb-4">
+        {(["desktop", "mobile"] as const).map((d) => (
+          <button
+            key={d}
+            onClick={() => setDevice(d)}
+            className={cn(
+              "flex-1 py-1.5 text-[11px] font-semibold uppercase tracking-wide rounded-md transition-colors",
+              device === d ? "bg-white text-slate-800 shadow-sm" : "text-slate-400 hover:text-slate-600"
+            )}
+          >
+            {d}
+          </button>
+        ))}
+      </div>
+
       {tab === "general" ? (
+        device === "mobile" ? (
+          <MobileFooterEditor s={s} set={set} />
+        ) : (
         <>
           {/* Every placed footer item opens its own settings screen. */}
           {FOOTER_ITEMS.filter((i) => placed.has(i.id)).map((item) => (
@@ -183,6 +270,7 @@ export function FooterPanel({
             )}
           </div>
         </>
+        )
       ) : (
         <>
           <Row label="Background"><Color value={s.footer_bg_color} onChange={(v) => set("footer_bg_color", v)} /></Row>

@@ -1098,6 +1098,48 @@ async function renderSiteLayout({ children, hideHeader, hideFooter, transparentH
           </footer>
         )}
 
+        {/* Mobile footer — separate layout for small screens, opt-in via Footer → Mobile layout. */}
+        {!hideFooter && settings.footer_mobile_enabled === "true" && (
+          <footer
+            className="footer-mobile"
+            style={{ backgroundColor: "var(--footer-bg)", color: "var(--footer-text)" }}
+          >
+            {(["toprow", "main", "bottomrow"] as const).map((row) => {
+              const mCols = (["left", "center", "right"] as const).map((col) => {
+                const key = `footer_m_${row}_${col}`;
+                return parseZone(settings[key] ?? "[]");
+              });
+              if (mCols.every((c) => c.length === 0) && !customizerMode) return null;
+              const isBottom = row === "bottomrow";
+              return (
+                <div key={row} data-bms-row={`ftr:m:${row}`}>
+                  <div
+                    className={`max-w-6xl mx-auto px-4 ${isBottom ? "py-5 text-xs" : "py-8"} flex flex-col gap-6 ${isBottom ? "items-center" : ""}`}
+                  >
+                    {mCols.map((items, ci) => (!customizerMode && items.length === 0 ? null : (
+                      <div key={ci} className={`min-w-0 flex ${isBottom ? "flex-row items-center gap-6" : "flex-col gap-4"}`}>
+                        {(customizerMode ? FOOTER_ITEM_IDS : items).map((id) =>
+                          customizerMode ? (
+                            <span
+                              key={id}
+                              data-bms-slot={`ftr:m:${row}:${["left", "center", "right"][ci]}:${id}`}
+                              style={{ display: "none" }}
+                            >
+                              <FooterItem id={id} settings={settings} nav={nav as NavItem[]} language={docLanguage} logoSize={logoSize} customizerMode />
+                            </span>
+                          ) : (
+                            <FooterItem key={id} id={id} settings={settings} nav={nav as NavItem[]} language={docLanguage} logoSize={logoSize} />
+                          )
+                        )}
+                      </div>
+                    )))}
+                  </div>
+                </div>
+              );
+            })}
+          </footer>
+        )}
+
         <ElementSlot hook="after_footer" pageType={pageType} language={langOverride || docLanguage} contentLanguage={docLanguage} direction={direction} path={currentPath} />
 
         {/* Ad blocks with the "After footer" position. Skipped in the customizer
