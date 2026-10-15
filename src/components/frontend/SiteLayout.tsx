@@ -44,6 +44,8 @@ function adPageKind(pageType: string): string | null {
     case "post": return "posts";
     case "page": return "static";
     case "category": return "category";
+    case "tag":
+    case "author": return "archive";
     case "search": return "search";
     default: return null;
   }
