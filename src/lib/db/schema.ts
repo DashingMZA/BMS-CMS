@@ -527,6 +527,7 @@ export const media = pgTable("media", {
   blur: text("blur"),
   alt: text("alt"),
   caption: text("caption"),
+  title: text("title"),
   uploadedById: text("uploaded_by_id").references(() => users.id, { onDelete: "set null" }),
   folderId: integer("folder_id").references(() => mediaFolders.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),

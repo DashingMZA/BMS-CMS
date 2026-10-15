@@ -9,6 +9,7 @@ import { maxPxFrom, optimizeUpload } from "@/lib/optimizeUpload";
 import { getSiteSettings } from "@/lib/settings";
 import { sanitizeSvg } from "@/lib/sanitizeSvg";
 import { imageSize } from "@/lib/imageSize";
+import { deleteMediaRow } from "@/lib/mediaDelete";
 
 /**
  * What the media library will store.
@@ -114,7 +115,7 @@ export async function GET(req: NextRequest) {
     // The shape is unchanged — `media` is still an array — so older callers keep
     // working and simply get the first page.
     const { searchParams } = new URL(req.url);
-    const limit = Math.min(Math.max(parseInt(searchParams.get("limit") ?? "") || 60, 1), 200);
+    const limit = Math.min(Math.max(parseInt(searchParams.get("limit") ?? "") || 50, 1), 200);
     const page = Math.max(parseInt(searchParams.get("page") ?? "") || 1, 1);
     const offset = (page - 1) * limit;
     // Folder filter: a number = that folder, "root" = unfiled files, absent = all.
@@ -277,5 +278,57 @@ export async function POST(req: NextRequest) {
       : code === "ENOSPC" ? "The host has run out of disk space."
       : "The upload could not be stored. Check the server log for the reason.";
     return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+/**
+ * Bulk delete: { ids: number[], force?: boolean }.
+ *
+ * Each id goes through the same checks as the single delete — permission,
+ * in-use warning (unless force) — and the report lists what happened per
+ * file so a partial failure doesn't silently drop the rest.
+ */
+export async function DELETE(req: NextRequest) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const body = (await req.json().catch(() => ({}))) as { ids?: unknown[]; force?: boolean };
+    const ids: number[] = Array.isArray(body.ids)
+      ? [...new Set(body.ids.map((v: unknown) => parseInt(String(v), 10)).filter((n) => Number.isFinite(n)))]
+      : [];
+    if (ids.length === 0) return NextResponse.json({ error: "No files selected." }, { status: 400 });
+    if (ids.length > 200) return NextResponse.json({ error: "Delete at most 200 files at once." }, { status: 400 });
+
+    const force = body.force === true;
+    const deleted: number[] = [];
+    const blocked: { id: number; uses: string[] }[] = [];
+    const failed: { id: number; error: string }[] = [];
+
+    for (const id of ids) {
+      const existing = await db.query.media.findFirst({
+        where: eq(media.id, id),
+        columns: { uploadedById: true },
+      });
+      if (!existing) {
+        failed.push({ id, error: "Not found" });
+        continue;
+      }
+      // Authors may only delete their own uploads; editors/admins anything.
+      const role = (session.user as { role?: string })?.role;
+      const own = existing.uploadedById === session.user.id;
+      if (!own && role !== "admin" && role !== "editor") {
+        failed.push({ id, error: "Not allowed" });
+        continue;
+      }
+      const result = await deleteMediaRow(id, { force });
+      if (result.ok) deleted.push(id);
+      else if (result.inUse) blocked.push({ id, uses: result.inUse });
+      else failed.push({ id, error: result.error });
+    }
+
+    return NextResponse.json({ deleted, blocked, failed });
+  } catch {
+    return NextResponse.json({ error: "Bulk delete failed." }, { status: 500 });
   }
 }

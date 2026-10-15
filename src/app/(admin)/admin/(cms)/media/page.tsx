@@ -6,7 +6,7 @@ import MediaLibraryClient, { type MediaItem } from "./MediaLibraryClient";
 // Same page size as GET /api/media's default — the client asks for that
 // route's own default when it loads page 2+, so the two must agree or the
 // list would skip or repeat rows at the page boundary.
-const PAGE_SIZE = 60;
+const PAGE_SIZE = 50;
 
 /**
  * Server-rendered first page, so opening the Media Library shows files
@@ -28,6 +28,7 @@ export default async function MediaPage() {
     size: r.size,
     alt: r.alt,
     caption: r.caption,
+    title: r.title,
     createdAt: r.createdAt.toISOString(),
     folderId: r.folderId,
   }));
@@ -37,7 +38,6 @@ export default async function MediaPage() {
     <MediaLibraryClient
       initialItems={items}
       initialTotal={total}
-      initialHasMore={items.length < total}
     />
   );
 }

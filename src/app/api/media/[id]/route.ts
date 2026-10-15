@@ -1,9 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { rawQuery } from "@/lib/db/raw";
-import { purgeCloudflarePaths } from "@/lib/revalidateSite";
-import { WIDTHS as IMAGE_WIDTHS, QUALITIES as IMAGE_QUALITIES } from "@/lib/logoSrc";
-import { readdir, unlink } from "node:fs/promises";
-import path from "node:path";
 import { db } from "@/lib/db";
 import { media, mediaFolders } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
@@ -11,7 +6,7 @@ import { auth } from "@/lib/auth";
 import type { Session } from "next-auth";
 import { numericId } from "@/lib/routeParams";
 import { isAuthor, sessionUser, FORBIDDEN } from "@/lib/authz";
-import { isLocalUpload } from "@/lib/exportMedia";
+import { deleteMediaRow } from "@/lib/mediaDelete";
 
 /**
  * Whether this session may change or remove this upload.
@@ -52,6 +47,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const [item] = await db.update(media).set({
       alt: text(body.alt, 300),
       caption: text(body.caption, 1000),
+      title: text(body.title, 300),
       // Moving between folders: null = root, a number = that folder.
       // Validated against existing folders so a typo can't orphan a file.
       ...(body.folderId !== undefined
@@ -85,38 +81,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
  * to remove the file leaves the library honest rather than pointing at
  * nothing; a file that is already gone is not an error.
  */
-/**
- * Where an upload is still used, in words — "2 posts, the site settings".
- *
- * Deleting an image that a post or the logo still shows left a broken image
- * on the live site with no warning. The content columns are JSON, searched as
- * text for the file's URL, which catches it in any block, column or prop.
- */
-async function usesOf(url: string): Promise<string[]> {
-  const like = `%${url.replace(/[\\%_]/g, (c) => "\\" + c)}%`;
-  const count = async (sql: string) => {
-    try {
-      const rows = await rawQuery<{ n: number }>(sql, [like]);
-      return Number(rows[0]?.n ?? 0);
-    } catch {
-      return 0;
-    }
-  };
-  const [postsN, pagesN, elementsN, usersN, settingsN] = await Promise.all([
-    count("SELECT count(*)::int AS n FROM posts WHERE deleted_at IS NULL AND (content::text LIKE $1 OR featured_image LIKE $1 OR og_image LIKE $1)"),
-    count("SELECT count(*)::int AS n FROM pages WHERE deleted_at IS NULL AND (content::text LIKE $1 OR featured_image LIKE $1 OR og_image LIKE $1)"),
-    count("SELECT count(*)::int AS n FROM elements WHERE content::text LIKE $1"),
-    count("SELECT count(*)::int AS n FROM users WHERE content::text LIKE $1 OR image LIKE $1"),
-    count("SELECT count(*)::int AS n FROM site_settings WHERE value LIKE $1"),
-  ]);
-  const out: string[] = [];
-  if (postsN) out.push(`${postsN} post${postsN === 1 ? "" : "s"}`);
-  if (pagesN) out.push(`${pagesN} page${pagesN === 1 ? "" : "s"}`);
-  if (elementsN) out.push(`${elementsN} element${elementsN === 1 ? "" : "s"}`);
-  if (usersN) out.push(`${usersN} author profile${usersN === 1 ? "" : "s"}`);
-  if (settingsN) out.push("the site settings (logo, icon or a default image)");
-  return out;
-}
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -128,55 +92,21 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     if (numId === null) return NextResponse.json({ error: "Not found" }, { status: 404 });
     const existing = await db.query.media.findFirst({
       where: eq(media.id, numId),
-      columns: { url: true, filename: true, uploadedById: true },
+      columns: { uploadedById: true },
     });
     if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
     if (!mayTouch(session, existing.uploadedById)) return NextResponse.json(FORBIDDEN, { status: 403 });
 
-    if (req.nextUrl.searchParams.get("force") !== "1") {
-      const uses = await usesOf(existing.url);
-      if (uses.length > 0) {
+    const force = req.nextUrl.searchParams.get("force") === "1";
+    const result = await deleteMediaRow(numId, { force });
+    if (!result.ok) {
+      if (result.inUse) {
         return NextResponse.json(
-          { error: `This file is still used in ${uses.join(", ")}. Deleting it leaves a broken image there.`, uses, code: "in_use" },
+          { error: `This file is still used in ${result.inUse.join(", ")}. Deleting it leaves a broken image there.`, uses: result.inUse, code: "in_use" },
           { status: 409 }
         );
       }
-    }
-
-    if (isLocalUpload(existing.url)) {
-      // `basename` keeps this inside the uploads directory whatever the row says.
-      const file = path.join(process.cwd(), "public", "uploads", path.basename(existing.url));
-      await unlink(file).catch((err: NodeJS.ErrnoException) => {
-        if (err.code !== "ENOENT") throw err;
-      });
-      // Everything else made from it. The resized copies in /uploads/_sized/
-      // stayed public after a delete, and the untouched original — GPS and
-      // all — stayed in uploads-originals/ (see api/speed/media).
-      const name = path.basename(existing.url);
-      const stem = name.replace(/\.[^.]+$/, "");
-      await unlink(path.join(process.cwd(), "uploads-originals", name)).catch(() => undefined);
-      const sizedDir = path.join(process.cwd(), "public", "uploads", "_sized");
-      const sized = await readdir(sizedDir).catch(() => [] as string[]);
-      for (const f of sized) {
-        // Exactly `<stem>-<width>w.webp`: a prefix test also matched
-        // `photo-2-120w.webp` when `photo.webp` was deleted.
-        if (f.startsWith(`${stem}-`) && /^\d+w\.webp$/.test(f.slice(stem.length + 1))) await unlink(path.join(sizedDir, f)).catch(() => undefined);
-      }
-    } else if (process.env.BLOB_READ_WRITE_TOKEN && /^https?:\/\//.test(existing.url)) {
-      const { del } = await import("@vercel/blob");
-      await del(existing.url).catch(() => undefined);
-    }
-
-    await db.delete(media).where(eq(media.id, numId));
-    // Cloudflare keeps an image for up to a year (Speed → Browser cache). The
-    // file and every optimised variant are dropped by URL: the variants are
-    // `/_next/image?url=…&w=…&q=…` over the widths and qualities in
-    // next.config.mjs, a list this can write out. Emptying the whole zone
-    // instead threw out every other image on the site too.
-    if (existing.url.startsWith("/")) {
-      const enc = encodeURIComponent(existing.url);
-      const variants = IMAGE_WIDTHS.flatMap((w) => IMAGE_QUALITIES.map((q) => `/_next/image?url=${enc}&w=${w}&q=${q}`));
-      purgeCloudflarePaths([existing.url, ...variants]);
+      return NextResponse.json({ error: result.error }, { status: result.error === "Not found" ? 404 : 500 });
     }
     return NextResponse.json({ success: true });
   } catch {

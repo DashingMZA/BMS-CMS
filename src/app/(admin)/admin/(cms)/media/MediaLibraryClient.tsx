@@ -14,6 +14,7 @@ export interface MediaItem {
   size: number;
   alt: string | null;
   caption: string | null;
+  title: string | null;
   createdAt: string;
   folderId: number | null;
 }
@@ -29,11 +30,9 @@ type FolderFilter = number | "root" | "all";
 export default function MediaLibraryClient({
   initialItems,
   initialTotal,
-  initialHasMore,
 }: {
   initialItems: MediaItem[];
   initialTotal: number;
-  initialHasMore: boolean;
 }) {
   const [items, setItems] = useState<MediaItem[]>(initialItems);
   const [uploading, setUploading] = useState(false);
@@ -41,9 +40,18 @@ export default function MediaLibraryClient({
   const [copied, setCopied] = useState(false);
   const [total, setTotal] = useState(initialTotal);
   const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(initialHasMore);
-  const [loadingMore, setLoadingMore] = useState(false);
+  const [loadingPage, setLoadingPage] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  // Bulk actions
+  const [checked, setChecked] = useState<Set<number>>(new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
+  // Folder delete choice dialog
+  const [deletingFolder, setDeletingFolder] = useState<MediaFolder | null>(null);
+  // Detail panel editing
+  const [editTitle, setEditTitle] = useState("");
+  const [editAlt, setEditAlt] = useState("");
+  const [editCaption, setEditCaption] = useState("");
+  const [savingMeta, setSavingMeta] = useState(false);
 
   // Folders
   const [folders, setFolders] = useState<MediaFolder[]>([]);
@@ -51,7 +59,6 @@ export default function MediaLibraryClient({
   const [showNewFolder, setShowNewFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const [renaming, setRenaming] = useState<MediaFolder | null>(null);
-  const [checked, setChecked] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     fetch("/api/media/folders")
@@ -62,16 +69,17 @@ export default function MediaLibraryClient({
 
   const folderParam = activeFolder === "all" ? "" : `&folderId=${activeFolder}`;
 
-  async function fetchMedia(nextPage = 1, append = false) {
-    if (append) setLoadingMore(true);
+  async function fetchMedia(nextPage = 1) {
+    setLoadingPage(true);
     const res = await fetch(`/api/media?page=${nextPage}${folderParam}`);
     const data = await res.json();
-    setItems((prev) => (append ? [...prev, ...(data.media ?? [])] : data.media ?? []));
+    setItems(data.media ?? []);
     setTotal(data.total ?? (data.media ?? []).length);
-    setHasMore(!!data.hasMore);
     setPage(nextPage);
-    setLoadingMore(false);
+    setLoadingPage(false);
   }
+
+  const totalPages = Math.max(1, Math.ceil(total / 50));
 
   // Refetch when the folder filter changes.
   useEffect(() => {
@@ -158,12 +166,12 @@ export default function MediaLibraryClient({
     }
   }
 
-  async function deleteFolder(id: number, name: string) {
-    if (!confirm(`Delete the folder "${name}"? Its files move back to the main library.`)) return;
-    const res = await fetch(`/api/media/folders/${id}`, { method: "DELETE" });
+  async function deleteFolder(id: number, mode: "move" | "delete") {
+    const res = await fetch(`/api/media/folders/${id}?mode=${mode}`, { method: "DELETE" });
     if (res.ok) {
       setFolders((f) => f.filter((x) => x.id !== id));
       if (activeFolder === id) setActiveFolder("all");
+      setDeletingFolder(null);
       fetchMedia();
     } else {
       window.alert("Could not delete the folder.");
@@ -187,6 +195,74 @@ export default function MediaLibraryClient({
     if (failed) window.alert(`${failed} of ${ids.length} could not be moved.`);
     fetchMedia();
   }
+
+  /** Delete all checked files, with the in-use guard per file. */
+  async function bulkDelete() {
+    const ids = [...checked];
+    if (!ids.length) return;
+    if (!confirm(`Delete ${ids.length} selected file${ids.length === 1 ? "" : "s"}?`)) return;
+    setBulkBusy(true);
+    const res = await fetch("/api/media", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids }),
+    }).catch(() => null);
+    setBulkBusy(false);
+    if (!res?.ok) {
+      window.alert("Bulk delete failed.");
+      return;
+    }
+    const data = await res.json();
+    const blocked = data.blocked ?? [];
+    const failed = data.failed ?? [];
+    if (blocked.length > 0) {
+      const names = blocked.map((b: { id: number; uses: string[] }) => {
+        const item = items.find((i) => i.id === b.id);
+        return `• ${item?.originalName ?? b.id} (${b.uses.join(", ")})`;
+      });
+      if (confirm(`${blocked.length} file(s) are still in use:\n${names.join("\n")}\n\nDelete them anyway?`)) {
+        const res2 = await fetch("/api/media", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ids: blocked.map((b: { id: number }) => b.id), force: true }),
+        }).catch(() => null);
+        if (!res2?.ok) window.alert("Some files could not be force-deleted.");
+      }
+    }
+    if (failed.length > 0) window.alert(`${failed.length} file(s) could not be deleted.`);
+    setChecked(new Set());
+    if (selected && ids.includes(selected.id)) setSelected(null);
+    fetchMedia();
+  }
+
+  /** Save title/alt/caption for the selected file. */
+  async function saveMeta() {
+    if (!selected) return;
+    setSavingMeta(true);
+    const res = await fetch(`/api/media/${selected.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: editTitle, alt: editAlt, caption: editCaption }),
+    }).catch(() => null);
+    setSavingMeta(false);
+    if (res?.ok) {
+      const data = await res.json();
+      const updated = data.media;
+      setItems((prev) => prev.map((i) => (i.id === selected.id ? { ...i, title: updated.title, alt: updated.alt, caption: updated.caption } : i)));
+      setSelected((s) => (s ? { ...s, title: updated.title, alt: updated.alt, caption: updated.caption } : s));
+    } else {
+      window.alert("Could not save.");
+    }
+  }
+
+  // Load the selected file's meta into the edit fields — set at selection
+  // time, not in an effect, so there's no cascading render.
+  const selectItem = (item: MediaItem | null) => {
+    setSelected(item);
+    setEditTitle(item?.title ?? "");
+    setEditAlt(item?.alt ?? "");
+    setEditCaption(item?.caption ?? "");
+  };
 
   const toggleCheck = (id: number) =>
     setChecked((s) => {
@@ -215,7 +291,6 @@ export default function MediaLibraryClient({
             <p className="text-sm text-slate-500">
               {total} {total === 1 ? "file" : "files"}
               {activeFolder !== "all" && <> in {activeFolderName}</>}
-              {items.length < total && <span className="text-slate-400"> · showing {items.length}</span>}
             </p>
           </div>
           <div>
@@ -306,7 +381,7 @@ export default function MediaLibraryClient({
                     </button>
                     <button
                       type="button"
-                      onClick={() => deleteFolder(f.id, f.name)}
+                      onClick={() => setDeletingFolder(f)}
                       className="p-1 text-slate-400 hover:text-red-600"
                       title="Delete folder"
                     >
@@ -318,7 +393,17 @@ export default function MediaLibraryClient({
             </div>
             {checked.size > 0 && (
               <div className="mt-4 pt-3 border-t border-slate-100">
-                <p className="text-xs text-slate-500 mb-2">{checked.size} selected — move to:</p>
+                <p className="text-xs text-slate-500 mb-2">{checked.size} selected</p>
+                <button
+                  type="button"
+                  onClick={bulkDelete}
+                  disabled={bulkBusy}
+                  className="w-full mb-2 text-left text-xs px-2 py-1.5 rounded bg-red-50 text-red-700 hover:bg-red-100 font-medium disabled:opacity-50"
+                >
+                  <Trash2 size={12} className="inline mr-1" />
+                  {bulkBusy ? "Deleting…" : "Delete selected"}
+                </button>
+                <p className="text-xs text-slate-500 mb-1">Move to:</p>
                 <div className="space-y-0.5 max-h-40 overflow-y-auto">
                   <button
                     type="button"
@@ -363,7 +448,7 @@ export default function MediaLibraryClient({
                       className="absolute top-2 left-2 z-10 w-4 h-4 rounded"
                     />
                     <button
-                      onClick={() => setSelected(item)}
+                      onClick={() => selectItem(item)}
                       className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all w-full ${
                         selected?.id === item.id
                           ? "border-brand-500 ring-2 ring-brand-200"
@@ -391,18 +476,30 @@ export default function MediaLibraryClient({
                 ))}
               </div>
             )}
-            {hasMore && (
-              <div className="mt-4 text-center">
+            {totalPages > 1 && (
+              <div className="mt-4 flex items-center justify-center gap-2">
                 <button
                   type="button"
-                  onClick={() => fetchMedia(page + 1, true)}
-                  disabled={loadingMore}
-                  className="btn-secondary"
+                  onClick={() => fetchMedia(page - 1)}
+                  disabled={page <= 1 || loadingPage}
+                  className="btn-secondary text-xs disabled:opacity-50"
                 >
-                  {loadingMore ? "Loading…" : `Load more (${total - items.length} left)`}
+                  ← Prev
+                </button>
+                <span className="text-xs text-slate-500">
+                  Page {page} of {totalPages} ({total} files)
+                </span>
+                <button
+                  type="button"
+                  onClick={() => fetchMedia(page + 1)}
+                  disabled={page >= totalPages || loadingPage}
+                  className="btn-secondary text-xs disabled:opacity-50"
+                >
+                  Next →
                 </button>
               </div>
             )}
+            {loadingPage && <p className="mt-2 text-center text-xs text-slate-400">Loading…</p>}
           </div>
 
           {/* Detail panel */}
@@ -426,6 +523,44 @@ export default function MediaLibraryClient({
               <div>
                 <p className="font-medium text-slate-900 text-sm truncate">{selected.originalName}</p>
                 <p className="text-xs text-slate-400 mt-0.5">{formatBytes(selected.size)} · {selected.mimeType}</p>
+              </div>
+
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs font-medium text-slate-600 block mb-1">Title</label>
+                  <input
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    placeholder="Image title"
+                    className="w-full text-sm border border-slate-300 rounded-lg px-3 py-1.5"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-slate-600 block mb-1">Alt text</label>
+                  <input
+                    value={editAlt}
+                    onChange={(e) => setEditAlt(e.target.value)}
+                    placeholder="Describe the image for screen readers & SEO"
+                    className="w-full text-sm border border-slate-300 rounded-lg px-3 py-1.5"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-slate-600 block mb-1">Caption</label>
+                  <textarea
+                    value={editCaption}
+                    onChange={(e) => setEditCaption(e.target.value)}
+                    placeholder="Shown under the image"
+                    rows={2}
+                    className="w-full text-sm border border-slate-300 rounded-lg px-3 py-1.5"
+                  />
+                </div>
+                <button
+                  onClick={saveMeta}
+                  disabled={savingMeta}
+                  className="btn-primary text-xs w-full disabled:opacity-50"
+                >
+                  {savingMeta ? "Saving…" : "Save details"}
+                </button>
               </div>
 
               <div className="flex gap-2">
@@ -470,6 +605,43 @@ export default function MediaLibraryClient({
               </button>
               <button type="button" onClick={renameFolder} className="btn-primary text-sm">
                 Rename
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete folder — ask what to do with its files */}
+      {deletingFolder && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl p-5 w-full max-w-sm">
+            <h3 className="font-semibold text-slate-900 mb-2">Delete folder &ldquo;{deletingFolder.name}&rdquo;?</h3>
+            <p className="text-sm text-slate-500 mb-4">What should happen to the files inside it?</p>
+            <div className="space-y-2 mb-4">
+              <button
+                type="button"
+                onClick={() => deleteFolder(deletingFolder.id, "move")}
+                className="w-full text-left text-sm px-3 py-2.5 rounded-lg border border-slate-200 hover:border-brand-300 hover:bg-brand-50"
+              >
+                <span className="font-medium text-slate-800 block">Move files to Unfiled</span>
+                <span className="text-xs text-slate-500">Keep the files, just remove the folder.</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm(`Delete "${deletingFolder.name}" and ALL files inside it? This cannot be undone.`)) {
+                    deleteFolder(deletingFolder.id, "delete");
+                  }
+                }}
+                className="w-full text-left text-sm px-3 py-2.5 rounded-lg border border-red-200 hover:border-red-400 hover:bg-red-50"
+              >
+                <span className="font-medium text-red-700 block">Delete files too</span>
+                <span className="text-xs text-slate-500">Permanently delete the folder and everything in it.</span>
+              </button>
+            </div>
+            <div className="flex justify-end">
+              <button type="button" onClick={() => setDeletingFolder(null)} className="btn-secondary text-sm">
+                Cancel
               </button>
             </div>
           </div>

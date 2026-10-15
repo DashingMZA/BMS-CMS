@@ -3,11 +3,13 @@ import { db } from "@/lib/db";
 import { media, mediaFolders } from "@/lib/db/schema";
 import { auth } from "@/lib/auth";
 import { eq } from "drizzle-orm";
+import { deleteMediaRow } from "@/lib/mediaDelete";
 
 /**
  * Rename/move (PATCH) or delete (DELETE) a media folder.
- * Deleting never deletes files: contained files move to the deleted folder's
- * parent (or root), and child folders become top-level.
+ * Deleting moves contained files to the deleted folder's parent (or root)
+ * unless ?mode=delete, which deletes the files too. Child folders always
+ * become top-level.
  */
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -67,7 +69,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await auth();
     if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -79,8 +81,18 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     const folder = await db.query.mediaFolders.findFirst({ where: eq(mediaFolders.id, folderId) });
     if (!folder) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-    // Files move to the deleted folder's parent (or root) — never deleted.
-    await db.update(media).set({ folderId: folder.parentId }).where(eq(media.folderId, folderId));
+    // ?mode=delete also deletes the folder's files; default moves them to the
+    // deleted folder's parent (or root) so nothing is lost by accident.
+    const mode = req.nextUrl.searchParams.get("mode");
+    if (mode === "delete") {
+      const rows = await db.query.media.findMany({
+        where: eq(media.folderId, folderId),
+        columns: { id: true },
+      });
+      for (const r of rows) await deleteMediaRow(r.id, { force: true });
+    } else {
+      await db.update(media).set({ folderId: folder.parentId }).where(eq(media.folderId, folderId));
+    }
     // Child folders become top-level.
     await db.update(mediaFolders).set({ parentId: null }).where(eq(mediaFolders.parentId, folderId));
     await db.delete(mediaFolders).where(eq(mediaFolders.id, folderId));
