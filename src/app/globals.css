@@ -93,6 +93,14 @@
 .bms-ad-left { text-align: left; }
 .bms-ad-center { text-align: center; }
 .bms-ad-right { text-align: right; }
+/* Tailwind's preflight makes img/video/iframe block-level, so text-align
+   alone cannot centre them — auto margins do. */
+.bms-ad-center img, .bms-ad-center video, .bms-ad-center iframe,
+.bms-ad-center ins, .bms-ad-center > div { margin-left: auto; margin-right: auto; }
+.bms-ad-left img, .bms-ad-left video, .bms-ad-left iframe,
+.bms-ad-left ins, .bms-ad-left > div { margin-left: 0; margin-right: auto; }
+.bms-ad-right img, .bms-ad-right video, .bms-ad-right iframe,
+.bms-ad-right ins, .bms-ad-right > div { margin-left: auto; margin-right: 0; }
 .bms-ad-float-left { float: left; margin: 0 1.5rem 1rem 0; max-width: 50%; }
 .bms-ad-float-right { float: right; margin: 0 0 1rem 1.5rem; max-width: 50%; }
 .bms-ad-no-wrap { overflow: hidden; }
