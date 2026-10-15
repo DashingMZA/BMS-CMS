@@ -932,11 +932,11 @@ export function contentCss(s: Record<string, string>): string {
   out.push(`.content-shell[data-layout="left-sidebar"] .content-sidebar{display:block;order:0}`);
   out.push(`.content-shell[data-layout="right-sidebar"] .content-sidebar{display:block;order:2}`);
   out.push(`.content-article{order:1;min-width:0}`);
-  // Sidebar content must always be visible: widgets inherit the theme's text
-  // colour explicitly, so a dark-themed parent can't turn them white on a
-  // light sidebar. Links keep the text colour on hover (underline only),
-  // never a colour swap that could render them invisible.
-  out.push(`.content-sidebar{color:var(--color-text,#0f172a)}`);
+  // Sidebar content must always be visible: widgets get an explicit light
+  // background and dark text, independent of the page's site_bg (which may
+  // be dark on archives/pages). Links keep the text colour on hover
+  // (underline only), never a colour swap that could render them invisible.
+  out.push(`.content-sidebar{background:var(--color-bg,#ffffff);color:var(--color-text,#0f172a);border-radius:0.75rem;padding:1.25rem}`);
   out.push(`.content-sidebar a{color:inherit}`);
   out.push(`.content-sidebar a:hover{color:inherit}`);
   // The Speed "render offscreen" optimisation uses content-visibility:auto,
