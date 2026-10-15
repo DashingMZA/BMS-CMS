@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `fd65fa5` — Hero / title-band controls for posts and pages
+New `HeroBlock` component (`src/components/frontend/HeroBlock.tsx`) with two layouts: `banner` (full-width featured image above the title) and `overlay` (title on top of the image with a dark scrim). New settings per kind: `{post,page}_hero_layout` (none/banner/overlay), `{post,page}_hero_height` (small/medium/large), `{post,page}_hero_overlay` (0–90 scrim opacity), `{post,page}_hero_title_color`, `{post,page}_feature_position` (above-title/below-title when no hero). Wired into `[...path]/page.tsx` for both post and page branches — the hero replaces the separate title block + featured image (no duplicate `<h1>`). Customizer UI in SinglePostPanel + PageLayoutPanel. Hero title-color CSS via new `heroCss()` in siteCss.ts.
+
 ### 2026-10-15 — `c2bc10a` — SVG social icons
 New shared `SocialIcons` component with brand SVGs (Facebook, X, Instagram, LinkedIn, YouTube). Replaces text labels in header social item, footer social item, and sidebar social widget. currentColor fill inherits surrounding text color.
 Fixed: new "tag"/"author" page types fell through to null in adPageKind, so menu/footer ads targeting "Tag / Archive pages" never showed on tag/author archives.
