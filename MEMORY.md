@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `7323eb4` — P2/P3: scheduled ads, element device targeting, sidebar stack default
+Scheduled ads: `AdBlock` gains `startAt`/`endAt`; `isBlockLive` respects the window; admin has datetime-local inputs. Element device targeting: migration `0025_element_device.sql` adds `device` column; ElementSlot adds `bms-el-desktop`/`bms-el-mobile` classes with CSS hiding per breakpoint; editor has a Device card. P3: `sidebar_mobile_layout` default changed to "stack".
+
 ### 2026-10-15 — `09d2107` — WP media auto-pull + footer mobile builder
 Media auto-pull: new `downloadMedia` checkbox on WP import; `wpMediaPull.ts` downloads remote images to `public/uploads/`, updates media rows, and rewrites old URLs in post/page content. Footer mobile builder: 9 `footer_m_*` zone settings + `footer_mobile_enabled` toggle; FooterPanel has Desktop/Mobile device tabs with a chip-based zone editor; SiteLayout renders the mobile footer on ≤767px when enabled (CSS hides desktop footer there).
 
