@@ -1076,8 +1076,10 @@ export const customizerDefaults: CustomizerSettings = {
 
 export type FooterWidget = {
   title?: string;
-  type: "text" | "links" | "about";
+  type: "text" | "html" | "links" | "about";
   text?: string;
+  /** Raw HTML for the "html" type. Rendered as-is; admin-only configuration. */
+  html?: string;
   links?: FooterLink[];
 };
 

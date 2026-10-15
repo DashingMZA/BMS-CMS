@@ -188,7 +188,8 @@ function WidgetGeneral({ id, s, set }: { id: string; s: CustomizerSettings; set:
     <>
       <Field label="Widget Type">
         <select className={inputCls} value={w.type} onChange={(e) => patch({ type: e.target.value as FooterWidget["type"] })}>
-          <option value="text">Text / HTML</option>
+          <option value="text">Text</option>
+          <option value="html">Custom HTML</option>
           <option value="links">Link List</option>
           <option value="about">About + Logo</option>
         </select>
@@ -214,10 +215,11 @@ function WidgetGeneral({ id, s, set }: { id: string; s: CustomizerSettings; set:
           </div>
         </Field>
       ) : (
-        <Field label={w.type === "about" ? "About Text" : "Content"}
+        <Field label={w.type === "about" ? "About Text" : w.type === "html" ? "HTML" : "Content"}
           help={w.type === "about" ? "Shows your site logo above this text." : undefined}>
-          <textarea rows={4} className={cn(inputCls, w.type === "text" && "font-mono text-xs")}
-            value={w.text ?? ""} onChange={(e) => patch({ text: e.target.value })} />
+          <textarea rows={4} className={cn(inputCls, (w.type === "text" || w.type === "html") && "font-mono text-xs")}
+            value={w.type === "html" ? (w.html ?? "") : (w.text ?? "")}
+            onChange={(e) => patch(w.type === "html" ? { html: e.target.value } : { text: e.target.value })} />
         </Field>
       )}
     </>

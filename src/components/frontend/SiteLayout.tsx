@@ -184,7 +184,7 @@ function parseZone(val: string): string[] {
 }
 
 type FooterLink = { label: string; url: string };
-type FooterWidget = { title?: string; type: "text" | "links" | "about"; text?: string; links?: FooterLink[] };
+type FooterWidget = { title?: string; type: "text" | "html" | "links" | "about"; text?: string; html?: string; links?: FooterLink[] };
 
 function parseJson<T>(val: string, fallback: T): T {
   try { return JSON.parse(val || "null") ?? fallback; } catch { return fallback; }
@@ -304,6 +304,29 @@ function FooterItem({ id, settings, nav, language, logoSize, customizerMode }: {
             element must exist for the live preview to fill. */}
         {(w.text || customizerMode) && (
           <p className="text-sm leading-relaxed max-w-md" {...hook(customizerMode, { "data-bms-widget-text": id })} style={w.text ? undefined : { display: "none" }}>{w.text}</p>
+        )}
+      </div>
+    );
+  }
+
+  if (w.type === "text") {
+    return (
+      <div>
+        <h2 className="font-semibold mb-3" style={{ color: "var(--footer-heading)", ...(w.title ? {} : { display: "none" }) }} {...hook(customizerMode, { "data-bms-widget-title": id })}>{w.title}</h2>
+        {(w.text || customizerMode) && (
+          <p className="text-sm leading-relaxed max-w-md" {...hook(customizerMode, { "data-bms-widget-text": id })} style={w.text ? undefined : { display: "none" }}>{w.text}</p>
+        )}
+      </div>
+    );
+  }
+
+  if (w.type === "html") {
+    // Admin-configured HTML, like the sidebar HTML widget.
+    return (
+      <div>
+        <h2 className="font-semibold mb-3" style={{ color: "var(--footer-heading)", ...(w.title ? {} : { display: "none" }) }} {...hook(customizerMode, { "data-bms-widget-title": id })}>{w.title}</h2>
+        {(w.html || customizerMode) && (
+          <div className="text-sm leading-relaxed max-w-md" dangerouslySetInnerHTML={{ __html: w.html || "" }} />
         )}
       </div>
     );
