@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `348968b` — Ads: Sidebar 2 support for sidebar ad slots
+`AdBlock` gains `sidebarId` (1|2). Admin shows a Sidebar 1/2 selector for all sidebar positions; "After widget N" counts the selected sidebar's real widgets (s2widget1-6 for Sidebar 2). Frontend `AdSlot` accepts `sidebarId` and filters; `Sidebar.tsx` passes its own sidebar number so top/middle/bottom/custom ads only render in their target sidebar.
+
 ### 2026-10-15 — `a8a5979` — Media library: bulk delete, pagination, folder choice, title/alt/caption
 Bulk delete: new `DELETE /api/media` accepts `{ids, force}` with per-file in-use guard; selection bar has a red "Delete selected" button. Pagination: 50/page with Prev/Next (replaces load-more); API default limit 60→50. Folder delete: dialog asks "Move files to Unfiled" vs "Delete files too" (`?mode=delete`). Detail panel: editable Title (new `media.title` column, migration 0026), Alt text, Caption with Save. Shared `mediaDelete.ts`/`mediaUsage.ts` helpers; single delete refactored to use them.
 
