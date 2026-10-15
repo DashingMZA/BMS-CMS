@@ -656,8 +656,11 @@ export default async function BlogArchive({
               // pills, burying the posts. Tags arrive ordered by post count,
               // so the limit keeps the most useful ones.
               const limit = Math.max(1, parseInt(settings.archive_chips_limit || "30", 10) || 30);
-              const cats = (settings.archive_chips_source === "tags" ? [] : allCategories).slice(0, limit);
-              const tags = (settings.archive_chips_source === "categories" ? [] : allTags).slice(0, limit);
+              // Default to "categories" (not "both") when unset — matches the
+              // Customizer default. An undefined source was showing both.
+              const source = settings.archive_chips_source || "categories";
+              const cats = (source === "tags" ? [] : allCategories).slice(0, limit);
+              const tags = (source === "categories" ? [] : allTags).slice(0, limit);
               return (
                 <>
             {/* "All" only when a listing of everything exists to link to. */}
