@@ -939,6 +939,11 @@ export function contentCss(s: Record<string, string>): string {
   out.push(`.content-sidebar{color:var(--color-text,#0f172a)}`);
   out.push(`.content-sidebar a{color:inherit}`);
   out.push(`.content-sidebar a:hover{color:inherit}`);
+  // The Speed "render offscreen" optimisation uses content-visibility:auto,
+  // which can leave sidebar ads/images unpainted until interacted with
+  // (click-drag reveals them). The sidebar is above the fold by design —
+  // exempt it so its content always paints.
+  out.push(`.content-sidebar,.content-sidebar *{content-visibility:visible !important}`);
 
   // Device-specific sidebar behavior. "hide" removes the sidebar and collapses
   // the grid; "stack" keeps it visible below the content in a single column.
