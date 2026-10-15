@@ -30,7 +30,7 @@ import {
   X, ChevronRight, ChevronLeft, Monitor, Tablet, Smartphone, Eye, EyeOff,
   RefreshCw, Check, Palette, Layout, PanelBottom, Settings2, FileText,
   Search, BadgeInfo, Menu as MenuIcon, Home, Code2, Braces, Loader2, Gauge,
-  Undo2, Redo2,
+  Undo2, Redo2, Download, Upload,
 } from "lucide-react";
 
 type Device = "desktop" | "tablet" | "mobile";
@@ -273,6 +273,7 @@ export default function CustomizePage() {
   // Keys touched since the last publish that CSS alone can't preview.
   const [pendingStructural, setPendingStructural] = useState<Set<string>>(new Set());
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const importRef = useRef<HTMLInputElement | null>(null);
   // The keys this session actually changed. Publish sends only these: it used
   // to send the whole table as it was when the Customizer opened, so anything
   // saved elsewhere in the meantime (SEO, permalinks, the homepage choice,
@@ -406,6 +407,54 @@ export default function CustomizePage() {
     return () => window.removeEventListener("message", onClickEdit);
   }, []);
 
+  /** Download the current draft as a theme preset JSON file. */
+  function exportPreset() {
+    const preset = {
+      name: settings.site_name || "theme-preset",
+      exportedAt: new Date().toISOString(),
+      settings: settings as unknown as Record<string, string>,
+    };
+    const blob = new Blob([JSON.stringify(preset, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `theme-preset-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  /** Load a theme preset JSON file into the draft. Only known keys are applied. */
+  function importPreset(file: File) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(String(reader.result));
+        const incoming = parsed.settings ?? parsed;
+        if (!incoming || typeof incoming !== "object") throw new Error("bad file");
+        const known = new Set(Object.keys(customizerDefaults));
+        let applied = 0;
+        setSettings((p) => {
+          const next = { ...p };
+          for (const [k, v] of Object.entries(incoming as Record<string, unknown>)) {
+            if (known.has(k) && typeof v === "string") {
+              (next as unknown as Record<string, string>)[k] = v;
+              changedRef.current.add(k);
+              applied++;
+            }
+          }
+          return next;
+        });
+        setPast((h) => [...h.slice(-49), settings]);
+        setFuture([]);
+        setDirty(true);
+        window.alert(applied > 0 ? `Preset imported — ${applied} settings loaded. Publish to apply.` : "No settings found in this file.");
+      } catch {
+        window.alert("Could not read this preset file.");
+      }
+    };
+    reader.readAsText(file);
+  }
+
   async function publish() {
     setSaving(true);
     const sent = [...changedRef.current];
@@ -471,6 +520,31 @@ export default function CustomizePage() {
             className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent"
           >
             <Redo2 size={18} />
+          </button>
+          <input
+            ref={importRef}
+            type="file"
+            accept="application/json,.json"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) importPreset(f);
+              e.target.value = "";
+            }}
+          />
+          <button
+            onClick={exportPreset}
+            title="Download these settings as a preset file"
+            className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors"
+          >
+            <Download size={18} />
+          </button>
+          <button
+            onClick={() => importRef.current?.click()}
+            title="Load settings from a preset file"
+            className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors"
+          >
+            <Upload size={18} />
           </button>
           <button
             onClick={publish}
