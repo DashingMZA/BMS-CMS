@@ -168,7 +168,11 @@ async function renderContentShell({
   // previews through its own route, so nothing needs the hidden copy.
   const isSidebar = (v?: string | null) => v === "left-sidebar" || v === "right-sidebar";
   const siteLayout = kind === "page" ? settings.page_layout : kind === "post" ? settings.post_layout : settings.archive_layout;
-  const showSidebar = isSidebar(layout) || (layout === "default" && isSidebar(siteLayout));
+  // Archives (homepage, categories, tags) are blog listings: the "normal"
+  // default layout includes the right sidebar, like the post pages. Only an
+  // explicit full-width choice ("fullwidth", "narrow", "wide") hides it.
+  const archiveLayout = kind === "archive" && (siteLayout === "normal" || !siteLayout) ? "right-sidebar" : siteLayout;
+  const showSidebar = isSidebar(layout) || (layout === "default" && isSidebar(kind === "archive" ? archiveLayout : siteLayout));
 
   return (
     <SiteLayout

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import SiteLayout from "@/components/frontend/SiteLayout";
 import SearchResults from "@/components/frontend/SearchResults";
+import Sidebar from "@/components/frontend/Sidebar";
 import { searchPostsPage, SEARCH_RATE } from "@/lib/search";
 import { headers } from "next/headers";
 import { clientIp, rateLimited } from "@/lib/rateLimit";
@@ -84,18 +85,42 @@ export default async function SearchPage({
     ? { posts: [], total: 0, capped: false, totalPages: 0 }
     : await searchPostsPage(q, lang, page);
 
+  // The search page never had the main sidebar — only its own search box.
+  // It follows the Customizer's Results Layout like archives do: "normal"
+  // (the default) includes the right sidebar.
+  const searchLayout = settings.search_archive_layout || "normal";
+  const showSidebar =
+    searchLayout === "left-sidebar" ||
+    searchLayout === "right-sidebar" ||
+    searchLayout === "normal";
+  // Explicit data-layout so the site CSS grid applies (left/right ordering).
+  const dataLayout = searchLayout === "left-sidebar" ? "left-sidebar" : "right-sidebar";
+
   return (
     <SiteLayout pageType="search" currentPath={searchPath(lang, settings)} language={lang}>
-      <SearchResults
-        query={q}
-        posts={results.posts}
-        total={results.total}
-        capped={results.capped}
-        page={Math.min(page, Math.max(1, results.totalPages))}
-        totalPages={results.totalPages}
-        settings={settings}
-        language={lang}
-      />
+      <div className="content-shell-outer">
+        <div className="content-shell" data-kind="search" data-layout={showSidebar ? dataLayout : "fullwidth"}>
+          <div className="content-grid">
+            <div className="content-article">
+              <SearchResults
+                query={q}
+                posts={results.posts}
+                total={results.total}
+                capped={results.capped}
+                page={Math.min(page, Math.max(1, results.totalPages))}
+                totalPages={results.totalPages}
+                settings={settings}
+                language={lang}
+              />
+            </div>
+            {showSidebar && (
+              <aside className="content-sidebar">
+                <Sidebar settings={settings} language={lang} pageKind="search" />
+              </aside>
+            )}
+          </div>
+        </div>
+      </div>
     </SiteLayout>
   );
 }

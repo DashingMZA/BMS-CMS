@@ -104,3 +104,5 @@
 .bms-ad-float-left { float: left; margin: 0 1.5rem 1rem 0; max-width: 50%; }
 .bms-ad-float-right { float: right; margin: 0 0 1rem 1.5rem; max-width: 50%; }
 .bms-ad-no-wrap { overflow: hidden; }
+/* Ad images never overflow their slot, however wide the creative is. */
+.bms-adblock img { max-width: 100%; height: auto; }

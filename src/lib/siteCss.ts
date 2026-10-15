@@ -858,7 +858,9 @@ export function contentCss(s: Record<string, string>): string {
 
   // Sidebar presence follows whichever layout ends up applying.
   for (const kind of ["page", "post", "archive"] as const) {
-    const chosen = kind === "page" ? s.page_layout : kind === "post" ? s.post_layout : s.archive_layout;
+    const raw = kind === "page" ? s.page_layout : kind === "post" ? s.post_layout : s.archive_layout;
+    // Archives: "normal" (the default) includes the right sidebar, like posts.
+    const chosen = kind === "archive" && (raw === "normal" || !raw) ? "right-sidebar" : raw;
     const withSidebar = chosen === "left-sidebar" || chosen === "right-sidebar";
     out.push(`.content-shell[data-kind="${kind}"][data-layout="default"] .content-sidebar{display:${withSidebar ? "block" : "none"}}`);
     if (withSidebar) {
