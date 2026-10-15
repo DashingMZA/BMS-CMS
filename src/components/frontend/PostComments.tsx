@@ -65,8 +65,11 @@ function thread(rows: Row[]): { comment: Row; replies: Row[] }[] {
 
 /** `settings` is threaded in so a comment date reads like every other date on the site. */
 function Comment({ c, settings, language }: { c: Row; settings: Record<string, string>; language?: string }) {
+  // No <li> here: the caller wraps this in the list item (which carries the
+  // id), so rendering one here nests <li> inside <li> — invalid HTML that
+  // breaks hydration on every page with a comment.
   return (
-    <li id={`comment-${c.id}`} className="border-t border-black/10 pt-5">
+    <>
       <div className="flex items-baseline gap-2 text-sm">
         <span className="font-semibold">
           {safeHttpUrl(c.authorUrl) ? (
@@ -81,7 +84,7 @@ function Comment({ c, settings, language }: { c: Row; settings: Record<string, s
       </div>
       {/* Printed as text, never as HTML — this content came from the public. */}
       <p className="mt-1.5 whitespace-pre-wrap text-sm leading-relaxed opacity-90">{c.content}</p>
-    </li>
+    </>
   );
 }
 
@@ -179,13 +182,13 @@ async function renderComments({
           {items.map(({ comment, replies }, idx) => (
             // `<li>`, not `<div>`: a `<ul>` may only contain `<li>`, and the
             // markup was invalid on every page with a comment.
-            <li key={comment.id}>
+            <li key={comment.id} id={`comment-${comment.id}`} className="border-t border-black/10 pt-5">
               <Comment c={comment} settings={settings} language={language} />
               <ReplyBox postId={postId} pageId={pageId} replyTo={comment.id} labels={replyLabels} />
               {replies.length > 0 && (
                 <ul className="mt-5 space-y-5 ps-6">
                   {replies.map((r) => (
-                    <li key={r.id}>
+                    <li key={r.id} id={`comment-${r.id}`} className="border-t border-black/10 pt-5">
                       <Comment c={r} settings={settings} language={language} />
                       <ReplyBox postId={postId} pageId={pageId} replyTo={r.id} labels={replyLabels} />
                     </li>
