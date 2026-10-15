@@ -137,7 +137,13 @@ export function parseAdBlocks(raw: string | null | undefined): AdBlock[] {
       const pages = defaultPages();
       const rp = r.pages as Record<string, unknown> | undefined;
       if (rp && typeof rp === "object") {
-        for (const k of Object.keys(pages) as AdPageKind[]) pages[k] = !!rp[k];
+        // Only override keys the saved block actually has. A block saved
+        // before a page kind existed (or with a partial pages object) keeps
+        // the default `true` for the missing kinds instead of flipping them
+        // to false via `!!undefined`.
+        for (const k of Object.keys(pages) as AdPageKind[]) {
+          if (k in rp) pages[k] = !!rp[k];
+        }
       }
       return {
         id: typeof r.id === "string" && r.id ? r.id : `block-${i}`,
