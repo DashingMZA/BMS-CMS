@@ -3,13 +3,75 @@ import ColorInput from "@/components/admin/customizer/ColorInput";
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { ChevronRight, GripVertical, Monitor, Tablet, Smartphone } from "lucide-react";
+import { ChevronRight, GripVertical, Monitor, Tablet, Smartphone, Trash2 } from "lucide-react";
 import type { CustomizerSettings } from "@/lib/appearanceSettings";
 import { HEADER_ITEMS, parseZone, zoneKey, type DockDevice } from "./HeaderDock";
 import { COLS } from "@/lib/builderItems";
-import { Switch } from "./PanelKit";
+import { Switch, inputCls } from "./PanelKit";
+import { parseHeaderDockItems, type HeaderDockItem } from "@/components/frontend/MobileHeaderDock";
 
 type SetFn = (k: keyof CustomizerSettings, v: string) => void;
+
+const HEADER_DOCK_ICONS = ["home", "search", "menu", "phone", "mail", "user", "heart", "cart"] as const;
+
+function HeaderDockEditor({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const items = parseHeaderDockItems(value);
+  const patch = (i: number, changes: Partial<HeaderDockItem>) => {
+    const next = items.map((x, j) => (j === i ? { ...x, ...changes } : x));
+    onChange(JSON.stringify(next));
+  };
+  const remove = (i: number) => onChange(JSON.stringify(items.filter((_, j) => j !== i)));
+  const add = () => {
+    if (items.length >= 5) return;
+    onChange(JSON.stringify([...items, { icon: "home", label: "New", href: "/" }]));
+  };
+
+  return (
+    <div className="mt-2 space-y-2">
+      {items.map((item, i) => (
+        <div key={i} className="rounded-lg border border-slate-200 p-2.5 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Item {i + 1}</span>
+            <button onClick={() => remove(i)} className="text-slate-400 hover:text-red-600" title="Remove">
+              <Trash2 size={12} />
+            </button>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <select
+              className={inputCls}
+              value={item.icon}
+              onChange={(e) => patch(i, { icon: e.target.value })}
+            >
+              {HEADER_DOCK_ICONS.map((ic) => (
+                <option key={ic} value={ic}>{ic}</option>
+              ))}
+            </select>
+            <input
+              className={inputCls}
+              value={item.label}
+              placeholder="Label"
+              onChange={(e) => patch(i, { label: e.target.value })}
+            />
+          </div>
+          <input
+            className={inputCls}
+            value={item.href}
+            placeholder="Link URL"
+            onChange={(e) => patch(i, { href: e.target.value })}
+          />
+        </div>
+      ))}
+      {items.length < 5 && (
+        <button
+          onClick={add}
+          className="w-full rounded-lg border border-dashed border-slate-300 py-2 text-xs font-medium text-slate-500 hover:border-brand-400 hover:text-brand-600"
+        >
+          + Add item
+        </button>
+      )}
+    </div>
+  );
+}
 type Drag = { item: string; from: keyof CustomizerSettings | null };
 
 /* ── shared bits ──────────────────────────────────────────────────────────── */
@@ -196,6 +258,23 @@ export function HeaderPanel({
           <div className="h-px bg-slate-200 my-4" />
 
           <Switch label="Bottom border" value={s.header_border} onChange={(v) => set("header_border", v)} />
+
+          {/* Mobile dock — compact fixed top bar replacing the header on small screens. */}
+          <div className="mt-4 border-t border-slate-200 pt-4">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-2">Mobile dock</p>
+            <Switch
+              label="Show dock on mobile"
+              value={s.header_mobile_dock}
+              defaultOn={false}
+              onChange={(v) => set("header_mobile_dock", v)}
+            />
+            {s.header_mobile_dock === "true" && (
+              <HeaderDockEditor
+                value={s.header_dock_items}
+                onChange={(v) => set("header_dock_items", v)}
+              />
+            )}
+          </div>
         </>
       )}
     </div>

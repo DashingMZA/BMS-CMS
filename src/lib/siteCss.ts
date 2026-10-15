@@ -237,6 +237,10 @@ export function headerResponsiveCss(s: Record<string, string>): string {
     `@media (max-width:${bp}px){.hdr-desktop{display:none !important}}`,
     `@media (min-width:${bp + 1}px){.hdr-mobile{display:none !important}}`,
   ];
+  // Mobile header dock: when enabled it replaces the whole header below 768px.
+  if (s.header_mobile_dock === "true") {
+    parts.push(`@media(max-width:767px){header[data-hrow],.hdr-mobile,.hdr-desktop{display:none!important}body{padding-top:56px}}`);
+  }
   if (s.header_bg_color_tablet) {
     parts.push(`@media (max-width:1024px){:root{--header-bg:${s.header_bg_color_tablet}}}`);
   }

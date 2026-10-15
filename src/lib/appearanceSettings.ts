@@ -227,6 +227,10 @@ export interface AppearanceSettings {
   header_bg_color: string;
   header_text_color: string;
   header_border: string;
+  /** Show the mobile header dock (compact fixed top bar) on small screens: "true" | "false". */
+  header_mobile_dock: string;
+  /** JSON: { icon: string; label: string; href: string }[] — mobile header dock items. */
+  header_dock_items: string;
   // Footer
   footer_bg_color: string;
   footer_text_color: string;
@@ -749,6 +753,12 @@ export const defaults: AppearanceSettings = {
   header_bg_color: "#ffffff",
   header_text_color: "#0f172a",
   header_border: "true",
+  header_mobile_dock: "false",
+  header_dock_items: JSON.stringify([
+    { icon: "menu", label: "Menu", href: "#" },
+    { icon: "home", label: "Home", href: "/" },
+    { icon: "search", label: "Search", href: "/search" },
+  ]),
   footer_bg_color: "#0f172a",
   footer_text_color: "#94a3b8",
   footer_heading_color: "#ffffff",

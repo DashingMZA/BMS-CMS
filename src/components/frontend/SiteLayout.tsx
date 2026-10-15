@@ -14,6 +14,7 @@ import StickyHeader from "./StickyHeader";
 import ElementSlot from "./ElementSlot";
 import SocialIcons from "./SocialIcons";
 import MobileDock, { parseDockItems } from "./MobileDock";
+import MobileHeaderDock, { parseHeaderDockItems } from "./MobileHeaderDock";
 import { headers } from "next/headers";
 
 /**
@@ -1107,6 +1108,12 @@ async function renderSiteLayout({ children, hideHeader, hideFooter, transparentH
           const kind = adPageKind(pageType);
           return kind ? <AdBlocks position="after_footer" pageKind={kind} /> : null;
         })()}
+
+        {/* Mobile header dock — compact fixed top bar, opt-in via Header → Mobile dock.
+            Replaces the normal header on small screens when enabled. */}
+        {!customizerMode && settings.header_mobile_dock === "true" && (
+          <MobileHeaderDock items={parseHeaderDockItems(settings.header_dock_items)} />
+        )}
 
         {/* Mobile dock — fixed bottom bar, opt-in via Footer → Mobile dock. */}
         {!customizerMode && settings.footer_mobile_dock === "true" && (
