@@ -8,8 +8,10 @@
 
 import { cn } from "@/lib/utils";
 import { Trash2 } from "lucide-react";
+import { useState } from "react";
 import {
   SIDEBAR_WIDGET_IDS,
+  SIDEBAR2_WIDGET_IDS,
   SIDEBAR_WIDGET_TYPES,
   parseSidebarWidgets,
   type CustomizerSettings,
@@ -23,10 +25,17 @@ const inputCls =
 
 const HAS_COUNT = new Set(["recent", "categories", "tags", "archives", "comments"]);
 
-export function SidebarPanel({ s, set }: { s: CustomizerSettings; set: SetFn }) {
-  const widgets = parseSidebarWidgets(s.sidebar_widgets);
-
-  const save = (next: Record<string, SidebarWidget>) => set("sidebar_widgets", JSON.stringify(next));
+function SidebarSlots({
+  ids,
+  widgets,
+  save,
+  label,
+}: {
+  ids: readonly string[];
+  widgets: Record<string, SidebarWidget>;
+  save: (next: Record<string, SidebarWidget>) => void;
+  label: string;
+}) {
   const patch = (id: string, changes: Partial<SidebarWidget>) =>
     save({ ...widgets, [id]: { ...(widgets[id] ?? { type: "text" }), ...changes } as SidebarWidget });
   const clear = (id: string) => {
@@ -37,11 +46,7 @@ export function SidebarPanel({ s, set }: { s: CustomizerSettings; set: SetFn }) 
 
   return (
     <div>
-      <p className="mb-4 text-[11px] leading-relaxed text-slate-400">
-        Shows on any page or post whose layout is Left Sidebar or Right Sidebar.
-      </p>
-
-      {SIDEBAR_WIDGET_IDS.map((id, i) => {
+      {ids.map((id, i) => {
         const w = widgets[id];
         return (
           <div key={id} className="mb-4 rounded-lg border border-slate-200 p-3">
@@ -194,6 +199,66 @@ export function SidebarPanel({ s, set }: { s: CustomizerSettings; set: SetFn }) 
           </div>
         );
       })}
+    </div>
+  );
+}
+
+export function SidebarPanel({ s, set }: { s: CustomizerSettings; set: SetFn }) {
+  const [tab, setTab] = useState<"sidebar1" | "sidebar2">("sidebar1");
+  const widgets1 = parseSidebarWidgets(s.sidebar_widgets);
+  const widgets2 = parseSidebarWidgets(s.sidebar2_widgets);
+
+  return (
+    <div>
+      <p className="mb-4 text-[11px] leading-relaxed text-slate-400">
+        Shows on any page or post whose layout is Left Sidebar or Right Sidebar.
+        Choose which sidebar a layout shows below.
+      </p>
+
+      <div className="mb-4">
+        <label className="block text-[11px] font-semibold uppercase tracking-wide text-slate-500 mb-1.5">
+          Sidebar for left/right layouts
+        </label>
+        <select
+          className={inputCls}
+          value={s.sidebar_choice || "sidebar1"}
+          onChange={(e) => set("sidebar_choice", e.target.value)}
+        >
+          <option value="sidebar1">Sidebar 1</option>
+          <option value="sidebar2">Sidebar 2</option>
+        </select>
+      </div>
+
+      <div className="mb-4 flex gap-1 rounded-lg bg-slate-100 p-1">
+        {(["sidebar1", "sidebar2"] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={cn(
+              "flex-1 rounded-md py-1.5 text-[12px] font-medium transition-colors",
+              tab === t ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
+            )}
+          >
+            {t === "sidebar1" ? "Sidebar 1" : "Sidebar 2"}
+          </button>
+        ))}
+      </div>
+
+      {tab === "sidebar1" ? (
+        <SidebarSlots
+          ids={SIDEBAR_WIDGET_IDS}
+          widgets={widgets1}
+          save={(next) => set("sidebar_widgets", JSON.stringify(next))}
+          label="Sidebar 1"
+        />
+      ) : (
+        <SidebarSlots
+          ids={SIDEBAR2_WIDGET_IDS}
+          widgets={widgets2}
+          save={(next) => set("sidebar2_widgets", JSON.stringify(next))}
+          label="Sidebar 2"
+        />
+      )}
     </div>
   );
 }

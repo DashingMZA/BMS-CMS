@@ -380,6 +380,10 @@ export interface AppearanceSettings {
   forms_autoreply_body: string;
   /** JSON: Record<widgetId, SidebarWidget> */
   sidebar_widgets: string;
+  /** JSON: Record<widgetId, SidebarWidget> — the second sidebar. */
+  sidebar2_widgets: string;
+  /** Which sidebar a left/right layout shows: sidebar1 | sidebar2. */
+  sidebar_choice: string;
   archive_layout: string;
   archive_content_style: string;
   archive_spacing: string;
@@ -863,6 +867,8 @@ export const defaults: AppearanceSettings = {
     swidget2: { type: "recent", title: "Recent Posts", count: 5 },
     swidget3: { type: "categories", title: "Categories" },
   }),
+  sidebar2_widgets: JSON.stringify({}),
+  sidebar_choice: "sidebar1",
   archive_layout: "normal",
   // "unboxed", matching what the site actually renders: siteCss falls back to
   // unboxed for a kind whose content style was never saved, so a fresh site's
@@ -1105,6 +1111,7 @@ export type SidebarWidget = {
 };
 
 export const SIDEBAR_WIDGET_IDS = ["swidget1", "swidget2", "swidget3", "swidget4", "swidget5", "swidget6"] as const;
+export const SIDEBAR2_WIDGET_IDS = ["s2widget1", "s2widget2", "s2widget3", "s2widget4", "s2widget5", "s2widget6"] as const;
 
 export const SIDEBAR_WIDGET_TYPES: { id: SidebarWidget["type"]; label: string }[] = [
   { id: "search",     label: "Search" },

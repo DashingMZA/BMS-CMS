@@ -4,7 +4,7 @@ import { uiText } from "@/lib/uiText";
 import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { posts, tags, postTags, categories, comments } from "@/lib/db/schema";
-import { parseSidebarWidgets, SIDEBAR_WIDGET_IDS, type SidebarWidget } from "@/lib/appearanceSettings";
+import { parseSidebarWidgets, SIDEBAR_WIDGET_IDS, SIDEBAR2_WIDGET_IDS, type SidebarWidget } from "@/lib/appearanceSettings";
 import { categoryPath, postPath, searchPath, tagPath } from "@/lib/permalinks";
 import { isLive } from "@/lib/publishState";
 import { parseAdBlocks, sidebarBlocksFor, type AdBlock } from "@/lib/ads";
@@ -24,6 +24,8 @@ export default async function Sidebar(props: {
   language: string;
   /** Ad targeting kind: "posts" | "static" | "archive" | ... */
   pageKind?: string;
+  /** Which sidebar to render: sidebar1 | sidebar2. */
+  sidebarId?: string;
 }) {
   try {
     return await renderSidebar(props);
@@ -37,13 +39,18 @@ async function renderSidebar({
   settings,
   language,
   pageKind = "posts",
+  sidebarId = "sidebar1",
 }: {
   settings: Record<string, string>;
   language: string;
   pageKind?: string;
+  /** Which sidebar to render: sidebar1 | sidebar2. */
+  sidebarId?: string;
 }) {
-  const configured = parseSidebarWidgets(settings.sidebar_widgets);
-  const widgets = SIDEBAR_WIDGET_IDS
+  const isSecond = sidebarId === "sidebar2";
+  const configured = parseSidebarWidgets(isSecond ? settings.sidebar2_widgets : settings.sidebar_widgets);
+  const widgetIds = isSecond ? SIDEBAR2_WIDGET_IDS : SIDEBAR_WIDGET_IDS;
+  const widgets = widgetIds
     .map((id) => ({ id: id as string, widget: configured[id] as SidebarWidget | undefined }))
     .filter((w): w is { id: string; widget: SidebarWidget } => !!w.widget);
 

@@ -237,7 +237,12 @@ async function renderContentShell({
           </article>
           {showSidebar && (
             <aside className="content-sidebar">
-              <Sidebar settings={settings} language={language ?? defaultContentLanguage(settings)} pageKind={adPageKind ?? adKindFor(kind)} />
+              <Sidebar
+                settings={settings}
+                language={language ?? defaultContentLanguage(settings)}
+                pageKind={adPageKind ?? adKindFor(kind)}
+                sidebarId={settings.sidebar_choice === "sidebar2" ? "sidebar2" : "sidebar1"}
+              />
             </aside>
           )}
         </div>
