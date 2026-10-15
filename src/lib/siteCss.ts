@@ -932,6 +932,13 @@ export function contentCss(s: Record<string, string>): string {
   out.push(`.content-shell[data-layout="left-sidebar"] .content-sidebar{display:block;order:0}`);
   out.push(`.content-shell[data-layout="right-sidebar"] .content-sidebar{display:block;order:2}`);
   out.push(`.content-article{order:1;min-width:0}`);
+  // Sidebar content must always be visible: widgets inherit the theme's text
+  // colour explicitly, so a dark-themed parent can't turn them white on a
+  // light sidebar. Links keep the text colour on hover (underline only),
+  // never a colour swap that could render them invisible.
+  out.push(`.content-sidebar{color:var(--color-text,#0f172a)}`);
+  out.push(`.content-sidebar a{color:inherit}`);
+  out.push(`.content-sidebar a:hover{color:inherit}`);
 
   // Device-specific sidebar behavior. "hide" removes the sidebar and collapses
   // the grid; "stack" keeps it visible below the content in a single column.
