@@ -120,10 +120,10 @@ export default function SearchResults({
                 )}
               </div>
             ) : (
-              <div className="search-items">
+              <div className={`search-items archive-items is-${settings.archive_card_style || "classic"}`}>
                 {posts.map((p) => (
-                  <article key={p.id} className="search-item flex flex-col gap-2">
-                    <Link href={href(p)} data-search-el="feature" className="block overflow-hidden rounded-lg bg-black/5 aspect-[16/9]">
+                  <article key={p.id} className="search-item archive-card group flex flex-col">
+                    <Link href={href(p)} data-search-el="feature" className="archive-card-image-link block overflow-hidden bg-black/5 aspect-[16/9]">
                       {p.featuredImage && (
                         // Optimised and sized to the result card (one column
                         // on phones, two on tablets, up to three wide), not
@@ -135,37 +135,39 @@ export default function SearchResults({
                           height={360}
                           sizes="(max-width: 639px) calc(100vw - 32px), (max-width: 1023px) 50vw, 400px"
                           quality={intIn(speedSettings(settings).image_quality, 50, 90, 75)}
-                          className="w-full h-full object-cover"
+                          className="archive-card-image w-full h-full object-cover"
                         />
                       )}
                     </Link>
 
-                    <div data-search-el="categories" className="text-xs uppercase tracking-wide">
-                      {p.category ? (
-                        <Link href={categoryPath(p.category.slug, language, settings)} className="hover:opacity-70 transition-opacity" style={{ color: "var(--color-primary,#0ea5e9)" }}>
-                          {p.category.name}
+                    <div className="flex flex-1 flex-col px-5 pb-6 pt-5">
+                      <div data-search-el="categories" className="archive-card-term text-xs uppercase tracking-wide">
+                        {p.category ? (
+                          <Link href={categoryPath(p.category.slug, language, settings)} className="hover:opacity-70 transition-opacity" style={{ color: "var(--color-primary,#0ea5e9)" }}>
+                            {p.category.name}
+                          </Link>
+                        ) : null}
+                      </div>
+
+                      <h2 data-search-el="title" className="archive-card-title mt-2.5 text-lg font-semibold leading-snug">
+                        <Link href={href(p)} className="hover:opacity-70 transition-opacity">{p.title}</Link>
+                      </h2>
+
+                      <div data-search-el="meta" className="archive-card-meta mt-2 text-xs opacity-60">
+                        {p.publishedAt ? formatSiteDate(p.publishedAt, settings, language) : null}
+                      </div>
+
+                      {excerptWords > 0 && p.excerpt && (
+                        <p data-search-el="excerpt" className="archive-card-excerpt mt-3 text-sm opacity-80 leading-relaxed">
+                          {truncateWords(p.excerpt, excerptWords)}
+                        </p>
+                      )}
+
+                      <div data-search-el="readmore" className="archive-card-more mt-auto pt-5">
+                        <Link href={href(p)} className="text-sm font-medium hover:opacity-70 transition-opacity" style={{ color: "var(--color-primary,#0ea5e9)" }}>
+                          {a.readMore} {rtl ? "←" : "→"}
                         </Link>
-                      ) : null}
-                    </div>
-
-                    <h2 data-search-el="title" className="text-lg font-semibold leading-snug">
-                      <Link href={href(p)} className="hover:opacity-70 transition-opacity">{p.title}</Link>
-                    </h2>
-
-                    <div data-search-el="meta" className="text-xs opacity-60">
-                      {p.publishedAt ? formatSiteDate(p.publishedAt, settings, language) : null}
-                    </div>
-
-                    {excerptWords > 0 && p.excerpt && (
-                      <p data-search-el="excerpt" className="text-sm opacity-80 leading-relaxed">
-                        {truncateWords(p.excerpt, excerptWords)}
-                      </p>
-                    )}
-
-                    <div data-search-el="readmore">
-                      <Link href={href(p)} className="text-sm font-medium hover:opacity-70 transition-opacity" style={{ color: "var(--color-primary,#0ea5e9)" }}>
-                        {a.readMore} {rtl ? "←" : "→"}
-                      </Link>
+                      </div>
                     </div>
                   </article>
                 ))}

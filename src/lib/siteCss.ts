@@ -307,11 +307,13 @@ export function searchCss(s: Record<string, string>): string {
   }
   if (s.search_title_color) out.push(`.search-title-block h1{color:${s.search_title_color}}`);
 
-  // Boxed / unboxed cards
-  const boxed = (s.search_content_style || "boxed") !== "unboxed";
-  out.push(`.search-item{${boxed
-    ? "background:var(--search-content-bg,#fff);border-radius:0.9rem;padding:1.25rem;box-shadow:0 1px 3px rgba(0,0,0,.08)"
-    : "background:transparent;padding:0;box-shadow:none"}}`);
+  // Card design presets — shared with the archive cards, so search results
+  // honour the same Card design setting. The old boxed/unboxed toggle is
+  // superseded: "classic" is the boxed look, "minimal" the unboxed one.
+  const searchCardStyle = s.archive_card_style || "classic";
+  out.push(`.search-items .archive-card{background:var(--color-bg,#fff);border:0;border-radius:2px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.04)}`);
+  out.push(`.search-items .archive-card-image{border-radius:0}`);
+  out.push(archiveCardStyleCss(searchCardStyle).replaceAll(".archive-items", ".search-items"));
 
   // Backgrounds
   if (s.search_site_bg) out.push(`.search-shell-outer{background:${s.search_site_bg}}`);

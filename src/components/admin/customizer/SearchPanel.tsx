@@ -14,7 +14,7 @@ import {
   type SearchElement,
 } from "@/lib/appearanceSettings";
 import {
-  CardChoice, DeviceTabs, Field, LAYOUT_ART, NumBox, SectionHead, Swatch, Switch, bar,
+  CardChoice, DeviceTabs, Field, LabelChoice, LAYOUT_ART, NumBox, SectionHead, Swatch, Switch, bar,
   inputCls, type Device, type SetFn,
 } from "./PanelKit";
 
@@ -122,16 +122,16 @@ export function SearchPanel({ s, set }: { s: CustomizerSettings; set: SetFn }) {
             <p className="text-[11px] text-slate-400 mt-1">Only one sidebar exists so far — it holds the search box.</p>
           </Field>
 
-          <Field label="Content Style">
-            <CardChoice
-              cols={2}
-              value={s.search_content_style}
-              onChange={(v) => set("search_content_style", v)}
+          <Field label="Card design" help="The look of every result card — the same presets as the archive cards.">
+            <LabelChoice cols={3} value={s.archive_card_style || "classic"} onChange={(v) => set("archive_card_style", v)}
               options={[
-                { value: "boxed",   label: "Boxed",   art: <span className="flex gap-0.5 w-3/4 h-full items-stretch">{bar("w-1/2 rounded")}{bar("w-1/2 rounded")}</span> },
-                { value: "unboxed", label: "Unboxed", art: <span className="flex flex-col gap-0.5 w-3/4">{bar("h-1 w-full opacity-60")}{bar("h-1 w-2/3 opacity-60")}</span> },
-              ]}
-            />
+                { value: "classic", label: "Classic" },
+                { value: "elevated", label: "Elevated" },
+                { value: "bordered", label: "Bordered" },
+                { value: "overlay", label: "Overlay" },
+                { value: "list", label: "List" },
+                { value: "minimal", label: "Minimal" },
+              ]} />
           </Field>
 
           <Field label="Search Result Columns">
