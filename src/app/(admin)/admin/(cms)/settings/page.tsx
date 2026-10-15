@@ -65,6 +65,16 @@ const TABS = [
 
 type TabId = (typeof TABS)[number]["id"];
 
+/** Which settings keys belong to which tab — so the amber dot lands on the
+    tab that actually has unsaved changes, not just the active one. */
+const TAB_KEYS: Record<TabId, string[]> = {
+  general: ["site_name", "site_description", "site_url", "hosting_panel_url"],
+  language: ["site_language", "site_direction", "admin_language", "admin_direction", "content_languages", "date_format", "site_timezone"],
+  permalinks: ["permalink_structure", "permalink_custom"],
+  sitemap: [],
+  backup: [],
+};
+
 export default function SettingsPage() {
   const [settings, setSettings] = useState<Settings>(defaults);
   const [newLanguage, setNewLanguage] = useState("");
@@ -85,7 +95,10 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [dirty, setDirty] = useState(false);
+  /** Tabs with unsaved changes — drives the amber dots. */
+  const [dirtyTabs, setDirtyTabs] = useState<Set<TabId>>(new Set());
+  /** Warn once per dirty session, not on every tab switch. */
+  const warnedRef = useRef(false);
 
   useEffect(() => {
     fetch("/api/settings")
@@ -102,7 +115,9 @@ export default function SettingsPage() {
   const changedRef = useRef<Set<string>>(new Set());
   function update(key: keyof Settings, value: string) {
     changedRef.current.add(key);
-    setDirty(true);
+    // Mark the owning tab dirty so its amber dot lights up.
+    const owner = (Object.keys(TAB_KEYS) as TabId[]).find((t) => TAB_KEYS[t].includes(key));
+    if (owner) setDirtyTabs((prev) => new Set(prev).add(owner));
     setSettings((prev) => ({ ...prev, [key]: value }));
   }
 
@@ -122,18 +137,20 @@ export default function SettingsPage() {
       return;
     }
     for (const k of keys) changedRef.current.delete(k);
-    setDirty(false);
+    setDirtyTabs(new Set());
+    warnedRef.current = false;
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   }
 
-  /** Switch tabs, but warn first if there are unsaved changes. */
+  /** Switch tabs, warning once per dirty session — not on every switch. */
   function switchTab(tab: TabId) {
     if (tab === activeTab) return;
-    if (dirty) {
+    if (dirtyTabs.size > 0 && !warnedRef.current) {
+      warnedRef.current = true;
       if (!confirm("You have unsaved changes. Switch tabs without saving?")) return;
-      // Keep the changes in the form; just let them move. The next Save
-      // (on any tab) still saves everything changed.
+      // OK = switch anyway. Changes stay in the form (dots stay on their
+      // tabs); any tab's Save button still saves everything.
     }
     setActiveTab(tab);
     window.scrollTo({ top: 0 });
@@ -171,7 +188,7 @@ export default function SettingsPage() {
               }`}
             >
               {t.label}
-              {dirty && activeTab === t.id && (
+              {dirtyTabs.has(t.id) && (
                 <span className="ml-1.5 inline-block w-2 h-2 rounded-full bg-amber-500" title="Unsaved changes" />
               )}
             </button>
