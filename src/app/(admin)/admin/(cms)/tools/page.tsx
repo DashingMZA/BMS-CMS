@@ -56,6 +56,7 @@ function ImportTab() {
   const [fileName, setFileName] = useState("");
   const [dryRun, setDryRun] = useState(true);
   const [overwrite, setOverwrite] = useState(false);
+  const [language, setLanguage] = useState("en");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [report, setReport] = useState<ImportReport | null>(null);
@@ -82,6 +83,7 @@ function ImportTab() {
       fd.set("file", f);
       fd.set("dryRun", String(dryRun));
       fd.set("overwrite", String(overwrite));
+      fd.set("language", language);
       const res = await fetch("/api/tools/import-wp", { method: "POST", body: fd });
       const data = await res.json();
       if (!res.ok) {
@@ -136,6 +138,19 @@ function ImportTab() {
           <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
             <input type="checkbox" checked={overwrite} onChange={(e) => setOverwrite(e.target.checked)} className="rounded" />
             Overwrite — put existing posts back to the file&rsquo;s version
+          </label>
+          <label className="flex items-center gap-2 text-xs text-slate-600">
+            Language
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              className="input py-1 text-xs"
+            >
+              <option value="en">English</option>
+              <option value="ur">Urdu</option>
+              <option value="ar">Arabic</option>
+              <option value="es">Spanish</option>
+            </select>
           </label>
         </div>
       </div>

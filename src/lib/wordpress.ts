@@ -232,7 +232,7 @@ function mimeFromUrl(url: string): string {
  * container the manual .xml→.json converter uses — so the imported article
  * renders exactly as it did on WordPress.
  */
-export function wxrToSiteExport(wxr: WxrParsed): SiteExport {
+export function wxrToSiteExport(wxr: WxrParsed, language = "en"): SiteExport {
   const now = new Date().toISOString();
   const attachUrlById = new Map<number, string>();
   const media: Record<string, unknown>[] = [];
@@ -266,12 +266,13 @@ export function wxrToSiteExport(wxr: WxrParsed): SiteExport {
   const catByNicename = new Map<string, number>();
   const categories: Record<string, unknown>[] = [];
   let cid = 1;
-  const addCat = (nicename: string, name: string) => {
+  const addCat = (nicename: string, name: string, parentNicename?: string) => {
     if (!nicename || catByNicename.has(nicename)) return;
     catByNicename.set(nicename, cid);
     categories.push({
       id: cid, name: name || nicename, slug: nicename, description: null,
-      language: "en", direction: null, translationGroup: null, parentId: null,
+      language, direction: null, translationGroup: null, parentId: null,
+      _wpParent: parentNicename || null,
       archiveColor: null, archiveHoverColor: null, headerImage: null,
       archiveColumns: "default", archiveCardStyle: "default", archiveDesign: null,
       seoTitle: null, seoDescription: null, focusKeyword: null, canonicalUrl: null,
@@ -281,7 +282,13 @@ export function wxrToSiteExport(wxr: WxrParsed): SiteExport {
     });
     cid++;
   };
-  for (const c of wxr.categories) addCat(c.nicename, c.name);
+  for (const c of wxr.categories) addCat(c.nicename, c.name, c.parent);
+  // Second pass: wire parent categories — WP gives the parent's nicename.
+  for (const cat of categories) {
+    const wpParent = cat["_wpParent"] as string | null;
+    if (wpParent) cat["parentId"] = catByNicename.get(wpParent) ?? null;
+    delete cat["_wpParent"];
+  }
 
   const tagByNicename = new Map<string, number>();
   const tags: Record<string, unknown>[] = [];
@@ -291,7 +298,7 @@ export function wxrToSiteExport(wxr: WxrParsed): SiteExport {
     tagByNicename.set(nicename, tid);
     tags.push({
       id: tid, name: name || nicename, slug: nicename, description: null,
-      language: "en", direction: null, translationGroup: null, createdAt: now,
+      language, direction: null, translationGroup: null, createdAt: now,
     });
     tid++;
   };
@@ -356,7 +363,7 @@ export function wxrToSiteExport(wxr: WxrParsed): SiteExport {
       contentStyle: "default", verticalSpacing: "default", showFeaturedImage: "default",
       showComments: "default", deletedAt: null, cssClasses: null,
       disableHeader: false, disableFooter: false,
-      language: "en", direction: null, translationGroup: null,
+      language, direction: null, translationGroup: null,
       publishedAt: it.pubDate ?? it.postDateGmt ?? it.postDate,
       scriptHead: null, scriptBodyEnd: null, customCss: null,
       createdAt: it.postDate ?? now,

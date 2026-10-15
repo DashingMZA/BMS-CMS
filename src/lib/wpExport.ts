@@ -205,11 +205,12 @@ export async function buildWxrExport(options: WxrExportOptions = {}): Promise<st
   }
 
   for (const c of catRows) {
+    const parentSlug = c.parentId ? catById.get(c.parentId)?.slug ?? "" : "";
     out.push(
       `\t<wp:category>`,
       `\t\t<wp:term_id>${c.id}</wp:term_id>`,
       `\t\t<wp:category_nicename>${cdata(c.slug)}</wp:category_nicename>`,
-      `\t\t<wp:category_parent>${cdata("")}</wp:category_parent>`,
+      `\t\t<wp:category_parent>${cdata(parentSlug)}</wp:category_parent>`,
       `\t\t<wp:cat_name>${cdata(c.name)}</wp:cat_name>`,
       `\t</wp:category>`,
     );

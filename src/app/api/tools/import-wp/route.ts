@@ -23,21 +23,25 @@ export async function POST(req: NextRequest) {
   let overwrite = false;
 
   const contentType = req.headers.get("content-type") ?? "";
+  let language = "en";
   try {
     if (contentType.includes("multipart/form-data")) {
       const form = await req.formData();
       dryRun = form.get("dryRun") === "true";
       overwrite = form.get("overwrite") === "true";
+      const lang = form.get("language");
+      if (typeof lang === "string" && /^[a-z]{2}$/.test(lang)) language = lang;
       const upload = form.get("file");
       if (!(upload instanceof File)) {
         return NextResponse.json({ error: "No .xml file was sent." }, { status: 400 });
       }
       xml = await upload.text();
     } else {
-      const body = (await req.json()) as { xml?: string; dryRun?: boolean; overwrite?: boolean };
+      const body = (await req.json()) as { xml?: string; dryRun?: boolean; overwrite?: boolean; language?: string };
       xml = body.xml ?? "";
       dryRun = body.dryRun === true;
       overwrite = body.overwrite === true;
+      if (typeof body.language === "string" && /^[a-z]{2}$/.test(body.language)) language = body.language;
     }
   } catch {
     return NextResponse.json({ error: "Could not read the uploaded file." }, { status: 400 });
@@ -57,7 +61,7 @@ export async function POST(req: NextRequest) {
 
   let siteExport;
   try {
-    siteExport = wxrToSiteExport(parseWxr(xml));
+    siteExport = wxrToSiteExport(parseWxr(xml), language);
   } catch (e) {
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "Could not parse the WordPress file." },
