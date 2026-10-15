@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `dbfbbe1` — CLAUDE.md + AGENTS.md link
+Created `CLAUDE.md`: full project map (what BMS-CMS is, tech stack, structure, all DB tables, every public route + rendering pipeline, all admin sections, API routes, key components, complete ads system reference with positions/targeting/pageKind wiring, settings/customizer, auth, conventions). Linked from `AGENTS.md` §0 so new agents read it first.
+
 ### 2026-10-15 — `e214044` — parseAdBlocks: missing page kinds default to true
 Old ad blocks saved before the `homepage`/`category`/`search` page kinds existed had those keys missing from `pages`. `!!undefined` turned them `false`, hiding sidebar ads on homepage/category/tag archives even though the user never unchecked anything. Now only keys actually present in the saved block are overridden; missing keys keep the default `true`.
 
