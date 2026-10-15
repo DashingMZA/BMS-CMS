@@ -247,6 +247,7 @@ export default async function BlogArchive({
   base,
   language,
   pageType,
+  archiveKind,
   pageKind = "archive",
 }: {
   page?: number;
@@ -333,6 +334,8 @@ export default async function BlogArchive({
   base: string;
   /** Header rules and Elements target this; the front page's listing is "front". */
   pageType?: PageType;
+  /** Archive subtype for page-type targeting; tag pages pass "tag". */
+  archiveKind?: "category" | "tag" | "author";
   /**
    * Which language's posts this archive lists.
    *
@@ -530,6 +533,7 @@ export default async function BlogArchive({
     <ContentShell
       design={design ?? {}}
       kind="archive"
+      archiveKind={archiveKind}
       pageType={pageType}
       adPageKind={pageKind}
       currentPath={base}

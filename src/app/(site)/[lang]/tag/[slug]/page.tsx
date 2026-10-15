@@ -129,6 +129,7 @@ export default async function TagPage({
       // percent-encoded, and `segment()` stripped the `%` signs out of it.
       base={tagPath(tag.slug, lang, settings)}
       pageKind="archive"
+      archiveKind="tag"
       // Per-tag design overrides, same as categories.
       term={{
         archiveColor: tag.archiveColor,

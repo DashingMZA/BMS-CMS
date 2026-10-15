@@ -28,8 +28,8 @@ export interface ContentDesign {
  * applies. That split is what lets the Customizer preview both levels live.
  */
 /** ContentShell speaks in document kinds; elements target page types. */
-const pageTypeFor = (kind: "page" | "post" | "archive") =>
-  kind === "archive" ? ("category" as const) : kind;
+const pageTypeFor = (kind: "page" | "post" | "archive", archiveKind?: "category" | "tag" | "author") =>
+  kind === "archive" ? (archiveKind ?? "category") : kind;
 
 /** Document kind → ad page kind for sidebar ad targeting. */
 const adKindFor = (kind: "page" | "post" | "archive") =>
@@ -38,6 +38,7 @@ const adKindFor = (kind: "page" | "post" | "archive") =>
 export default async function ContentShell({
   design,
   kind = "page",
+  archiveKind,
   currentPath,
   children,
   language,
@@ -54,6 +55,8 @@ export default async function ContentShell({
   design: ContentDesign;
   /** Which set of site-wide defaults applies when a value is "default". */
   kind?: "page" | "post" | "archive";
+  /** Archive subtype for page-type targeting; defaults to "category". */
+  archiveKind?: "category" | "tag" | "author";
   /** Path of this document, so the nav can mark the matching item active. */
   currentPath?: string;
   /**
@@ -103,6 +106,7 @@ export default async function ContentShell({
     return await renderContentShell({
       design,
       kind,
+      archiveKind,
       currentPath,
       children,
       language,
@@ -117,7 +121,7 @@ export default async function ContentShell({
       // archive reported "default": a header rule or Element targeting
       // "Single post" or "Category archive" matched nothing, anywhere, and
       // the feature looked broken rather than unwired.
-      pageType: pageType ?? pageTypeFor(kind),
+      pageType: pageType ?? pageTypeFor(kind, archiveKind),
       documentContent,
       adPageKind,
     });
@@ -130,6 +134,7 @@ export default async function ContentShell({
 async function renderContentShell({
   design,
   kind = "page",
+  archiveKind,
   currentPath,
   children,
   language,
@@ -145,6 +150,7 @@ async function renderContentShell({
 }: {
   design: ContentDesign;
   kind?: "page" | "post" | "archive";
+  archiveKind?: "category" | "tag" | "author";
   currentPath?: string;
   language?: string;
   direction?: string | null;
@@ -166,7 +172,7 @@ async function renderContentShell({
   const style = design.contentStyle || "default";
   const spacing = design.verticalSpacing || "default";
   const extra = design.cssClasses ?? "";
-  const targetType = pageType ?? pageTypeFor(kind);
+  const targetType = pageType ?? pageTypeFor(kind, archiveKind);
 
   // Whether this document's layout shows a sidebar at all — the same rule the
   // stylesheet applies (siteCss `.content-sidebar`): an explicit left/right

@@ -11,6 +11,8 @@ export const PAGE_TYPES = [
   { id: "post",     label: "Single post" },
   { id: "page",     label: "Single page" },
   { id: "category", label: "Category archive" },
+  { id: "tag",      label: "Tag archive" },
+  { id: "author",   label: "Author archive" },
   { id: "search",   label: "Search results" },
   { id: "404",      label: "404 page" },
 ] as const;
