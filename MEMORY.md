@@ -26,7 +26,10 @@
 
 ## Work log (newest first)
 
-### 2026-10-15 — `fd29476` — Tag term parity with categories
+### 2026-10-15 — `00730e0` — Search panel improvements
+- Fixed label bug: "Category Pages Default Sidebar" → "Search Results Default Sidebar"
+- New `search_excerpt_length` setting (words, 0 = hide) + Customizer control
+- New `search_empty_title` / `search_empty_text` for the no-results state + Customizer controls
 Tags now have the same per-term fields as categories: archive design (color, hover, header image, columns, card style, design JSON) + SEO (title, description, focus keyword, canonical, OG, robots flags). Migration `0021_tag_term_parity.sql`. New TagEditor + `/admin/tags/[id]` page. Tag archives respect design overrides and SEO fields.
 New `sortOrder` column (migration `0020_category_sort.sql`), admin UI number input in the inline editor, API PATCH support. All category listings now order by sortOrder then name (admin, API, sidebar widget).
 Same ShareButtons component reused. New `page_share_show` setting (default off) + Page Layout panel toggle. Renders below content on pages.
