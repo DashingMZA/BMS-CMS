@@ -306,6 +306,16 @@ export interface AppearanceSettings {
   page_elements: string;            // JSON: { id: string; visible: boolean }[]
   page_sidebar: string;
   page_feature_show: string;
+  /** Featured image placement when no hero: above-title | below-title. */
+  page_feature_position: string;
+  /** Hero / title band: none | banner | overlay */
+  page_hero_layout: string;
+  /** small | medium | large */
+  page_hero_height: string;
+  /** 0..90 — dark overlay opacity for text readability on overlay heroes. */
+  page_hero_overlay: string;
+  /** Hero title color override; empty = theme default. */
+  page_hero_title_color: string;
   page_comments_show: string;
   page_share_show: string;
   page_title_font: string;
@@ -330,6 +340,17 @@ export interface AppearanceSettings {
   post_title_show: string;
   post_meta_show: string;
   post_feature_show: string;
+  /** Featured image placement when no hero: above-title | below-title. */
+  post_feature_position: string;
+  // Hero / title band.
+  /** none | banner | overlay */
+  post_hero_layout: string;
+  /** small | medium | large */
+  post_hero_height: string;
+  /** 0..90 — dark overlay opacity for text readability on overlay heroes. */
+  post_hero_overlay: string;
+  /** Hero title color override; empty = theme default. */
+  post_hero_title_color: string;
   // Single Post Layout — the post's own title area and after-content blocks.
   post_title_layout: string;        // in-content | above-content
   post_title_align: string;         // left | center | right
@@ -787,6 +808,11 @@ export const defaults: AppearanceSettings = {
   ]),
   page_sidebar: "sidebar1",
   page_feature_show: "true",
+  page_feature_position: "below-title",
+  page_hero_layout: "none",
+  page_hero_height: "medium",
+  page_hero_overlay: "40",
+  page_hero_title_color: "",
   page_comments_show: "false",
   page_share_show: "false",
   page_title_font: "",
@@ -811,6 +837,11 @@ export const defaults: AppearanceSettings = {
   post_title_show: "true",
   post_meta_show: "true",
   post_feature_show: "true",
+  post_feature_position: "below-title",
+  post_hero_layout: "none",
+  post_hero_height: "medium",
+  post_hero_overlay: "40",
+  post_hero_title_color: "",
   post_title_layout: "in-content",
   post_title_align: "left",
   post_title_align_tablet: "left",

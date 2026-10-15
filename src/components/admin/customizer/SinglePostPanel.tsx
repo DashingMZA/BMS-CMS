@@ -107,6 +107,45 @@ export function SinglePostGeneral({ s, set }: { s: CustomizerSettings; set: SetF
           </Field>
 
           <Switch label="Show featured image" value={s.post_feature_show} onChange={(v) => set("post_feature_show", v)} />
+          {s.post_feature_show !== "false" && (
+            <div className="pl-6 space-y-3">
+              <Field label="Featured image position">
+                <select className={inputCls} value={s.post_feature_position || "below-title"} onChange={(e) => set("post_feature_position", e.target.value)}>
+                  <option value="below-title">Below title</option>
+                  <option value="above-title">Above title</option>
+                </select>
+              </Field>
+            </div>
+          )}
+
+          <SectionHead>Hero / Title Band</SectionHead>
+          <Field label="Hero layout">
+            <select className={inputCls} value={s.post_hero_layout || "none"} onChange={(e) => set("post_hero_layout", e.target.value)}>
+              <option value="none">None — title and image separately</option>
+              <option value="banner">Banner — full-width image above the title</option>
+              <option value="overlay">Overlay — title on top of the image</option>
+            </select>
+            <p className="text-[11px] text-slate-400 mt-1">Needs a featured image. The hero replaces the separate title area and image.</p>
+          </Field>
+          {s.post_hero_layout !== "none" && (
+            <div className="pl-6 space-y-3">
+              <Field label="Hero height">
+                <select className={inputCls} value={s.post_hero_height || "medium"} onChange={(e) => set("post_hero_height", e.target.value)}>
+                  <option value="small">Small</option>
+                  <option value="medium">Medium</option>
+                  <option value="large">Large</option>
+                </select>
+              </Field>
+              {s.post_hero_layout === "overlay" && (
+                <Field label="Overlay darkness (%)" help="Dark scrim behind the title so it stays readable.">
+                  <input type="range" min={0} max={90} step={5} className="w-full"
+                    value={s.post_hero_overlay || "40"}
+                    onChange={(e) => set("post_hero_overlay", e.target.value)} />
+                </Field>
+              )}
+              <Field label="Hero title color"><Swatch s={s} set={set} k="post_hero_title_color" /></Field>
+            </div>
+          )}
           <Switch label="Show post meta" value={s.post_meta_show} onChange={(v) => set("post_meta_show", v)} />
           <Switch label="Show post tags" value={s.post_tags_show} onChange={(v) => set("post_tags_show", v)} />
           <Switch label="Show post author box" value={s.post_author_box_show} onChange={(v) => set("post_author_box_show", v)} defaultOn={false} />

@@ -469,6 +469,7 @@ export function singlePageCss(s: Record<string, string>): string {
   out.push(`.content-shell[data-kind="page"] .content-feature{display:${s.page_feature_show === "false" ? "none" : "block"}}`);
   out.push(...docBackgroundCss(s, "page"));
   out.push(...titleOrderCss(s, "page"));
+  out.push(...heroCss(s, "page"));
   return out.join("");
 }
 
@@ -497,7 +498,28 @@ export function singlePostCss(s: Record<string, string>): string {
   // Element order and visibility.
   out.push(...titleOrderCss(s, "post"));
 
+  out.push(...heroCss(s, "post"));
+
   return out.join("");
+}
+
+/**
+ * Hero / title band CSS.
+ *
+ * The overlay hero's title colour: PostTitleBlock's title has its own colour
+ * from titleAreaCss, so the hero override needs to win when set. The scrim
+ * opacity is inline (it changes per render), but the colour belongs in the
+ * stylesheet so the Customizer preview updates without a re-render.
+ */
+function heroCss(s: Record<string, string>, kind: "post" | "page"): string[] {
+  const out: string[] = [];
+  const color = kind === "post" ? s.post_hero_title_color : s.page_hero_title_color;
+  if (color) {
+    const p = kind === "post" ? "post" : "page";
+    out.push(`.doc-hero-overlay[data-hero="${kind}"] .${p}-title-block .content-title{color:${color}}`);
+    out.push(`.doc-hero-overlay[data-hero="${kind}"] .${p}-title-block{color:${color}}`);
+  }
+  return out;
 }
 
 /** Header Search item — style, sizing, colours, spacing and its modal. */

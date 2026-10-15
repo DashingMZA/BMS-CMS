@@ -26,6 +26,7 @@ import CategoryArchive, { categoryArchiveMetadata } from "@/components/frontend/
 import ContentShell from "@/components/frontend/ContentShell";
 import ContentImage from "@/components/frontend/ContentImage";
 import PostTitleBlock from "@/components/frontend/PostTitleBlock";
+import HeroBlock from "@/components/frontend/HeroBlock";
 import { countWords, readingTimeLabel } from "@/lib/siteExtras";
 import PostAfterContent from "@/components/frontend/PostAfterContent";
 import PostComments from "@/components/frontend/PostComments";
@@ -605,40 +606,68 @@ export default async function ContentRoute({ params }: Params) {
             that matched nothing and the whole Page Layout title area — order,
             alignment, breadcrumb, meta — had nothing to act on. */}
         <AdBlocks position="before_title" pageKind="static" />
-        {!hideTitle ? (
-          <PostTitleBlock
-            kind="page"
-            // One H1 per page: when the content opens with its own (a Text
-            // Advanced heading in a hero row), the title area keeps its look
-            // but not the tag, and the sr-only fallback below is not needed.
-            as={contentHasH1(page.content) ? "p" : "h1"}
-            title={page.title}
-            publishedAt={page.publishedAt}
-            authorName={page.author?.name}
-            language={page.language}
-            dateText={formatSiteDate(page.publishedAt, settings, page.language)}
-            // The same root `pageCrumbs` writes into the BreadcrumbList.
-            homeHref={rootPath(page.language, settings)}
-          />
-        ) : (
-          // Hidden visually, not removed semantically.
-          //
-          // "Hide title" left the document with no `<h1>` at all — a screen
-          // reader lost the page heading entirely and a crawler lost the
-          // strongest on-page signal about what the page is. The setting is
-          // about the design, so it is honoured in the design and nowhere else.
-          !contentHasH1(page.content) && <h1 className="sr-only">{page.title}</h1>
-        )}
+        {(() => {
+          const heroLayout = settings.page_hero_layout;
+          const showHero = !hideFeaturedImg && page.featuredImage && (heroLayout === "banner" || heroLayout === "overlay");
+          const featureAbove = settings.page_feature_position === "above-title";
+          const titleEl = !hideTitle ? (
+            <PostTitleBlock
+              kind="page"
+              // One H1 per page: when the content opens with its own (a Text
+              // Advanced heading in a hero row), the title area keeps its look
+              // but not the tag, and the sr-only fallback below is not needed.
+              as={contentHasH1(page.content) ? "p" : "h1"}
+              title={page.title}
+              publishedAt={page.publishedAt}
+              authorName={page.author?.name}
+              language={page.language}
+              dateText={formatSiteDate(page.publishedAt, settings, page.language)}
+              // The same root `pageCrumbs` writes into the BreadcrumbList.
+              homeHref={rootPath(page.language, settings)}
+            />
+          ) : (
+            // Hidden visually, not removed semantically.
+            //
+            // "Hide title" left the document with no `<h1>` at all — a screen
+            // reader lost the page heading entirely and a crawler lost the
+            // strongest on-page signal about what the page is. The setting is
+            // about the design, so it is honoured in the design and nowhere else.
+            !contentHasH1(page.content) && <h1 className="sr-only">{page.title}</h1>
+          );
+          const featureEl = !hideFeaturedImg && !showHero && page.featuredImage && (
+            <ContentImage
+              priority
+              src={page.featuredImage}
+              alt={page.title}
+              sizes={columnSizes(col)}
+              className="w-full aspect-video object-cover rounded-xl mb-10"
+            />
+          );
+          if (showHero) {
+            return (
+              <HeroBlock
+                kind="page"
+                layout={heroLayout}
+                height={settings.page_hero_height || "medium"}
+                overlayOpacity={parseInt(settings.page_hero_overlay || "40", 10) || 0}
+                titleColor={settings.page_hero_title_color || null}
+                image={page.featuredImage!}
+                imageAlt={page.title}
+                sizes="100vw"
+              >
+                {titleEl}
+              </HeroBlock>
+            );
+          }
+          return (
+            <>
+              {featureAbove && featureEl}
+              {titleEl}
+              {!featureAbove && featureEl}
+            </>
+          );
+        })()}
         <AdBlocks position="after_title" pageKind="static" />
-        {!hideFeaturedImg && page.featuredImage && (
-          <ContentImage
-            priority
-            src={page.featuredImage}
-            alt={page.title}
-            sizes={columnSizes(col)}
-            className="w-full aspect-video object-cover rounded-xl mb-10"
-          />
-        )}
         <AdBlocks position="before_post" pageKind="static" />
         <div className="max-w-none" data-page-body>
           <BlockRenderer blocks={injectContentAds((page.content as Block[]) ?? [], parseAdBlocks(settings.ads_blocks), "static")} language={page.language} direction={page.direction} title={page.title} pageUrl={pageUrl} column={col} />
@@ -828,28 +857,57 @@ export default async function ContentRoute({ params }: Params) {
           the document, and the Customizer previews site chrome rather than a
           real post, so the second copy bought nothing. */}
       <AdBlocks position="before_title" pageKind="posts" />
-      {!hideTitle ? (
-        <div className={titleAbove ? "post-title-above mb-10" : "post-title-in"}>
-          <PostTitleBlock {...titleProps} />
-        </div>
-      ) : (
-        // Same reasoning as the page branch above: the setting hides the
-        // heading, it does not delete it from the document.
-        !contentHasH1(post.content) && <h1 className="sr-only">{post.title}</h1>
-      )}
+      {(() => {
+        const heroLayout = settings.post_hero_layout;
+        const showHero = !hideFeaturedImg && post.featuredImage && (heroLayout === "banner" || heroLayout === "overlay");
+        const featureAbove = settings.post_feature_position === "above-title";
+        const titleEl = !hideTitle ? (
+          <div className={titleAbove ? "post-title-above mb-10" : "post-title-in"}>
+            <PostTitleBlock {...titleProps} />
+          </div>
+        ) : (
+          // Same reasoning as the page branch above: the setting hides the
+          // heading, it does not delete it from the document.
+          !contentHasH1(post.content) && <h1 className="sr-only">{post.title}</h1>
+        );
+        const featureEl = !hideFeaturedImg && !showHero && post.featuredImage && (
+          <ContentImage
+            priority
+            src={post.featuredImage}
+            alt={post.title}
+            sizes={columnSizes(postCol)}
+            className="content-feature w-full aspect-video object-cover rounded-xl mb-10"
+            {...(featuredInfo ? { width: featuredInfo.width, height: featuredInfo.height, blurDataURL: featuredInfo.blur } : {})}
+          />
+        );
+        if (showHero) {
+          return (
+            <HeroBlock
+              kind="post"
+              layout={heroLayout}
+              height={settings.post_hero_height || "medium"}
+              overlayOpacity={parseInt(settings.post_hero_overlay || "40", 10) || 0}
+              titleColor={settings.post_hero_title_color || null}
+              image={post.featuredImage!}
+              imageAlt={post.title}
+              sizes="100vw"
+            >
+              {titleEl}
+            </HeroBlock>
+          );
+        }
+        // Featured image placement when there is no hero: above or below the
+        // title block (Customizer → Single Post → Featured image position).
+        return (
+          <>
+            {featureAbove && featureEl}
+            {titleEl}
+            {!featureAbove && featureEl}
+          </>
+        );
+      })()}
       <AdBlocks position="after_title" pageKind="posts" />
       <AdBlocks position="before_post" pageKind="posts" />
-
-      {!hideFeaturedImg && post.featuredImage && (
-        <ContentImage
-          priority
-          src={post.featuredImage}
-          alt={post.title}
-          sizes={columnSizes(postCol)}
-          className="content-feature w-full aspect-video object-cover rounded-xl mb-10"
-          {...(featuredInfo ? { width: featuredInfo.width, height: featuredInfo.height, blurDataURL: featuredInfo.blur } : {})}
-        />
-      )}
       <AdBlocks position="before_content" pageKind="posts" />
 
       <div className="max-w-none">
