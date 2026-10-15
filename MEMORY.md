@@ -26,7 +26,8 @@
 
 ## Work log (newest first)
 
-### 2026-10-15 — `ffdd5b8` — Share buttons for pages
+### 2026-10-15 — `e92e484` — Category manual sort order
+New `sortOrder` column (migration `0020_category_sort.sql`), admin UI number input in the inline editor, API PATCH support. All category listings now order by sortOrder then name (admin, API, sidebar widget).
 Same ShareButtons component reused. New `page_share_show` setting (default off) + Page Layout panel toggle. Renders below content on pages.
 New `post_share_show` setting (default off) + Customizer toggle. ShareButtons component: X, Facebook, LinkedIn, WhatsApp, copy-link. Renders in PostAfterContent below tags.
 Undo/redo buttons in the Customizer toolbar + Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y shortcuts. 50-step history, no-op changes don't pollute it.
