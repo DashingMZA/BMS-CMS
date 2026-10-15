@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { access, mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { db } from "@/lib/db";
-import { media } from "@/lib/db/schema";
-import { count, desc } from "drizzle-orm";
+import { media, mediaFolders } from "@/lib/db/schema";
+import { count, desc, eq, isNull } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { maxPxFrom, optimizeUpload } from "@/lib/optimizeUpload";
 import { getSiteSettings } from "@/lib/settings";
@@ -117,14 +117,25 @@ export async function GET(req: NextRequest) {
     const limit = Math.min(Math.max(parseInt(searchParams.get("limit") ?? "") || 60, 1), 200);
     const page = Math.max(parseInt(searchParams.get("page") ?? "") || 1, 1);
     const offset = (page - 1) * limit;
+    // Folder filter: a number = that folder, "root" = unfiled files, absent = all.
+    const folderParam = searchParams.get("folderId");
+    const folderFilter =
+      folderParam === null
+        ? undefined
+        : folderParam === "root"
+          ? isNull(media.folderId)
+          : Number.isFinite(parseInt(folderParam, 10))
+            ? eq(media.folderId, parseInt(folderParam, 10))
+            : undefined;
 
     const [result, [counted]] = await Promise.all([
       db.query.media.findMany({
+        where: folderFilter,
         orderBy: [desc(media.createdAt)],
         limit,
         offset,
       }),
-      db.select({ n: count() }).from(media),
+      db.select({ n: count() }).from(media).where(folderFilter),
     ]);
 
     const total = counted?.n ?? result.length;
@@ -226,6 +237,21 @@ export async function POST(req: NextRequest) {
 
     const stored = await storeFile(filename, buffer, mimeType);
 
+    // Optional folder: the uploader passes folderId in the form data.
+    // Validated so a bad id can't orphan the file.
+    let folderId: number | null = null;
+    const folderParam = formData.get("folderId");
+    if (folderParam != null && String(folderParam) !== "") {
+      const fid = parseInt(String(folderParam), 10);
+      if (Number.isFinite(fid)) {
+        const folder = await db.query.mediaFolders.findFirst({
+          where: eq(mediaFolders.id, fid),
+          columns: { id: true },
+        });
+        if (folder) folderId = fid;
+      }
+    }
+
     const [mediaItem] = await db.insert(media).values({
       filename: stored.filename,
       originalName: file.name,
@@ -236,6 +262,7 @@ export async function POST(req: NextRequest) {
       height: size?.height ?? null,
       blur: optimized.blur ?? null,
       uploadedById: session.user?.id,
+      folderId,
     }).returning();
 
     return NextResponse.json({ media: mediaItem, ...(svgNotes.length ? { sanitized: svgNotes } : {}) }, { status: 201 });

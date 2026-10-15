@@ -5,7 +5,7 @@ import { WIDTHS as IMAGE_WIDTHS, QUALITIES as IMAGE_QUALITIES } from "@/lib/logo
 import { readdir, unlink } from "node:fs/promises";
 import path from "node:path";
 import { db } from "@/lib/db";
-import { media } from "@/lib/db/schema";
+import { media, mediaFolders } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import type { Session } from "next-auth";
@@ -52,6 +52,21 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const [item] = await db.update(media).set({
       alt: text(body.alt, 300),
       caption: text(body.caption, 1000),
+      // Moving between folders: null = root, a number = that folder.
+      // Validated against existing folders so a typo can't orphan a file.
+      ...(body.folderId !== undefined
+        ? {
+            folderId:
+              body.folderId === null
+                ? null
+                : (await db.query.mediaFolders.findFirst({
+                    where: eq(mediaFolders.id, parseInt(String(body.folderId), 10)),
+                    columns: { id: true },
+                  }))
+                  ? parseInt(String(body.folderId), 10)
+                  : undefined,
+          }
+        : {}),
     }).where(eq(media.id, numId)).returning();
 
     return NextResponse.json({ media: item });

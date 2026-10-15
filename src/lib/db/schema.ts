@@ -10,6 +10,7 @@ import {
   primaryKey,
   index,
   uniqueIndex,
+  type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
@@ -482,11 +483,27 @@ export const media = pgTable("media", {
   alt: text("alt"),
   caption: text("caption"),
   uploadedById: text("uploaded_by_id").references(() => users.id, { onDelete: "set null" }),
+  folderId: integer("folder_id").references(() => mediaFolders.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 }, (t) => [
   // The image-size lookup resolves images by URL on every render that has one.
   index("media_url_idx").on(t.url),
+  index("media_folder_idx").on(t.folderId),
 ]);
+
+/**
+ * Media library folders. A folder can nest inside another via parentId;
+ * a null parentId means a top-level folder. Deleting a folder sets its
+ * children's parentId to null (they become top-level) and moves its files
+ * to the deleted folder's parent (or root) — files are never deleted with
+ * the folder.
+ */
+export const mediaFolders = pgTable("media_folders", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  parentId: integer("parent_id").references((): AnyPgColumn => mediaFolders.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
 
 export const siteSettings = pgTable("site_settings", {
   id: serial("id").primaryKey(),
@@ -605,7 +622,7 @@ export const plugins = pgTable("plugins", {
 // here instead: what failed, where, and the stack — enough to fix it.
 export const errorLog = pgTable("error_log", {
   id: serial("id").primaryKey(),
-  /** "render", "route", "proxy", "client" — where it surfaced. */
+  /** "render", "route", "middleware", "client" — where it surfaced. */
   source: varchar("source", { length: 20 }).notNull().default("render"),
   path: text("path"),
   method: varchar("method", { length: 10 }),

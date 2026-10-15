@@ -29,6 +29,7 @@ export default async function MediaPage() {
     alt: r.alt,
     caption: r.caption,
     createdAt: r.createdAt.toISOString(),
+    folderId: r.folderId,
   }));
   const total = counted?.n ?? items.length;
 
