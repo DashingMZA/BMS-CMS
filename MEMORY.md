@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `508d701` — Fix lint errors/warnings
+ShareButtons: moved the `react-hooks/set-state-in-effect` disable comment to the call site inside the effect (v7 plugin requires it there). Removed unused `label` prop (SidebarPanel) and unused imports `headers`, `newTabProps` (SiteLayout). `pnpm lint` clean.
+
 ### 2026-10-15 — `8bc13dd` — Sticky sidebar ad (CSS-only)
 New per-block `sticky` flag for sidebar-positioned ad blocks. When on, the ad gets `position: sticky; bottom: 1rem` and stays visible while scrolling. Toggle in Admin → Ads → block → "Sticky — stay visible while scrolling". Old blocks default to non-sticky via parseAdBlocks.
 
