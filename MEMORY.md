@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `5d9a39e` — Customizer: visual layout cards for archive/page/post
+LayoutGeneral now uses CardChoice with LAYOUT_ART visual previews (like Search Results) instead of plain text LabelChoice buttons. Applies to archive, page, and post layout settings.
+
 ### 2026-10-15 — `a94c88c` — Customizer: chip controls to General tab
 Moved "Show the category filter row", "Chip source", "Max chips" from Design to General tab (functional, not visual). Design keeps only chip colours.
 
