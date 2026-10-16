@@ -199,19 +199,10 @@ function termOverrideCss(
   if (color) out.push(`.archive-card-term{color:${color}}`);
   if (hover) out.push(`.archive-card-term:hover{color:${hover}}`);
 
-  // `default` means "follow the site-wide setting", which has already emitted
-  // its own rules — so this only speaks when the term overrides it. The List
-  // design is one card per row whatever the count says, so it wins here too.
-  const n = style === "list" ? 0 : parseInt(term.archiveColumns ?? "", 10);
-  if (n >= 1 && n <= 4) {
-    const gap = archiveGridGap(style);
-    out.push(`.archive-items{grid-template-columns:repeat(1,minmax(0,1fr));gap:${gap / 16}rem}`);
-    if (n > 1) {
-      out.push(
-        `@media(min-width:640px){.archive-items{grid-template-columns:repeat(${n},minmax(0,1fr))}}`
-      );
-    }
-  } else if (style === "list") {
+  // Columns are now driven by the --cols CSS variable set inline on
+  // .archive-items (from cardCols: term override OR global setting).
+  // No separate column rules here — one writer, no cascade race.
+  if (style === "list") {
     // A term that picked List while the site is a grid needs the grid reset
     // to one column, which the site stylesheet has not done.
     out.push(`.archive-items{grid-template-columns:repeat(1,minmax(0,1fr));gap:1.25rem}`);
@@ -704,7 +695,7 @@ export default async function BlogArchive({
         {blocksFor(adBlocks, "before_post", pageKind).map((b) => (
           <AdBlockView key={`before-post-${b.id}`} block={b} />
         ))}
-        <div className={`archive-items is-${cardStyle}`}>
+        <div className={`archive-items is-${cardStyle}`} style={{ "--cols": cardCols } as React.CSSProperties}>
           {list.map((post, index) => (
             <Fragment key={post.id}>
               <article

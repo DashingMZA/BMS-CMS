@@ -935,7 +935,8 @@ export function contentCss(s: Record<string, string>): string {
   // background and dark text, independent of the page's site_bg (which may
   // be dark on archives/pages). Links keep the text colour on hover
   // (underline only), never a colour swap that could render them invisible.
-  out.push(`.content-sidebar{background:var(--color-bg,#ffffff);color:var(--color-text,#0f172a);border-radius:0.75rem;padding:1.25rem}`);
+  out.push(`.content-sidebar{background:#ffffff;color:#0f172a;border-radius:0.75rem;padding:1.25rem}`);
+  out.push(`.content-sidebar h1,.content-sidebar h2,.content-sidebar h3,.content-sidebar h4,.content-sidebar h5,.content-sidebar h6{color:#0f172a}`);
   out.push(`.content-sidebar a{color:inherit}`);
   out.push(`.content-sidebar a:hover{color:inherit}`);
   // The Speed "render offscreen" optimisation uses content-visibility:auto,
@@ -1046,16 +1047,12 @@ export function contentCss(s: Record<string, string>): string {
   out.push(archiveColourCss(s));
 
   // Archive columns. The List design is one per row by definition, so it sets
-  // the count rather than being overridden by it.
-  // Breakpoints: 1 column on mobile (<640px), then the chosen count. The old
-  // 1024px breakpoint for 3-4 columns caused confusion when the viewport was
-  // narrower (e.g. DevTools open, smaller laptop) — the setting is now
-  // honoured from 640px up.
+  // Single source of truth: the grid reads --cols (set inline by BlogArchive
+  // from term override OR global setting). Falls back to the global setting
+  // when --cols is absent (e.g. cached HTML).
   const cols = style === "list" ? 1 : Math.min(4, Math.max(1, parseInt(s.archive_columns) || 3));
   out.push(`.archive-items{display:grid;gap:${style === "list" ? "1.25rem" : "1.75rem"};grid-template-columns:repeat(1,minmax(0,1fr))}`);
-  if (cols > 1) {
-    out.push(`@media(min-width:640px){.archive-items{grid-template-columns:repeat(${cols},minmax(0,1fr))}}`);
-  }
+  out.push(`@media(min-width:640px){.archive-items{grid-template-columns:repeat(var(--cols,${cols}),minmax(0,1fr))}}`);
 
   return out.join("");
 }
