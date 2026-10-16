@@ -119,7 +119,7 @@ export default async function SearchPage({
             </div>
             {showSidebar && (
               <aside className="content-sidebar">
-                <Sidebar settings={settings} language={lang} pageKind="search" />
+                <Sidebar settings={settings} language={lang} pageKind="search" sidebarId={settings.search_sidebar === "sidebar2" ? "sidebar2" : "sidebar1"} />
               </aside>
             )}
           </div>

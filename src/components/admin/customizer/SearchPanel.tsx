@@ -118,8 +118,8 @@ export function SearchPanel({ s, set }: { s: CustomizerSettings; set: SetFn }) {
           <Field label="Search Results Default Sidebar">
             <select className={inputCls} value={s.search_sidebar} onChange={(e) => set("search_sidebar", e.target.value)}>
               <option value="sidebar1">Sidebar 1</option>
+              <option value="sidebar2">Sidebar 2</option>
             </select>
-            <p className="text-[11px] text-slate-400 mt-1">Only one sidebar exists so far — it holds the search box.</p>
           </Field>
 
           <Field label="Card design" help="The look of every result card — the same presets as the archive cards.">

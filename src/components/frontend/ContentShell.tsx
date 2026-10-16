@@ -250,7 +250,12 @@ async function renderContentShell({
                 settings={settings}
                 language={language ?? defaultContentLanguage(settings)}
                 pageKind={adPageKind ?? adKindFor(kind)}
-                sidebarId={sidebarId ?? (settings.sidebar_choice === "sidebar2" ? "sidebar2" : "sidebar1")}
+                sidebarId={sidebarId ?? (
+                  kind === "archive" ? (settings.archive_sidebar === "sidebar2" ? "sidebar2" : "sidebar1") :
+                  kind === "post" ? (settings.post_sidebar === "sidebar2" ? "sidebar2" : "sidebar1") :
+                  kind === "page" ? (settings.page_sidebar === "sidebar2" ? "sidebar2" : "sidebar1") :
+                  (settings.sidebar_choice === "sidebar2" ? "sidebar2" : "sidebar1")
+                )}
               />
             </aside>
           )}

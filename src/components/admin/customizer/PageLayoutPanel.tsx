@@ -85,8 +85,8 @@ export function PageLayoutGeneral({ s, set }: { s: CustomizerSettings; set: SetF
       <Field label="Page Default Sidebar">
         <select className={inputCls} value={s.page_sidebar} onChange={(e) => set("page_sidebar", e.target.value)}>
           <option value="sidebar1">Sidebar 1</option>
+          <option value="sidebar2">Sidebar 2</option>
         </select>
-        <p className="text-[11px] text-slate-400 mt-1">Only one sidebar exists so far.</p>
       </Field>
 
       <Field label="Content Style">
