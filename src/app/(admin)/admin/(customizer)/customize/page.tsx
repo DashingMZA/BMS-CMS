@@ -697,7 +697,7 @@ export default function CustomizePage() {
           <iframe
             ref={iframeRef}
             key={previewKey}
-            src={section === "search" ? "/preview/customizer?view=search" : section === "archive" ? "/preview/customizer?view=archive" : "/preview/customizer"}
+            src={section === "search" ? "/preview/customizer?view=search" : (section === "layout" && focusItem === "archive") ? "/preview/customizer?view=archive" : "/preview/customizer"}
             title="Site preview"
             className="bg-white shadow-lg rounded-lg border border-slate-200 h-full transition-all duration-300"
             style={{ width: DEVICE_WIDTH[device], maxWidth: "100%" }}
