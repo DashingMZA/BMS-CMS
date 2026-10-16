@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `ab6b874` — Debug: data-columns attribute on archive grid
+Added `data-columns` and `data-setting` attributes to `.archive-items` so the user can see via Inspect what value the server is using vs what was selected. Helps diagnose why 4 columns shows as 3.
+
 ### 2026-10-15 — `729650d` — Search: remove archive-items class to prevent CSS overlap
 SearchResults was using both `search-items` and `archive-items` classes. The archive's column CSS (`.archive-items`) was overriding the search's column CSS (`.search-items`) because they have equal specificity. Removed `archive-items` from Search — it now only uses `search-items`, so Category and Search settings are fully independent.
 
