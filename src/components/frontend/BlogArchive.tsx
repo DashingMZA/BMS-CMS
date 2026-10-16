@@ -709,7 +709,7 @@ export default async function BlogArchive({
         {blocksFor(adBlocks, "before_post", pageKind).map((b) => (
           <AdBlockView key={`before-post-${b.id}`} block={b} />
         ))}
-        <div className={`archive-items is-${cardStyle}`} data-columns={cardCols} data-setting={settings.archive_columns || "unset"}>
+        <div className={`archive-items is-${cardStyle}`}>
           {list.map((post, index) => (
             <Fragment key={post.id}>
               <article

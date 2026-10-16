@@ -295,8 +295,7 @@ export function searchCss(s: Record<string, string>): string {
 
   const cols = Math.min(4, Math.max(1, parseInt(s.search_columns) || 3));
   out.push(`.search-items{display:grid;gap:1.75rem;grid-template-columns:repeat(1,minmax(0,1fr))}`);
-  out.push(`@media(min-width:640px){.search-items{grid-template-columns:repeat(${Math.min(2, cols)},minmax(0,1fr))}}`);
-  out.push(`@media(min-width:1024px){.search-items{grid-template-columns:repeat(${cols},minmax(0,1fr))}}`);
+  out.push(`@media(min-width:640px){.search-items{grid-template-columns:repeat(${cols},minmax(0,1fr))}}`);
 
   // Title block
   out.push(`.search-title-block{display:${s.search_title_show === "false" ? "none" : "block"}}`);
@@ -1048,11 +1047,14 @@ export function contentCss(s: Record<string, string>): string {
 
   // Archive columns. The List design is one per row by definition, so it sets
   // the count rather than being overridden by it.
+  // Breakpoints: 1 column on mobile (<640px), then the chosen count. The old
+  // 1024px breakpoint for 3-4 columns caused confusion when the viewport was
+  // narrower (e.g. DevTools open, smaller laptop) — the setting is now
+  // honoured from 640px up.
   const cols = style === "list" ? 1 : Math.min(4, Math.max(1, parseInt(s.archive_columns) || 3));
   out.push(`.archive-items{display:grid;gap:${style === "list" ? "1.25rem" : "1.75rem"};grid-template-columns:repeat(1,minmax(0,1fr))}`);
   if (cols > 1) {
-    out.push(`@media(min-width:640px){.archive-items{grid-template-columns:repeat(${Math.min(2, cols)},minmax(0,1fr))}}`);
-    if (cols > 2) out.push(`@media(min-width:1024px){.archive-items{grid-template-columns:repeat(${cols},minmax(0,1fr))}}`);
+    out.push(`@media(min-width:640px){.archive-items{grid-template-columns:repeat(${cols},minmax(0,1fr))}}`);
   }
 
   return out.join("");
