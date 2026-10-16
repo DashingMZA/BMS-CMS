@@ -770,10 +770,10 @@ function archiveCardOrderCss(s: Record<string, string>): string[] {
       `.archive-items:not(.is-overlay) .archive-card [data-card-el="${el.id}"]{order:${i}${el.visible === false ? ";display:none" : ""}}`
     );
   });
-  // Featured image above or below the content block.
-  if (s.archive_card_image_position === "below-content") {
-    out.push(`.archive-items:not(.is-overlay):not(.is-list) .archive-card > [data-card-el="image"]{order:99}`);
-  }
+  // The featured image is now a reorderable "feature" element (like Search),
+  // so the old below-content override is obsolete. Kept for configs saved
+  // before the migration: if the image position was below-content and the
+  // user hasn't reordered yet, the merge puts feature last anyway.
   return out;
 }
 

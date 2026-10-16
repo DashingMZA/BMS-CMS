@@ -353,18 +353,12 @@ function LayoutGeneral({
 
       {kind === "archive" && (
         <>
-          <Field label="Card elements" help="Drag to reorder. Toggle an item off to hide it. The overlay card keeps its text-on-image design.">
+          <Field label="Archive item elements" help="Drag to reorder. Toggle an item off to hide it. The overlay card keeps its text-on-image design.">
             <ElementList
               elements={parseArchiveCardOrder(s.archive_card_order)}
               labels={ARCHIVE_CARD_LABELS}
               onChange={(next) => set("archive_card_order", JSON.stringify(next))}
             />
-          </Field>
-          <Field label="Featured image position" help="The image sits outside the reorderable elements, so it moves above or below the whole content block.">
-            <select className={inputCls} value={s.archive_card_image_position || "above-content"} onChange={(e) => set("archive_card_image_position", e.target.value)}>
-              <option value="above-content">Above content</option>
-              <option value="below-content">Below content</option>
-            </select>
           </Field>
           {/* Functional, not visual: which chips and how many. Lives in
               General; Design keeps only the colours. */}

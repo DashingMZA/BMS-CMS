@@ -716,7 +716,7 @@ export default async function BlogArchive({
                 className="archive-card group flex flex-col"
               >
               {post.featuredImage && (
-                <Link href={postPath(post, settings)} data-card-el="image" className="block overflow-hidden">
+                <Link href={postPath(post, settings)} data-card-el="feature" className="block overflow-hidden">
                   {/* Through the optimiser, which matters most here: an archive
                       renders up to twelve of these at once, so they are the
                       largest block of image bytes on the site. `sizes` is the

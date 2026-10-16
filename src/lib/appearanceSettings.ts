@@ -1353,15 +1353,30 @@ export function parseSearchElements(raw: string): SearchElement[] {
  * The featured image is structurally separate (a direct child of the card,
  * for the overlay/list styles) so it gets its own position control. */
 export const ARCHIVE_CARD_LABELS: Record<string, string> = {
-  term: "Category label",
+  feature: "Feature",
+  term: "Categories",
   title: "Title",
-  meta: "Meta (author/date)",
+  meta: "Meta",
   excerpt: "Excerpt",
-  readmore: "Read more link",
+  readmore: "Readmore",
 };
 
 export function parseArchiveCardOrder(raw: string): SearchElement[] {
-  return mergeElements(raw, Object.keys(ARCHIVE_CARD_LABELS).map((id) => ({ id, visible: true })));
+  const fallback = Object.keys(ARCHIVE_CARD_LABELS).map((id) => ({ id, visible: true }));
+  try {
+    const v = JSON.parse(raw || "null");
+    if (!Array.isArray(v) || v.length === 0) return fallback;
+    // Keep any element the stored list forgot, so new elements aren't invisible.
+    // "feature" (the featured image) goes first, matching Search's order —
+    // existing configs saved before it existed get it prepended, not appended.
+    const seen = new Set(v.map((e: SearchElement) => e.id));
+    const missing = fallback.filter((f) => !seen.has(f.id));
+    const feature = missing.find((m) => m.id === "feature");
+    const rest = missing.filter((m) => m.id !== "feature");
+    return [...(feature ? [feature] : []), ...v, ...rest];
+  } catch {
+    return fallback;
+  }
 }
 
 function mergeElements(raw: string, fallback: SearchElement[]): SearchElement[] {
