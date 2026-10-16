@@ -389,6 +389,7 @@ export const config = {
     // redirect reaches them too — see FILE_ROUTES.
     "/robots.txt",
     "/llms.txt",
+    "/ads.txt",
     "/favicon.ico",
     "/main-sitemap.xsl",
     "/sitemap.xml",
