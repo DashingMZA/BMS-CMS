@@ -122,8 +122,8 @@ export function SearchPanel({ s, set }: { s: CustomizerSettings; set: SetFn }) {
             </select>
           </Field>
 
-          <Field label="Card design" help="The look of every result card — the same presets as the archive cards.">
-            <LabelChoice cols={3} value={s.archive_card_style || "classic"} onChange={(v) => set("archive_card_style", v)}
+          <Field label="Card design" help="The look of every result card.">
+            <LabelChoice cols={3} value={s.search_card_style || "classic"} onChange={(v) => set("search_card_style", v)}
               options={[
                 { value: "classic", label: "Classic" },
                 { value: "elevated", label: "Elevated" },

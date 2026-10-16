@@ -487,6 +487,7 @@ export interface AppearanceSettings {
   search_sidebar: string;
   search_content_style: string;     // boxed | unboxed
   search_columns: string;           // 1..4
+  search_card_style: string;        // classic | elevated | bordered | overlay | list | minimal
   search_elements: string;          // JSON: { id: string; visible: boolean }[]
   search_excerpt_length: string;    // words, 0 = hide
   search_empty_title: string;       // "No results" heading
@@ -1023,6 +1024,7 @@ export const defaults: AppearanceSettings = {
   search_sidebar: "sidebar1",
   search_content_style: "boxed",
   search_columns: "3",
+  search_card_style: "classic",
   search_excerpt_length: "25",
   search_empty_title: "",
   search_empty_text: "",

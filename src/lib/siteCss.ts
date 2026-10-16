@@ -311,10 +311,10 @@ export function searchCss(s: Record<string, string>): string {
   }
   if (s.search_title_color) out.push(`.search-title-block h1{color:${s.search_title_color}}`);
 
-  // Card design presets — shared with the archive cards, so search results
-  // honour the same Card design setting. The old boxed/unboxed toggle is
+  // Card design presets — search has its own card style setting now,
+  // independent of the archive cards. The old boxed/unboxed toggle is
   // superseded: "classic" is the boxed look, "minimal" the unboxed one.
-  const searchCardStyle = s.archive_card_style || "classic";
+  const searchCardStyle = s.search_card_style || "classic";
   out.push(`.search-items .archive-card{background:var(--color-bg,#fff);border:0;border-radius:2px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.04)}`);
   out.push(`.search-items .archive-card-image{border-radius:0}`);
   out.push(archiveCardStyleCss(searchCardStyle).replaceAll(".archive-items", ".search-items"));
