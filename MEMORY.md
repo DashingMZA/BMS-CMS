@@ -26,6 +26,11 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `eb0a98c` — Archive elements: match Search naming + Feature reorderable
+- ARCHIVE_CARD_LABELS now matches SEARCH_ELEMENT_LABELS: Feature, Categories, Title, Meta, Excerpt, Readmore (was: Category label, Meta (author/date), Read more link).
+- "Feature" (featured image) is now a reorderable element (was separate "Featured image position" setting, now removed).
+- Section renamed from "Card elements" to "Archive item elements" for consistency with "Search item elements".
+
 ### 2026-10-15 — `df02a4c` — Customizer: archive live preview + default sidebar
 - Preview page now supports `?view=archive` rendering a real BlogArchive (not the "Welcome" placeholder).
 - Customize page uses `?view=archive` for the archive section.
