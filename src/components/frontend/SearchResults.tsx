@@ -120,7 +120,7 @@ export default function SearchResults({
                 )}
               </div>
             ) : (
-              <div className={`search-items archive-items is-${settings.search_card_style || "classic"}`}>
+              <div className={`search-items is-${settings.search_card_style || "classic"}`}>
                 {posts.map((p) => (
                   <article key={p.id} className="search-item archive-card group flex flex-col">
                     <Link href={href(p)} data-search-el="feature" className="archive-card-image-link block overflow-hidden bg-black/5 aspect-[16/9]">
