@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `fa40398` — Customizer: fix archive preview section check
+The archive preview wasn't showing because `section` is "layout" (not "archive") — the subsection is in `focusItem`. Fixed the iframe src check to `(section === "layout" && focusItem === "archive")`.
+
 ### 2026-10-15 — `31db220` — Sidebar: per-page sidebar settings actually applied
 - ContentShell now uses archive_sidebar/page_sidebar/post_sidebar based on kind (was only using global sidebar_choice).
 - Search page now uses search_sidebar setting.
