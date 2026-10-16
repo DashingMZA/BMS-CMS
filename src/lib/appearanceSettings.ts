@@ -438,6 +438,7 @@ export interface AppearanceSettings {
   /** Tablet sidebar behavior: "default" | "hide" | "stack". */
   sidebar_tablet_layout: string;
   archive_layout: string;
+  archive_sidebar: string;
   archive_content_style: string;
   archive_spacing: string;
   archive_columns: string;        // 1..4
@@ -970,6 +971,7 @@ export const defaults: AppearanceSettings = {
   sidebar_mobile_layout: "stack",
   sidebar_tablet_layout: "default",
   archive_layout: "normal",
+  archive_sidebar: "sidebar1",
   // "unboxed", matching what the site actually renders: siteCss falls back to
   // unboxed for a kind whose content style was never saved, so a fresh site's
   // archive is unboxed while this panel used to show "Boxed" selected — the

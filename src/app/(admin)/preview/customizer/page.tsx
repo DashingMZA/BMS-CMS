@@ -7,6 +7,7 @@ import { auth } from "@/lib/auth";
 import { formatDate } from "@/lib/utils";
 import SiteLayout from "@/components/frontend/SiteLayout";
 import SearchResults, { type SearchPost } from "@/components/frontend/SearchResults";
+import BlogArchive from "@/components/frontend/BlogArchive";
 import { getSiteSettings } from "@/lib/settings";
 import ClickToEdit from "@/components/admin/customizer/ClickToEdit";
 import { postPath } from "@/lib/permalinks";
@@ -63,6 +64,27 @@ export default async function CustomizerPreviewPage({
       <>
       <SiteLayout customizerMode language={defaultContentLanguage(settings)}>
         <SearchResults query="example" posts={sample} settings={settings} language={defaultContentLanguage(settings)} />
+      </SiteLayout>
+      <ClickToEdit />
+      </>
+    );
+  }
+
+  if (view === "archive") {
+    // Show a real archive (BlogArchive) so category page settings preview
+    // live, like the search results do. Uses recent posts as sample content.
+    return (
+      <>
+      <SiteLayout customizerMode language={defaultContentLanguage(settings)}>
+        <BlogArchive
+          page={1}
+          title="Category Preview"
+          description="A live preview of your category archive layout."
+          base="/"
+          language={defaultContentLanguage(settings)}
+          pageType="front"
+          pageKind="homepage"
+        />
       </SiteLayout>
       <ClickToEdit />
       </>

@@ -290,6 +290,15 @@ function LayoutGeneral({
         />
       </Field>
 
+      {kind === "archive" && (
+        <Field label="Category Pages Default Sidebar">
+          <select className={inputCls} value={s.archive_sidebar || "sidebar1"} onChange={(e) => set("archive_sidebar", e.target.value)}>
+            <option value="sidebar1">Sidebar 1</option>
+          </select>
+          <p className="text-[11px] text-slate-400 mt-1">Only one sidebar exists so far — it holds the search box.</p>
+        </Field>
+      )}
+
       <Field label="Content Style">
         <LabelChoice value={String(s[k("content_style")])} onChange={(v) => set(k("content_style"), v)}
           options={[{ value: "boxed", label: "Boxed" }, { value: "unboxed", label: "Unboxed" }]} />
