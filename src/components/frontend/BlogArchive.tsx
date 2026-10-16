@@ -208,13 +208,8 @@ function termOverrideCss(
     out.push(`.archive-items{grid-template-columns:repeat(1,minmax(0,1fr));gap:${gap / 16}rem}`);
     if (n > 1) {
       out.push(
-        `@media(min-width:640px){.archive-items{grid-template-columns:repeat(${Math.min(2, n)},minmax(0,1fr))}}`
+        `@media(min-width:640px){.archive-items{grid-template-columns:repeat(${n},minmax(0,1fr))}}`
       );
-      if (n > 2) {
-        out.push(
-          `@media(min-width:1024px){.archive-items{grid-template-columns:repeat(${n},minmax(0,1fr))}}`
-        );
-      }
     }
   } else if (style === "list") {
     // A term that picked List while the site is a grid needs the grid reset
