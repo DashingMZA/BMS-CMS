@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `69a5321` — Search: independent card style setting
+Added `search_card_style` (was sharing `archive_card_style`). Category card changes no longer affect Search results. Updated SearchPanel, SearchResults, siteCss, and defaults.
+
 ### 2026-10-15 — `fa40398` — Customizer: fix archive preview section check
 The archive preview wasn't showing because `section` is "layout" (not "archive") — the subsection is in `focusItem`. Fixed the iframe src check to `(section === "layout" && focusItem === "archive")`.
 
