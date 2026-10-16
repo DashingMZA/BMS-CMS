@@ -26,6 +26,11 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `31db220` — Sidebar: per-page sidebar settings actually applied
+- ContentShell now uses archive_sidebar/page_sidebar/post_sidebar based on kind (was only using global sidebar_choice).
+- Search page now uses search_sidebar setting.
+- All sidebar dropdowns (Category, Page, Post, Search) now offer Sidebar 1 + Sidebar 2.
+
 ### 2026-10-15 — `eb0a98c` — Archive elements: match Search naming + Feature reorderable
 - ARCHIVE_CARD_LABELS now matches SEARCH_ELEMENT_LABELS: Feature, Categories, Title, Meta, Excerpt, Readmore (was: Category label, Meta (author/date), Read more link).
 - "Feature" (featured image) is now a reorderable element (was separate "Featured image position" setting, now removed).
