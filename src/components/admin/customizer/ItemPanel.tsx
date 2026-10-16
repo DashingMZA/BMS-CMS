@@ -18,7 +18,7 @@ import { SinglePostGeneral, SinglePostDesign } from "./SinglePostPanel";
 import { PageLayoutGeneral, PageLayoutDesign } from "./PageLayoutPanel";
 import { SidebarPanel } from "./SidebarPanel";
 import {
-  ColorPair, DeviceTabs, ElementList, Field, LabelChoice, SectionHead, Slider, SpacingBox,
+  CardChoice, ColorPair, DeviceTabs, ElementList, Field, LabelChoice, LAYOUT_ART, SectionHead, Slider, SpacingBox,
   Swatch, Toggle, inputCls, smallCls, type Device, type SetFn,
 } from "./PanelKit";
 
@@ -261,15 +261,6 @@ function NotBuilt({ what }: { what: string }) {
 
 /* ── Posts/Pages Layout sub-screens ───────────────────────────────────────── */
 
-const LAYOUT_CHOICES = [
-  { value: "normal", label: "Normal" },
-  { value: "narrow", label: "Narrow" },
-  { value: "wide", label: "Wide" },
-  { value: "fullwidth", label: "Fullwidth" },
-  { value: "left-sidebar", label: "Left Sidebar" },
-  { value: "right-sidebar", label: "Right Sidebar" },
-];
-
 const SPACING_CHOICES = [
   { value: "default", label: "Default" },
   { value: "enable", label: "Large" },
@@ -285,7 +276,18 @@ function LayoutGeneral({
   return (
     <>
       <Field label="Layout" help="Every page and post can override this from its own Design panel.">
-        <LabelChoice cols={3} value={String(s[k("layout")])} onChange={(v) => set(k("layout"), v)} options={LAYOUT_CHOICES} />
+        <CardChoice
+          value={String(s[k("layout")] || "normal")}
+          onChange={(v) => set(k("layout"), v)}
+          options={[
+            { value: "normal",        label: "Normal",        art: LAYOUT_ART.normal },
+            { value: "narrow",        label: "Narrow",        art: LAYOUT_ART.narrow },
+            { value: "wide",          label: "Wide",          art: LAYOUT_ART.wide },
+            { value: "fullwidth",     label: "Fullwidth",     art: LAYOUT_ART.fullwidth },
+            { value: "left-sidebar",  label: "Left Sidebar",  art: LAYOUT_ART["left-sidebar"] },
+            { value: "right-sidebar", label: "Right Sidebar", art: LAYOUT_ART["right-sidebar"] },
+          ]}
+        />
       </Field>
 
       <Field label="Content Style">
