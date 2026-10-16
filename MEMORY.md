@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-16 — `b784218` — Term columns override: use 640px breakpoint like global CSS
+The per-category columns override in termOverrideCss still used the old 1024px breakpoint, overriding the fixed global CSS. Aligned it to 640px so term-specific columns also honor the setting from tablet up.
+
 ### 2026-10-16 — `dfa9f63` — Columns: honor setting from 640px, remove 1024px breakpoint
 The 1024px breakpoint meant 3-4 columns only applied on wide viewports. If the browser was narrower (DevTools open, smaller laptop), it fell back to 2 columns, causing confusion. Now the chosen column count applies from 640px up. Also removed the debug data-columns attributes.
 
