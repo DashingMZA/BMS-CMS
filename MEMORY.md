@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-16 — `dfa9f63` — Columns: honor setting from 640px, remove 1024px breakpoint
+The 1024px breakpoint meant 3-4 columns only applied on wide viewports. If the browser was narrower (DevTools open, smaller laptop), it fell back to 2 columns, causing confusion. Now the chosen column count applies from 640px up. Also removed the debug data-columns attributes.
+
 ### 2026-10-15 — `ab6b874` — Debug: data-columns attribute on archive grid
 Added `data-columns` and `data-setting` attributes to `.archive-items` so the user can see via Inspect what value the server is using vs what was selected. Helps diagnose why 4 columns shows as 3.
 
