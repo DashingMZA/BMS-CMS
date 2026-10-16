@@ -26,6 +26,11 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `df02a4c` — Customizer: archive live preview + default sidebar
+- Preview page now supports `?view=archive` rendering a real BlogArchive (not the "Welcome" placeholder).
+- Customize page uses `?view=archive` for the archive section.
+- Added `archive_sidebar` setting ("Category Pages Default Sidebar" dropdown in General tab, like Search Results Default Sidebar).
+
 ### 2026-10-15 — `5d9a39e` — Customizer: visual layout cards for archive/page/post
 LayoutGeneral now uses CardChoice with LAYOUT_ART visual previews (like Search Results) instead of plain text LabelChoice buttons. Applies to archive, page, and post layout settings.
 
