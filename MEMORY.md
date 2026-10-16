@@ -26,6 +26,9 @@
 
 ## Work log (newest first)
 
+### 2026-10-15 — `729650d` — Search: remove archive-items class to prevent CSS overlap
+SearchResults was using both `search-items` and `archive-items` classes. The archive's column CSS (`.archive-items`) was overriding the search's column CSS (`.search-items`) because they have equal specificity. Removed `archive-items` from Search — it now only uses `search-items`, so Category and Search settings are fully independent.
+
 ### 2026-10-15 — `69a5321` — Search: independent card style setting
 Added `search_card_style` (was sharing `archive_card_style`). Category card changes no longer affect Search results. Updated SearchPanel, SearchResults, siteCss, and defaults.
 
