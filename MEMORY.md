@@ -26,6 +26,11 @@
 
 ## Work log (newest first)
 
+### 2026-10-16 — `7d1ad64` — Archive: single column source via CSS var; sidebar headings hardcoded
+Deep audit found two root causes:
+1. Sidebar headings invisible: `.content-sidebar{color:...}` used inheritance, but `<h2>` gets color from global `h1..h6{color:var(--color-heading)}` element rule which beats inheritance. Headings now hardcoded to #0f172a like the rest of the sidebar.
+2. Columns had TWO writers (global siteCss + per-term termOverrideCss) racing on `.archive-items`. Now single source: BlogArchive sets `--cols` inline from cardCols (term override OR global), siteCss reads `var(--cols,fallback)`. Deleted the column block from termOverrideCss.
+
 ### 2026-10-16 — `b784218` — Term columns override: use 640px breakpoint like global CSS
 The per-category columns override in termOverrideCss still used the old 1024px breakpoint, overriding the fixed global CSS. Aligned it to 640px so term-specific columns also honor the setting from tablet up.
 
