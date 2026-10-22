@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { isAdmin } from "@/lib/authz";
 import { previewCleanup, runCleanup } from "@/lib/maintenance";
+import { recordError } from "@/lib/errorLog";
 import { pruneAllRevisions } from "@/lib/revisions";
 
 /** Actions: revisions (trim every document to the limit) · cleanup (trash, logs, sessions). */
@@ -20,6 +21,15 @@ export async function POST(req: NextRequest) {
     }
     return NextResponse.json({ error: "Unknown action." }, { status: 400 });
   } catch (err) {
-    return NextResponse.json({ error: err instanceof Error ? err.message : "Failed." }, { status: 500 });
+    // The detail goes to the error log, not the response (SEC-007): a raw
+    // database message can name schema and host internals.
+    await recordError({
+      source: "route",
+      path: "/api/speed/database",
+      method: req.method,
+      message: err instanceof Error ? err.message : "Failed.",
+      stack: err instanceof Error ? err.stack : undefined,
+    });
+    return NextResponse.json({ error: "The database action failed." }, { status: 500 });
   }
 }

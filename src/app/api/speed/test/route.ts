@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { isAdmin } from "@/lib/authz";
 import { getSiteSettings } from "@/lib/settings";
 import { siteUrl } from "@/lib/siteUrl";
+import { recordError } from "@/lib/errorLog";
 
 const SHOW = ["x-litespeed-cache", "cf-cache-status", "x-nextjs-cache", "x-bms-cache", "cache-control", "age", "content-encoding", "server", "x-litespeed-cache-control", "content-type"];
 
@@ -37,7 +38,16 @@ export async function POST(req: NextRequest) {
       }
       runs.push({ status: res.status, ms: Date.now() - started, headers });
     } catch (err) {
-      return NextResponse.json({ error: err instanceof Error ? err.message : "Could not fetch.", url }, { status: 502 });
+      // The detail goes to the error log, not the response (SEC-007): a raw
+      // fetch error can name internal addresses and ports.
+      await recordError({
+        source: "route",
+        path: "/api/speed/test",
+        method: req.method,
+        message: err instanceof Error ? err.message : "Could not fetch.",
+        stack: err instanceof Error ? err.stack : undefined,
+      });
+      return NextResponse.json({ error: "Could not fetch.", url }, { status: 502 });
     }
   }
   return NextResponse.json({ url, runs }, { headers: { "Cache-Control": "no-store" } });

@@ -17,6 +17,7 @@ import { siteTimeZone } from "@/lib/locale";
 import { revalidatePublicSite } from "@/lib/revalidateSite";
 import { purgeAll } from "@/lib/lscache";
 import { releaseRedirectFrom } from "@/lib/autoRedirect";
+import { recordError } from "@/lib/errorLog";
 
 /**
  * Makes scheduled posts appear on time.
@@ -182,6 +183,15 @@ export async function GET(req: NextRequest) {
       { headers }
     );
   } catch (err) {
-    return NextResponse.json({ error: err instanceof Error ? err.message : "Cron failed." }, { status: 500 });
+    // The detail goes to the error log, not the response (SEC-007): a raw
+    // database message can name schema and host internals.
+    await recordError({
+      source: "route",
+      path: "/api/cron/publish",
+      method: req.method,
+      message: err instanceof Error ? err.message : "Cron failed.",
+      stack: err instanceof Error ? err.stack : undefined,
+    });
+    return NextResponse.json({ error: "Cron failed." }, { status: 500 });
   }
 }

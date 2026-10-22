@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { isAdmin } from "@/lib/authz";
 import { getSiteSettings } from "@/lib/settings";
 import { crawlBatch, warmPaths } from "@/lib/warmCache";
+import { recordError } from "@/lib/errorLog";
 
 /**
  * "Warm now": `batch` runs one crawler batch from wherever it stopped (and
@@ -24,6 +25,15 @@ export async function POST(req: NextRequest) {
       { headers: { "Cache-Control": "no-store" } }
     );
   } catch (err) {
-    return NextResponse.json({ error: err instanceof Error ? err.message : "Warm-up failed." }, { status: 500 });
+    // The detail goes to the error log, not the response (SEC-007): a raw
+    // internal message can name schema and host internals.
+    await recordError({
+      source: "route",
+      path: "/api/speed/warm",
+      method: req.method,
+      message: err instanceof Error ? err.message : "Warm-up failed.",
+      stack: err instanceof Error ? err.stack : undefined,
+    });
+    return NextResponse.json({ error: "Warm-up failed." }, { status: 500 });
   }
 }
