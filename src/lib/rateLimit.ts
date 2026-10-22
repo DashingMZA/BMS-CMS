@@ -38,15 +38,26 @@ export function rateLimited(name: string, key: string, { max, windowMs }: RateLi
   hits.push(now);
   bucket.set(key, hits);
 
-  // Cheap sweep so the map cannot grow without bound on a long-lived process.
-  if (bucket.size > 5000) {
-    for (const [k, times] of bucket) {
-      if (times.every((t) => now - t >= windowMs)) bucket.delete(k);
+  // Bound the bucket itself (SEC-006). The sweep this replaces deleted only
+  // keys whose every hit had expired — exactly the keys a flood is *not*
+  // creating, since each fresh key has an in-window hit by construction.
+  // Rotated source addresses (or forged ones, before SEC-005) therefore
+  // grew the map without limit inside a window. Past the cap, evict
+  // oldest-inserted first (a Map keeps that order): an evicted key just
+  // starts a fresh allowance, so under flood the limit weakens slightly
+  // instead of the process's memory growing until it dies.
+  if (bucket.size > MAX_BUCKET_KEYS) {
+    for (const k of bucket.keys()) {
+      if (bucket.size <= MAX_BUCKET_KEYS) break;
+      bucket.delete(k);
     }
   }
 
   return hits.length > max;
 }
+
+/** Most distinct keys one limiter remembers at once — see rateLimited. */
+const MAX_BUCKET_KEYS = 20_000;
 
 /**
  * Whether an address is one of Cloudflare's — the ranges server.js keeps,
