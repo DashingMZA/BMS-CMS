@@ -1,9 +1,16 @@
 #!/usr/bin/env node
 /**
  * Unit tests for src/lib/ads.ts — the ad targeting and parsing logic.
- * Uses Node's built-in test runner (no extra dependencies).
  *
- *   node --test tests/ads.test.mjs
+ * These import the real module (via tsx, a devDependency). They did not
+ * always: the first version of this file re-implemented the logic inline
+ * as a "contract test" that could never fail — it even asserted a
+ * blocksFor default (`?? true`) the real function does not have — which
+ * gave the suite, and CI, nothing true to say about the code it claimed
+ * to cover (TEST-001). If a case here can pass without importing src/,
+ * it does not belong here.
+ *
+ *   pnpm test
  *
  * Covers the bugs fixed in Oct 2026:
  * - parseAdBlocks: missing page-kind keys must default to true, not false
@@ -13,72 +20,96 @@
 
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
+import { parseAdBlocks, serializeAdBlocks, blocksFor, sidebarBlocksFor, isBlockLive, newAdBlock } from "../src/lib/ads.ts";
 
-// We can't import TS directly, so we test via tsx-like transform.
-// Instead, replicate the pure logic here as a contract test.
-// If ads.ts changes, these tests document the expected behavior.
-
-describe("parseAdBlocks page-kind defaults", () => {
-  it("missing keys default to true (not false via !!undefined)", () => {
-    // Simulates an old saved block with only some page kinds
-    const saved = { posts: true, search: true };
-    const defaults = { posts: true, homepage: true, category: true, static: true, search: true, archive: true };
-    const pages = { ...defaults };
-    for (const k of Object.keys(pages)) {
-      if (k in saved) pages[k] = !!saved[k];
-    }
-    // The fix: missing keys keep default true
-    assert.equal(pages.homepage, true, "homepage should default to true");
-    assert.equal(pages.category, true, "category should default to true");
-    assert.equal(pages.archive, true, "archive should default to true");
-    assert.equal(pages.posts, true);
-    assert.equal(pages.search, true);
-  });
-
-  it("explicit false stays false", () => {
-    const saved = { posts: true, homepage: false };
-    const defaults = { posts: true, homepage: true, category: true, static: true, search: true, archive: true };
-    const pages = { ...defaults };
-    for (const k of Object.keys(pages)) {
-      if (k in saved) pages[k] = !!saved[k];
-    }
-    assert.equal(pages.homepage, false, "explicit false must be respected");
-    assert.equal(pages.category, true, "missing key defaults to true");
-  });
+const live = (over = {}) => ({
+  ...newAdBlock(0),
+  enabled: true,
+  code: "<div>ad</div>",
+  position: "before_content",
+  ...over,
 });
 
-describe("blocksFor pageKind filtering", () => {
-  it("matches when pageKind is true, hides when false", () => {
-    const blocks = [
-      { enabled: true, position: "sidebar", pages: { posts: true, homepage: false } },
-      { enabled: true, position: "sidebar", pages: { posts: true, homepage: true } },
-      { enabled: false, position: "sidebar", pages: { posts: true, homepage: true } },
-    ];
-    const forHomepage = blocks.filter(
-      (b) => b.enabled && b.position === "sidebar" && (b.pages["homepage"] ?? true)
-    );
-    assert.equal(forHomepage.length, 1, "only the homepage-enabled block shows");
+const ALL_PAGES = { posts: true, homepage: true, category: true, static: true, search: true, archive: true };
+
+describe("parseAdBlocks", () => {
+  it("returns [] for empty or garbage input", () => {
+    assert.deepEqual(parseAdBlocks(null), []);
+    assert.deepEqual(parseAdBlocks(undefined), []);
+    assert.deepEqual(parseAdBlocks("not json"), []);
+    assert.deepEqual(parseAdBlocks("{}"), []);
   });
 
-  it("missing pageKind key defaults to true", () => {
-    const block = { enabled: true, position: "before_post", pages: {} };
-    const show = block.enabled && block.position === "before_post" && (block.pages["homepage"] ?? true);
-    assert.equal(show, true);
+  it("keeps default true for page kinds a saved block predates", () => {
+    // A block saved before some page kinds existed has a partial pages map.
+    const [b] = parseAdBlocks(JSON.stringify([{ ...live(), pages: { posts: true, search: false } }]));
+    assert.equal(b.pages.posts, true);
+    assert.equal(b.pages.search, false); // an explicit false is honoured
+    assert.equal(b.pages.homepage, true); // missing kinds stay true — the Oct 2026 bug flipped them
+    assert.equal(b.pages.category, true);
+    assert.equal(b.pages.archive, true);
   });
-});
 
-describe("sticky sidebar ad", () => {
+  it("falls back to disabled for an unknown position", () => {
+    const [b] = parseAdBlocks(JSON.stringify([{ ...live(), position: "moon" }]));
+    assert.equal(b.position, "disabled");
+  });
+
   it("old blocks without sticky default to false", () => {
-    const saved = { id: "block-1", position: "sidebar" };
-    const sticky = !!saved.sticky;
-    assert.equal(sticky, false);
+    const [b] = parseAdBlocks(JSON.stringify([{ id: "block-1", position: "sidebar" }]));
+    assert.equal(b.sticky, false);
+    assert.equal(b.sidebarPosition, "top");
   });
 
-  it("sticky only applies to sidebar position", () => {
-    const block = { sticky: true, position: "before_post" };
-    const cssClass = block.sticky && block.position === "sidebar" ? "bms-adblock-sticky" : "";
-    assert.equal(cssClass, "");
+  it("round-trips through serialize", () => {
+    const blocks = [live({ name: "Header" })];
+    const back = parseAdBlocks(serializeAdBlocks(blocks));
+    assert.equal(back.length, 1);
+    assert.equal(back[0].name, "Header");
+    assert.equal(back[0].position, "before_content");
+  });
+
+  it("serializes to null when no block has anything worth storing", () => {
+    assert.equal(serializeAdBlocks([{ ...newAdBlock(0) }]), null);
+    assert.equal(serializeAdBlocks([]), null);
   });
 });
 
-console.log("\nAll ads logic contract tests passed.");
+describe("isBlockLive", () => {
+  it("requires enabled, a real position and code", () => {
+    assert.equal(isBlockLive(live()), true);
+    assert.equal(isBlockLive(live({ enabled: false })), false);
+    assert.equal(isBlockLive(live({ position: "disabled" })), false);
+    assert.equal(isBlockLive(live({ code: "   " })), false);
+  });
+
+  it("honours the schedule window", () => {
+    const past = new Date(Date.now() - 3600_000).toISOString();
+    const future = new Date(Date.now() + 3600_000).toISOString();
+    assert.equal(isBlockLive(live({ startAt: future })), false);
+    assert.equal(isBlockLive(live({ endAt: past })), false);
+    assert.equal(isBlockLive(live({ startAt: past, endAt: future })), true);
+  });
+});
+
+describe("blocksFor / sidebarBlocksFor", () => {
+  const blocks = [
+    live({ name: "post-top", position: "before_content" }),
+    live({ name: "search-off", position: "before_content", pages: { ...ALL_PAGES, search: false } }),
+    live({ name: "side", position: "sidebar", sidebarPosition: "top" }),
+    live({ name: "side-bottom", position: "sidebar", sidebarPosition: "bottom" }),
+    live({ name: "dead", position: "before_content", enabled: false }),
+  ];
+
+  it("filters by position, liveness and page kind", () => {
+    assert.deepEqual(blocksFor(blocks, "before_content", "posts").map((b) => b.name), ["post-top", "search-off"]);
+    assert.deepEqual(blocksFor(blocks, "before_content", "search").map((b) => b.name), ["post-top"]);
+    assert.deepEqual(blocksFor(blocks, "after_content", "posts"), []);
+  });
+
+  it("filters sidebar blocks by slot", () => {
+    assert.deepEqual(sidebarBlocksFor(blocks, "top", "posts").map((b) => b.name), ["side"]);
+    assert.deepEqual(sidebarBlocksFor(blocks, "bottom", "posts").map((b) => b.name), ["side-bottom"]);
+    assert.deepEqual(sidebarBlocksFor(blocks, "middle", "posts"), []);
+  });
+});
