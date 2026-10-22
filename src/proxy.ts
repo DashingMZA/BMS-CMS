@@ -3,6 +3,7 @@ import { getToken } from "next-auth/jwt";
 import { findRedirect, countHit } from "@/lib/redirects";
 import { configuredSiteUrl, languageSet, maintenanceState, type MaintenanceState } from "@/lib/edgeLanguages";
 import { DEBUG_HEADER, LS_CACHE, LS_TAG, NO_CACHE, cacheSettings, hasSessionCookie, pageCacheDecision, purgeAll } from "@/lib/lscache";
+import { crossSiteRequest } from "@/lib/sameOrigin";
 import { on, pageKind } from "@/lib/speed";
 
 /** Paths that belong to the admin's root layout, not the site's. */
@@ -200,6 +201,15 @@ export default async function proxy(req: NextRequest) {
   // is marked uncacheable, and every authenticated write purges the lot — the
   // API routes purge too, this is the net under them.
   if (pathname.startsWith("/api")) {
+    // CSRF: a state-changing API request whose Origin is not this host is
+    // refused before it reaches a route (lib/sameOrigin.ts, SEC-002). One
+    // check here rather than in every handler — a route added later is
+    // covered by default instead of by someone remembering.
+    if (crossSiteRequest(req)) {
+      const refused = NextResponse.json({ error: "Cross-site request refused." }, { status: 403 });
+      refused.headers.set(LS_CACHE, NO_CACHE);
+      return refused;
+    }
     const res = NextResponse.next();
     res.headers.set(LS_CACHE, NO_CACHE);
     if (req.method !== "GET" && req.method !== "HEAD" && req.method !== "OPTIONS" && hasSessionCookie(cookie) && !TARGETED_PURGE.test(pathname)) {
