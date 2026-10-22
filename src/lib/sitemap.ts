@@ -190,25 +190,9 @@ export async function buildSitemapUrls(kind: SitemapKind, settings: SiteSettings
   try {
     switch (kind) {
       case "post": {
-        if (!on(settings, "seo_sitemap_posts", "sitemap_include_posts")) break;
-        if ((settings.seo_post_noindex ?? "false") === "true") break;
-        const includeImages = on(settings, "seo_sitemap_images", "sitemap_include_images");
-        const rows = await db.query.posts.findMany({
-          where: isLive(posts),
-          columns: { id: true, slug: true, updatedAt: true, publishedAt: true, createdAt: true, noIndex: true, language: true, featuredImage: true, ogImage: true, canonicalUrl: true },
-          orderBy: [desc(posts.publishedAt), desc(posts.id)],
+        await streamPostUrls(settings, base, (u) => {
+          out.push(u);
         });
-        for (const p of rows) {
-          if (p.noIndex || canonicalElsewhere(p.canonicalUrl, postUrl(p, settings, base), base)) continue;
-          // Absolute: a sitemap is read with no page to resolve against.
-          const img = p.featuredImage || p.ogImage || "";
-          const imageUrl = img.startsWith("http") ? img : img ? `${base}${img}` : "";
-          out.push({
-            loc: postUrl(p, settings, base),
-            lastmod: p.updatedAt ?? p.publishedAt,
-            ...(includeImages && imageUrl ? { images: [imageUrl] } : {}),
-          });
-        }
         break;
       }
 
@@ -321,6 +305,105 @@ export async function buildSitemapUrls(kind: SitemapKind, settings: SiteSettings
   return out;
 }
 
+/** Rows read per query while streaming post URLs (PERF-001). */
+const ROW_CHUNK = 2000;
+
+/**
+ * Every post URL, in sitemap order, visited one at a time (PERF-001).
+ *
+ * The post case used to load every published row into memory and slice
+ * the finished list — serving part 1 of a 200,000-post site cost the
+ * whole table on every cache miss. The filters and the ordering are
+ * exactly what the single query produced; the rows now arrive ROW_CHUNK
+ * at a time and a caller keeps only what it needs: one part
+ * (sitemapPartUrls), per-part dates (sitemapPostStats), or the whole
+ * list when it truly is the whole list (the cache warmer, via
+ * buildSitemapUrls).
+ *
+ * The other kinds keep the build-the-list path: theirs are bounded by
+ * the number of terms or authors, not by the size of the content table.
+ */
+async function streamPostUrls(settings: SiteSettings, base: string, visit: (u: SitemapUrl) => void): Promise<void> {
+  if (!sitemapEnabled(settings)) return;
+  if (!on(settings, "seo_sitemap_posts", "sitemap_include_posts")) return;
+  if ((settings.seo_post_noindex ?? "false") === "true") return;
+  const includeImages = on(settings, "seo_sitemap_images", "sitemap_include_images");
+  try {
+    for (let offset = 0; ; offset += ROW_CHUNK) {
+      const rows = await db.query.posts.findMany({
+        where: isLive(posts),
+        columns: { id: true, slug: true, updatedAt: true, publishedAt: true, createdAt: true, noIndex: true, language: true, featuredImage: true, ogImage: true, canonicalUrl: true },
+        orderBy: [desc(posts.publishedAt), desc(posts.id)],
+        limit: ROW_CHUNK,
+        offset,
+      });
+      for (const p of rows) {
+        if (p.noIndex || canonicalElsewhere(p.canonicalUrl, postUrl(p, settings, base), base)) continue;
+        // Absolute: a sitemap is read with no page to resolve against.
+        const img = p.featuredImage || p.ogImage || "";
+        const imageUrl = img.startsWith("http") ? img : img ? `${base}${img}` : "";
+        visit({
+          loc: postUrl(p, settings, base),
+          lastmod: p.updatedAt ?? p.publishedAt,
+          ...(includeImages && imageUrl ? { images: [imageUrl] } : {}),
+        });
+      }
+      if (rows.length < ROW_CHUNK) break;
+    }
+  } catch {
+    // Database unreachable — an empty child is still valid XML.
+  }
+}
+
+/** Recent post parts, on the same five-minute rhythm as sitemapUrls. */
+const partCache = new Map<string, { at: number; urls: Promise<SitemapUrl[]> }>();
+
+/**
+ * One part of one kind's sitemap. For posts the part is streamed, never
+ * the whole list; the other kinds slice their (bounded) list as before.
+ */
+export async function sitemapPartUrls(kind: SitemapKind, settings: SiteSettings, part: number): Promise<SitemapUrl[]> {
+  if (kind !== "post") {
+    const urls = await sitemapUrls(kind, settings);
+    return urls.slice((part - 1) * MAX_PER_SITEMAP, part * MAX_PER_SITEMAP);
+  }
+  const key = `${kind}|${part}|${JSON.stringify(settings)}`;
+  const hit = partCache.get(key);
+  if (hit && Date.now() - hit.at < URL_CACHE_MS) return hit.urls;
+  for (const k of partCache.keys()) if (k.startsWith(`${kind}|${part}|`)) partCache.delete(k);
+  const urls = (async () => {
+    const start = (part - 1) * MAX_PER_SITEMAP;
+    const slice: SitemapUrl[] = [];
+    let seen = 0;
+    await streamPostUrls(settings, siteUrl(settings), (u) => {
+      if (seen >= start && seen < start + MAX_PER_SITEMAP) slice.push(u);
+      seen++;
+    });
+    return slice;
+  })();
+  partCache.set(key, { at: Date.now(), urls });
+  return urls;
+}
+
+/**
+ * What the index needs for the post sitemap — a total and each part's
+ * newest date — gathered in one streamed pass that retains neither.
+ */
+async function sitemapPostStats(settings: SiteSettings): Promise<{ total: number; newest: (Date | null)[] }> {
+  let total = 0;
+  const newest: (Date | null)[] = [];
+  await streamPostUrls(settings, siteUrl(settings), (u) => {
+    const partIdx = Math.floor(total / MAX_PER_SITEMAP);
+    if (u.lastmod) {
+      const d = new Date(u.lastmod);
+      const cur = newest[partIdx] ?? null;
+      if (!cur || d > cur) newest[partIdx] = d;
+    }
+    total++;
+  });
+  return { total, newest };
+}
+
 // Relative on purpose: a browser only applies a same-origin stylesheet, and
 // the absolute site URL is a setting that can lag behind the real address
 // (staging, a preview port, the day before DNS moves). Relative can never miss.
@@ -355,6 +438,16 @@ export async function renderIndex(settings: SiteSettings): Promise<string> {
   const lines = [`<?xml version="1.0" encoding="UTF-8"?>`, STYLESHEET(base), `<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`];
   if (sitemapEnabled(settings)) {
     for (const kind of SITEMAP_KINDS) {
+      if (kind === "post") {
+        // Streamed (PERF-001): the totals and per-part dates are gathered
+        // without ever holding the list.
+        const { total, newest } = await sitemapPostStats(settings);
+        for (let part = 1; (part - 1) * MAX_PER_SITEMAP < total; part++) {
+          const d = newest[part - 1] ?? null;
+          lines.push(`<sitemap><loc>${locValue(`${base}${sitemapPartPath(kind, part)}`)}</loc>${d ? `<lastmod>${d.toISOString()}</lastmod>` : ""}</sitemap>`);
+        }
+        continue;
+      }
       const urls = await sitemapUrls(kind, settings);
       if (urls.length === 0) continue;
       // One entry per part, each dated by the newest URL it holds.
@@ -373,8 +466,7 @@ export async function renderIndex(settings: SiteSettings): Promise<string> {
 
 /** Response for one child sitemap route. */
 export async function childSitemapResponse(kind: SitemapKind, settings: SiteSettings, part = 1): Promise<Response> {
-  const urls = await sitemapUrls(kind, settings);
-  const slice = urls.slice((part - 1) * MAX_PER_SITEMAP, part * MAX_PER_SITEMAP);
+  const slice = await sitemapPartUrls(kind, settings, part);
   // Part 1 always answers (an empty urlset is valid); a later part that does
   // not exist is a 404, not an empty file that looks like a broken site.
   if (part > 1 && slice.length === 0) return new Response("Not found", { status: 404 });
