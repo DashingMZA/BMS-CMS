@@ -29,7 +29,13 @@ const SOURCES = [
   "SELECT content::text AS c FROM posts WHERE deleted_at IS NULL AND content::text LIKE $1 ORDER BY updated_at DESC LIMIT 5",
   "SELECT content::text AS c FROM pages WHERE deleted_at IS NULL AND content::text LIKE $1 ORDER BY updated_at DESC LIMIT 5",
   "SELECT content::text AS c FROM elements WHERE content::text LIKE $1 LIMIT 5",
-  "SELECT content::text AS c FROM users WHERE content::text LIKE $1 LIMIT 5",
+  // The users source carries two guards the others do not need (SEC-008):
+  // content IS NOT NULL, because the column is empty until an author opens
+  // the block editor — a LIKE over mostly-null rows bought nothing — and
+  // public_profile, because a form on a profile that is not public can
+  // never be shown to a visitor, so a submission must not be validated
+  // against it, stored under it, or mailed out as it.
+  "SELECT content::text AS c FROM users WHERE public_profile = true AND content IS NOT NULL AND content::text LIKE $1 LIMIT 5",
 ];
 
 const MAX_DEPTH = 64;
