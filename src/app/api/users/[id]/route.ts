@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePublicSite } from "@/lib/revalidateSite";
 import { recordSlugChange } from "@/lib/autoRedirect";
-import { db } from "@/lib/db";
+import { atomic, db } from "@/lib/db";
 import { pages, posts, users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { auth, passwordVersion, unstable_update } from "@/lib/auth";
@@ -323,12 +323,22 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
         { status: 409 }
       );
     }
+    let deleted = false;
     if (owned > 0 && reassign && reassign !== "none") {
       if (reassign === id) return NextResponse.json({ error: "Choose a different account." }, { status: 400 });
       const heir = await db.query.users.findFirst({ where: eq(users.id, reassign), columns: { id: true, slug: true } });
       if (!heir) return NextResponse.json({ error: "That account does not exist." }, { status: 400 });
-      await db.update(posts).set({ authorId: reassign }).where(eq(posts.authorId, id));
-      await db.update(pages).set({ authorId: reassign }).where(eq(pages.authorId, id));
+      // The reassignment and the delete are one atomic group (DB-001): a
+      // failure between them used to leave posts pointing at an account
+      // that no longer existed, or the account gone with its content
+      // still assigned to it. On the HTTP driver the steps run in order,
+      // as before — see atomic() in lib/db.
+      await atomic(async (tx) => {
+        await tx.update(posts).set({ authorId: reassign }).where(eq(posts.authorId, id));
+        await tx.update(pages).set({ authorId: reassign }).where(eq(pages.authorId, id));
+        await tx.delete(users).where(eq(users.id, id));
+      });
+      deleted = true;
       // Their author archive is indexed and linked from every byline they
       // had; send it to the archive that now lists the same posts rather
       // than letting it 404. One per language, since each has its own.
@@ -340,7 +350,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
       }
     }
 
-    await db.delete(users).where(eq(users.id, id));
+    if (!deleted) await db.delete(users).where(eq(users.id, id));
     // Bylines, author archives and author schema on every page they touch.
     if (owned > 0) revalidatePublicSite();
     return NextResponse.json({ success: true });

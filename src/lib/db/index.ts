@@ -108,3 +108,29 @@ export const db = new Proxy({} as DbInstance, {
     return getInstance()[prop as keyof DbInstance];
   },
 });
+
+/**
+ * Runs a group of writes as one transaction where the driver allows it
+ * (DB-001).
+ *
+ * Multi-step writes used to run statement by statement, so a failure
+ * halfway left the halves disagreeing — an account deleted after only
+ * some of its posts were reassigned, a media pull that rewrote half the
+ * content to the new URL and left the rest pointing at the old host.
+ * On the TCP driver (a VPS, shared hosting, a local database) the group
+ * now commits or rolls back together. Neon over HTTP has no transactions
+ * — each query is a stateless request — so there the same function runs
+ * the steps sequentially, exactly as before: no worse, and the call
+ * sites stay identical on both hosts.
+ *
+ * The callback receives the transaction (or `db` itself) and must use
+ * only the common builder subset, like everything else in this app.
+ */
+export async function atomic<T>(fn: (tx: DbInstance) => Promise<T>): Promise<T> {
+  const url = process.env.DATABASE_URL;
+  if (url && !isNeonHttp(url)) {
+    const pg = db as unknown as { transaction: (cb: (tx: DbInstance) => Promise<T>) => Promise<T> };
+    return pg.transaction(fn);
+  }
+  return fn(db);
+}

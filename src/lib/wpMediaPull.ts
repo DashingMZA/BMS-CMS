@@ -1,6 +1,6 @@
 import { lookup } from "node:dns/promises";
 import path from "node:path";
-import { db } from "@/lib/db";
+import { atomic, db } from "@/lib/db";
 import { media, posts, pages } from "@/lib/db/schema";
 import { eq, like, or } from "drizzle-orm";
 import { storeMediaFile } from "@/lib/mediaStorage";
@@ -154,18 +154,25 @@ export async function pullRemoteMedia(): Promise<{ downloaded: number; failed: n
       for (const [oldUrl, newUrl] of urlMap) out = out.split(oldUrl).join(newUrl);
       return out;
     };
-    const [allPosts, allPages] = await Promise.all([
-      db.query.posts.findMany({ columns: { id: true, content: true } }),
-      db.query.pages.findMany({ columns: { id: true, content: true } }),
-    ]);
-    for (const p of allPosts) {
-      const next = rewrite(p.content as string | null);
-      if (next && next !== p.content) await db.update(posts).set({ content: next }).where(eq(posts.id, p.id));
-    }
-    for (const pg of allPages) {
-      const next = rewrite(pg.content as string | null);
-      if (next && next !== pg.content) await db.update(pages).set({ content: next }).where(eq(pages.id, pg.id));
-    }
+    // The rewrite is one atomic group (DB-001): a failure halfway used to
+    // leave half the documents pointing at the new files and half at the
+    // old host. On the HTTP driver the steps run in order, as before —
+    // see atomic() in lib/db. Re-running a failed pull is safe: documents
+    // still carrying the old URL are matched again.
+    await atomic(async (x) => {
+      const [allPosts, allPages] = await Promise.all([
+        x.query.posts.findMany({ columns: { id: true, content: true } }),
+        x.query.pages.findMany({ columns: { id: true, content: true } }),
+      ]);
+      for (const p of allPosts) {
+        const next = rewrite(p.content as string | null);
+        if (next && next !== p.content) await x.update(posts).set({ content: next }).where(eq(posts.id, p.id));
+      }
+      for (const pg of allPages) {
+        const next = rewrite(pg.content as string | null);
+        if (next && next !== pg.content) await x.update(pages).set({ content: next }).where(eq(pages.id, pg.id));
+      }
+    });
   }
 
   return { downloaded, failed };
