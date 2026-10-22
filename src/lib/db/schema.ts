@@ -530,6 +530,16 @@ export const media = pgTable("media", {
   title: text("title"),
   uploadedById: text("uploaded_by_id").references(() => users.id, { onDelete: "set null" }),
   folderId: integer("folder_id").references(() => mediaFolders.id, { onDelete: "set null" }),
+  /**
+   * Which storage driver holds this file's bytes ("local" | "s3" | "r2" |
+   * "github" | "blob") — chosen in Settings → Media Storage at upload time.
+   * Recorded per row so deleting a file goes to the place it actually
+   * lives, even after the site's active driver has since changed.
+   */
+  storage: text("storage").notNull().default("local"),
+  /** The object key / repo path the file was stored under on its driver.
+   *  Null for rows uploaded before drivers existed — deletes derive it. */
+  storageKey: text("storage_key"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 }, (t) => [
   // The image-size lookup resolves images by URL on every render that has one.

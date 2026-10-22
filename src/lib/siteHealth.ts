@@ -22,6 +22,7 @@ import { db } from "@/lib/db";
 import { posts } from "@/lib/db/schema";
 import { rawQuery } from "@/lib/db/raw";
 import { getSiteSettings, type SiteSettings } from "@/lib/settings";
+import { activeDriver, storageConfigFromSettings } from "@/lib/mediaStorage";
 import { siteUrl } from "@/lib/siteUrl";
 import { isLive } from "@/lib/publishState";
 import { CURRENT_VERSION } from "@/lib/version";
@@ -259,15 +260,41 @@ export async function runHealthChecks(): Promise<HealthReport> {
   const nodeOk = major > 18 || (major === 18 && minor >= 18);
   checks.push({ id: "node", label: "Node.js", status: nodeOk ? "ok" : "fail", detail: `v${process.versions.node}${nodeOk ? "" : " — Next 15 needs 18.18 or newer"}` });
 
-  if (has(process.env.BLOB_READ_WRITE_TOKEN)) {
+  // The storage check reports the driver Settings → Media Storage selects:
+  // for remote drivers there is no local folder to probe (the tab's Test
+  // connection button does the real write test); for local it stays the
+  // writability check it has always been.
+  const storageCfg = storageConfigFromSettings(s);
+  const driver = activeDriver(storageCfg);
+  if (driver === "blob") {
     checks.push({ id: "storage", label: "Media storage", status: "ok", detail: "Vercel Blob." });
+  } else if (driver === "s3" || driver === "r2") {
+    const bucket = driver === "s3" ? storageCfg.s3.bucket : storageCfg.r2.bucket;
+    checks.push({
+      id: "storage",
+      label: "Media storage",
+      status: bucket ? "ok" : "fail",
+      detail: bucket
+        ? `${driver === "s3" ? "Amazon S3" : "Cloudflare R2"} — bucket ${bucket}.`
+        : `${driver === "s3" ? "Amazon S3" : "Cloudflare R2"} is selected but no bucket is set — uploads will fail. Settings → Media Storage.`,
+    });
+  } else if (driver === "github") {
+    checks.push({
+      id: "storage",
+      label: "Media storage",
+      status: storageCfg.github.repo && storageCfg.github.token ? "ok" : "fail",
+      detail:
+        storageCfg.github.repo && storageCfg.github.token
+          ? `GitHub — uploads are committed to ${storageCfg.github.repo}.`
+          : "GitHub storage is selected but the repo or token is missing — uploads will fail. Settings → Media Storage.",
+    });
   } else {
     const dir = path.join(process.cwd(), "public", "uploads");
     try {
       await access(dir, constants.W_OK);
-      checks.push({ id: "storage", label: "Media storage", status: "ok", detail: "public/uploads on this server's disk. Include it in backups." });
+      checks.push({ id: "storage", label: "Media storage", status: "ok", detail: "Local disk — public/uploads on this server. Include it in backups." });
     } catch {
-      checks.push({ id: "storage", label: "Media storage", status: "fail", detail: "public/uploads is not writable and no Blob token is set — uploads will fail. On a serverless host set BLOB_READ_WRITE_TOKEN." });
+      checks.push({ id: "storage", label: "Media storage", status: "fail", detail: "public/uploads is not writable and no Blob token is set — uploads will fail. Pick a remote driver in Settings → Media Storage, or set BLOB_READ_WRITE_TOKEN on a serverless host." });
     }
   }
 

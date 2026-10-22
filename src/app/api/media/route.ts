@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { access, mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { db } from "@/lib/db";
 import { media, mediaFolders } from "@/lib/db/schema";
@@ -10,6 +9,7 @@ import { getSiteSettings } from "@/lib/settings";
 import { sanitizeSvg } from "@/lib/sanitizeSvg";
 import { imageSize } from "@/lib/imageSize";
 import { deleteMediaRow } from "@/lib/mediaDelete";
+import { StorageError, storeMediaFile } from "@/lib/mediaStorage";
 
 /**
  * What the media library will store.
@@ -59,48 +59,13 @@ function rejectFile(file: File, safeName: string): string | null {
 }
 
 /**
- * `filename`, or `name-2.ext`, `name-3.ext`… — the first one not already on
- * disk.
- *
- * Uploads keep their real name now instead of a timestamp prefix, so two
- * photos both called `sunset.jpg` are a real possibility. Silently writing
- * the second over the first would leave whatever post used the original
- * pointing at a different photo with no warning; this is the cheap way to
- * make that not happen without a database round trip.
+ * Storing the bytes is the storage layer's job (lib/mediaStorage): the
+ * driver picked in Settings → Media Storage — local disk, S3, R2, GitHub,
+ * or Vercel Blob as the automatic fallback — receives the file, and the
+ * media row records which driver holds it so a later delete finds it.
  */
-async function uniqueDiskName(dir: string, filename: string): Promise<string> {
-  const ext = path.extname(filename);
-  const base = filename.slice(0, filename.length - ext.length);
-  let candidate = filename;
-  for (let n = 2; ; n++) {
-    try {
-      await access(path.join(dir, candidate));
-      candidate = `${base}-${n}${ext}`;
-    } catch {
-      return candidate; // ENOENT — nothing there yet.
-    }
-  }
-}
-
-// Blob is imported lazily so a deploy without the package or the token still
-// boots — the disk path below is what runs there.
-async function storeFile(filename: string, bytes: Buffer, mimeType: string): Promise<{ url: string; filename: string }> {
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
-    const { put } = await import("@vercel/blob");
-    const blob = await put(filename, bytes, { access: "public", contentType: mimeType });
-    // Blob names its own file (it appends a suffix for uniqueness on its
-    // side), so what is stored in `media.filename` is what the URL ends in.
-    return { url: blob.url, filename: blob.pathname.split("/").pop() ?? filename };
-  }
-
-  // Any host with a writable filesystem — a VPS, a container, `next start` on a
-  // plain Node box. Serverless platforms wipe this between invocations, which is
-  // exactly the case the token above covers.
-  const dir = path.join(process.cwd(), "public", "uploads");
-  await mkdir(dir, { recursive: true });
-  const unique = await uniqueDiskName(dir, filename);
-  await writeFile(path.join(dir, unique), bytes);
-  return { url: `/uploads/${unique}`, filename: unique };
+async function storeFile(filename: string, bytes: Buffer, mimeType: string) {
+  return storeMediaFile(filename, bytes, mimeType);
 }
 
 export async function GET(req: NextRequest) {
@@ -264,6 +229,8 @@ export async function POST(req: NextRequest) {
       blur: optimized.blur ?? null,
       uploadedById: session.user?.id,
       folderId,
+      storage: stored.driver,
+      storageKey: stored.key,
     }).returning();
 
     return NextResponse.json({ media: mediaItem, ...(svgNotes.length ? { sanitized: svgNotes } : {}) }, { status: 201 });
@@ -274,7 +241,8 @@ export async function POST(req: NextRequest) {
     console.error("[media upload]", err);
     const code = (err as NodeJS.ErrnoException)?.code;
     const message =
-      code === "EACCES" || code === "EROFS" ? "The uploads folder is not writable on this host."
+      err instanceof StorageError ? err.message
+      : code === "EACCES" || code === "EROFS" ? "The uploads folder is not writable on this host."
       : code === "ENOSPC" ? "The host has run out of disk space."
       : "The upload could not be stored. Check the server log for the reason.";
     return NextResponse.json({ error: message }, { status: 500 });

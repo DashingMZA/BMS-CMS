@@ -69,7 +69,7 @@ export const getSiteSettings = cache(async (): Promise<SiteSettings> => {
  * Keys only an administrator may read: the Cloudflare API token, anything
  * else named like a credential, and the head/footer scripts.
  */
-export const ADMIN_ONLY_SETTING = /(?:token|secret|password|api_key)$|^script_/i;
+export const ADMIN_ONLY_SETTING = /(?:token|secret|password|api_key)$|^script_|^storage_/i;
 
 /**
  * The map without those keys — for handing settings to a client component,

@@ -38,7 +38,7 @@ with:
 | Database | PostgreSQL via Drizzle ORM (`drizzle-orm` 0.45) + `@neondatabase/serverless` |
 | Auth | NextAuth v5 (beta) + bcryptjs, TOTP 2FA via `otplib` |
 | Editor | BlockNote 0.56 (`@blocknote/core/react/mantine`) over TipTap 3 + ProseMirror |
-| Media | `sharp` (image processing), `@vercel/blob` (optional storage) |
+| Media | `sharp` (image processing); storage drivers in `lib/mediaStorage.ts` — local disk, Amazon S3, Cloudflare R2, GitHub repo, Vercel Blob (automatic fallback) |
 | Email | `nodemailer` |
 | WP interop | `fast-xml-parser` (WXR import), custom WXR export |
 | Package manager | pnpm 12 (`pnpm-workspace.yaml` holds overrides/catalogs) |
@@ -196,7 +196,7 @@ admin-gated via `proxy.ts` + `authz.ts`.
 | Forms | `/admin/forms` | Form builder + submissions |
 | SEO | `/admin/seo` | Titles/meta templates, sitemap, robots, redirections, 404 monitor |
 | Tools | `/admin/tools` | **WordPress WXR import/export**, site export/import, backup |
-| Settings | `/admin/settings` | General settings |
+| Settings | `/admin/settings` | Tabbed: General, **Media Storage** (upload driver — local / S3 / R2 / GitHub — with per-driver credentials and a connection test), Language & Region, Permalinks, Sitemap & robots.txt, Export/Import |
 | Users | `/admin/users` | User management, roles, author pages |
 | Plugins / Health / Speed / Errors / Links / Updates | misc | Plugin registry, site health, performance, error log, link manager, updates |
 
@@ -304,6 +304,7 @@ targeting controls, Before/After menu+title+footer options, sidebar slot picker.
 ## 10. Settings & Customizer system
 
 - `getSiteSettings()` (`lib/settings.ts`) — cached read of `site_settings`; invalidated on save.
+- **Media storage** (`lib/mediaStorage.ts`): Settings → Media Storage picks the upload driver (`storage_driver`: `local` / `s3` / `r2` / `github`; empty = automatic — Vercel Blob if its token is set, else local disk). Per-driver credentials are `storage_*` keys (admin-only — stripped for non-admins). S3/R2 use hand-rolled SigV4 fetch (no SDK); GitHub commits each upload (Contents API ≤1 MB, Git data API above). Each media row records `storage` + `storage_key` (migration `0027`) so deletes go to the driver that holds the file. WP-import media pulls store through the same layer.
 - `appearanceSettings.ts` — TypeScript types + **defaults** for every Customizer key
   (`post_layout`, `page_layout`, `archive_layout: "normal"`, `search_archive_layout: "normal"`,
   `sidebar_widgets` default: Search / Recent Posts / Categories, colors, fonts…).

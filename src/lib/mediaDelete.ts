@@ -6,6 +6,7 @@ import { eq } from "drizzle-orm";
 import { purgeCloudflarePaths } from "@/lib/revalidateSite";
 import { WIDTHS as IMAGE_WIDTHS, QUALITIES as IMAGE_QUALITIES } from "@/lib/logoSrc";
 import { isLocalUpload } from "@/lib/exportMedia";
+import { deleteMediaFile } from "@/lib/mediaStorage";
 import { usesOf } from "./mediaUsage";
 
 /**
@@ -19,7 +20,7 @@ export async function deleteMediaRow(
 ): Promise<{ ok: true } | { ok: false; error: string; inUse?: string[] }> {
   const existing = await db.query.media.findFirst({
     where: eq(media.id, numId),
-    columns: { url: true, filename: true },
+    columns: { url: true, filename: true, storage: true, storageKey: true },
   });
   if (!existing) return { ok: false, error: "Not found" };
 
@@ -34,7 +35,25 @@ export async function deleteMediaRow(
     }
   }
 
-  if (isLocalUpload(existing.url)) {
+  // Files stored by a selectable driver (S3 / R2 / GitHub) are deleted from
+  // that driver — the row remembers it, because the site's active driver may
+  // have changed since the upload. A failed remote delete must not strand
+  // the row: the admin is told, and can retry once the storage is reachable.
+  if (existing.storage === "s3" || existing.storage === "r2" || existing.storage === "github") {
+    try {
+      await deleteMediaFile({
+        driver: existing.storage,
+        key: existing.storageKey,
+        url: existing.url,
+        filename: existing.filename,
+      });
+    } catch (err) {
+      return {
+        ok: false,
+        error: err instanceof Error ? err.message : "The file could not be deleted from its storage.",
+      };
+    }
+  } else if (isLocalUpload(existing.url)) {
     const file = path.join(process.cwd(), "public", "uploads", path.basename(existing.url));
     await unlink(file).catch((err: NodeJS.ErrnoException) => {
       if (err.code !== "ENOENT") throw err;
@@ -48,9 +67,10 @@ export async function deleteMediaRow(
       if (f.startsWith(`${stem}-`) && /^\d+w\.webp$/.test(f.slice(stem.length + 1)))
         await unlink(path.join(sizedDir, f)).catch(() => undefined);
     }
-  } else if (process.env.BLOB_READ_WRITE_TOKEN && /^https?:\/\//.test(existing.url)) {
-    const { del } = await import("@vercel/blob");
-    await del(existing.url).catch(() => undefined);
+  } else if (existing.storage === "blob" || (process.env.BLOB_READ_WRITE_TOKEN && /^https?:\/\//.test(existing.url))) {
+    await deleteMediaFile({ driver: "blob", key: existing.storageKey, url: existing.url, filename: existing.filename }).catch(
+      () => undefined
+    );
   }
 
   await db.delete(media).where(eq(media.id, numId));

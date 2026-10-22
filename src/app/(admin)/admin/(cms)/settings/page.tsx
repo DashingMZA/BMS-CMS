@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type ReactNode } from "react";
 import { PERMALINK_STRUCTURES } from "@/lib/permalinks";
 import { DATE_FORMATS, LANGUAGES, TEXT_DIRECTIONS, TIME_ZONES, languageLabel } from "@/lib/locale";
 import Header from "@/components/admin/Header";
@@ -26,6 +26,24 @@ interface Settings {
   sitemap_include_posts: string;
   sitemap_include_pages: string;
   robots_txt: string;
+  storage_driver: string;
+  storage_s3_bucket: string;
+  storage_s3_region: string;
+  storage_s3_access_key: string;
+  storage_s3_secret: string;
+  storage_s3_prefix: string;
+  storage_s3_base_url: string;
+  storage_r2_bucket: string;
+  storage_r2_account_id: string;
+  storage_r2_access_key: string;
+  storage_r2_secret: string;
+  storage_r2_prefix: string;
+  storage_r2_base_url: string;
+  storage_github_repo: string;
+  storage_github_branch: string;
+  storage_github_path: string;
+  storage_github_token: string;
+  storage_github_base_url: string;
 }
 
 const DEFAULT_ROBOTS = `User-agent: *
@@ -52,11 +70,30 @@ const defaults: Settings = {
   sitemap_include_posts: "true",
   sitemap_include_pages: "true",
   robots_txt: DEFAULT_ROBOTS,
+  storage_driver: "",
+  storage_s3_bucket: "",
+  storage_s3_region: "us-east-1",
+  storage_s3_access_key: "",
+  storage_s3_secret: "",
+  storage_s3_prefix: "uploads",
+  storage_s3_base_url: "",
+  storage_r2_bucket: "",
+  storage_r2_account_id: "",
+  storage_r2_access_key: "",
+  storage_r2_secret: "",
+  storage_r2_prefix: "uploads",
+  storage_r2_base_url: "",
+  storage_github_repo: "",
+  storage_github_branch: "main",
+  storage_github_path: "uploads",
+  storage_github_token: "",
+  storage_github_base_url: "",
 };
 
 
 const TABS = [
   { id: "general", label: "General" },
+  { id: "storage", label: "Media Storage" },
   { id: "language", label: "Language & Region" },
   { id: "permalinks", label: "Permalink Settings" },
   { id: "sitemap", label: "Sitemap & robots.txt" },
@@ -69,11 +106,28 @@ type TabId = (typeof TABS)[number]["id"];
     tab that actually has unsaved changes, not just the active one. */
 const TAB_KEYS: Record<TabId, string[]> = {
   general: ["site_name", "site_description", "site_url", "hosting_panel_url"],
+  storage: [
+    "storage_driver",
+    "storage_s3_bucket", "storage_s3_region", "storage_s3_access_key", "storage_s3_secret", "storage_s3_prefix", "storage_s3_base_url",
+    "storage_r2_bucket", "storage_r2_account_id", "storage_r2_access_key", "storage_r2_secret", "storage_r2_prefix", "storage_r2_base_url",
+    "storage_github_repo", "storage_github_branch", "storage_github_path", "storage_github_token", "storage_github_base_url",
+  ],
   language: ["site_language", "site_direction", "admin_language", "admin_direction", "content_languages", "date_format", "site_timezone"],
   permalinks: ["permalink_structure", "permalink_custom"],
   sitemap: [],
   backup: [],
 };
+
+/** One labelled field in the Media Storage tab. */
+function StorageField({ label, help, children }: { label: string; help?: string; children: ReactNode }) {
+  return (
+    <div>
+      <label className="label">{label}</label>
+      {children}
+      {help && <p className="text-xs text-slate-400 mt-1">{help}</p>}
+    </div>
+  );
+}
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<Settings>(defaults);
@@ -154,6 +208,30 @@ export default function SettingsPage() {
     }
     setActiveTab(tab);
     window.scrollTo({ top: 0 });
+  }
+
+  // Media Storage "Test connection": posts the form's current storage_*
+  // values — saved or not, which is the point — to the probe endpoint,
+  // which writes a one-line file to the chosen driver and removes it.
+  const [storageTest, setStorageTest] = useState<{ kind: "idle" | "busy" | "ok" | "fail"; message?: string }>({ kind: "idle" });
+
+  async function runStorageTest() {
+    setStorageTest({ kind: "busy" });
+    const all = settings as unknown as Record<string, string>;
+    const body = Object.fromEntries(
+      Object.keys(all).filter((k) => k.startsWith("storage_")).map((k) => [k, all[k] ?? ""])
+    );
+    const res = await fetch("/api/settings/storage-test", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    }).catch(() => null);
+    const data = res ? ((await res.json().catch(() => ({}))) as { ok?: boolean; driver?: string; error?: string }) : {};
+    if (res?.ok && data.ok) {
+      setStorageTest({ kind: "ok", message: `Works — a test file was written to the ${data.driver ?? ""} storage and removed again.` });
+    } else {
+      setStorageTest({ kind: "fail", message: data.error || "The test could not run. Try again." });
+    }
   }
 
   const saveButton = (
@@ -268,6 +346,133 @@ export default function SettingsPage() {
               </p>
             </div>
           </div>
+
+              {saveButton}
+            </div>
+          )}
+
+          {activeTab === "storage" && (
+            <div className="space-y-6">
+              <div className="card p-5 space-y-4">
+                <div>
+                  <h2 className="font-semibold text-slate-900 text-sm">Where uploads are stored</h2>
+                  <p className="text-xs text-slate-500 mt-1">
+                    New uploads — media library files, and images pulled in by a WordPress import — are stored
+                    by the driver below. Files already uploaded stay where they are: each file remembers its
+                    driver, so deleting it later still finds it. Credentials are stored with the site settings
+                    and are only ever shown to administrators.
+                  </p>
+                </div>
+
+                <StorageField label="Storage driver">
+                  <select className="input" value={settings.storage_driver} onChange={(e) => update("storage_driver", e.target.value)}>
+                    <option value="">Automatic — Vercel Blob if configured, otherwise this server&apos;s disk</option>
+                    <option value="local">Local disk (this server)</option>
+                    <option value="s3">Amazon S3</option>
+                    <option value="r2">Cloudflare R2</option>
+                    <option value="github">GitHub repository — small sites only</option>
+                  </select>
+                </StorageField>
+
+                {settings.storage_driver === "" && (
+                  <p className="text-xs text-slate-500">
+                    Automatic keeps the historical behaviour: if the host sets <code>BLOB_READ_WRITE_TOKEN</code>,
+                    uploads go to Vercel Blob; everywhere else they are written to <code>public/uploads</code> on
+                    this server. Pick a driver to fix the choice yourself.
+                  </p>
+                )}
+
+                {settings.storage_driver === "local" && (
+                  <p className="text-xs text-slate-500">
+                    Files are written to <code>public/uploads</code> on this server and served from there — no
+                    other settings are needed. Include that folder in your backups. On a serverless host the
+                    disk is wiped between deploys, so pick S3, R2 or GitHub there instead.
+                  </p>
+                )}
+
+                {settings.storage_driver === "s3" && (
+                  <>
+                    <StorageField label="Bucket name">
+                      <input type="text" className="input" value={settings.storage_s3_bucket} onChange={(e) => update("storage_s3_bucket", e.target.value)} placeholder="my-site-media" autoComplete="off" />
+                    </StorageField>
+                    <StorageField label="Region" help="The region the bucket lives in, e.g. us-east-1, eu-west-1, ap-south-1.">
+                      <input type="text" className="input" value={settings.storage_s3_region} onChange={(e) => update("storage_s3_region", e.target.value)} placeholder="us-east-1" autoComplete="off" />
+                    </StorageField>
+                    <StorageField label="Access key ID" help="An IAM key whose policy allows s3:PutObject, s3:GetObject and s3:DeleteObject on this bucket.">
+                      <input type="text" className="input" value={settings.storage_s3_access_key} onChange={(e) => update("storage_s3_access_key", e.target.value)} placeholder="AKIA…" autoComplete="off" />
+                    </StorageField>
+                    <StorageField label="Secret access key">
+                      <input type="password" className="input" value={settings.storage_s3_secret} onChange={(e) => update("storage_s3_secret", e.target.value)} autoComplete="off" />
+                    </StorageField>
+                    <StorageField label="Folder prefix" help="Objects are stored under this prefix inside the bucket.">
+                      <input type="text" className="input" value={settings.storage_s3_prefix} onChange={(e) => update("storage_s3_prefix", e.target.value)} placeholder="uploads" autoComplete="off" />
+                    </StorageField>
+                    <StorageField label="Public base URL (optional)" help="Where stored files are linked from — a CloudFront distribution or the bucket's website endpoint. Leave empty to link to the bucket directly (the bucket must then be publicly readable).">
+                      <input type="url" className="input" value={settings.storage_s3_base_url} onChange={(e) => update("storage_s3_base_url", e.target.value)} placeholder="https://media.example.com" autoComplete="off" />
+                    </StorageField>
+                  </>
+                )}
+
+                {settings.storage_driver === "r2" && (
+                  <>
+                    <StorageField label="Bucket name">
+                      <input type="text" className="input" value={settings.storage_r2_bucket} onChange={(e) => update("storage_r2_bucket", e.target.value)} placeholder="my-site-media" autoComplete="off" />
+                    </StorageField>
+                    <StorageField label="Account ID" help="Shown on the Cloudflare R2 overview page; it forms the storage endpoint.">
+                      <input type="text" className="input" value={settings.storage_r2_account_id} onChange={(e) => update("storage_r2_account_id", e.target.value)} autoComplete="off" />
+                    </StorageField>
+                    <StorageField label="Access key ID" help="From R2 → Manage R2 API Tokens. The token needs Object Read & Write on this bucket.">
+                      <input type="text" className="input" value={settings.storage_r2_access_key} onChange={(e) => update("storage_r2_access_key", e.target.value)} autoComplete="off" />
+                    </StorageField>
+                    <StorageField label="Secret access key">
+                      <input type="password" className="input" value={settings.storage_r2_secret} onChange={(e) => update("storage_r2_secret", e.target.value)} autoComplete="off" />
+                    </StorageField>
+                    <StorageField label="Folder prefix" help="Objects are stored under this prefix inside the bucket.">
+                      <input type="text" className="input" value={settings.storage_r2_prefix} onChange={(e) => update("storage_r2_prefix", e.target.value)} placeholder="uploads" autoComplete="off" />
+                    </StorageField>
+                    <StorageField label="Public base URL" help="R2 buckets are private until you expose them: use the bucket's r2.dev URL or a connected custom domain. Without one, stored links point at the storage endpoint and will not open for visitors.">
+                      <input type="url" className="input" value={settings.storage_r2_base_url} onChange={(e) => update("storage_r2_base_url", e.target.value)} placeholder="https://pub-xxxx.r2.dev or https://media.example.com" autoComplete="off" />
+                    </StorageField>
+                  </>
+                )}
+
+                {settings.storage_driver === "github" && (
+                  <>
+                    <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                      For very small sites only — a product page or a few pages with a handful of images. Every
+                      upload becomes a commit in the repository, and GitHub is not a file host: heavy image
+                      traffic or a large library belongs on S3 or R2 instead.
+                    </p>
+                    <StorageField label="Repository" help="The repository uploads are committed to — a dedicated media repo keeps your code history clean. It may be public or private.">
+                      <input type="text" className="input" value={settings.storage_github_repo} onChange={(e) => update("storage_github_repo", e.target.value)} placeholder="owner/repo" autoComplete="off" />
+                    </StorageField>
+                    <StorageField label="Branch">
+                      <input type="text" className="input" value={settings.storage_github_branch} onChange={(e) => update("storage_github_branch", e.target.value)} placeholder="main" autoComplete="off" />
+                    </StorageField>
+                    <StorageField label="Folder in repo" help="Uploads are committed under this folder.">
+                      <input type="text" className="input" value={settings.storage_github_path} onChange={(e) => update("storage_github_path", e.target.value)} placeholder="uploads" autoComplete="off" />
+                    </StorageField>
+                    <StorageField label="Personal access token" help="A fine-grained PAT with Contents read & write permission on this repository only.">
+                      <input type="password" className="input" value={settings.storage_github_token} onChange={(e) => update("storage_github_token", e.target.value)} placeholder="github_pat_…" autoComplete="off" />
+                    </StorageField>
+                    <StorageField label="Public base URL (optional)" help="Leave empty to link files via raw.githubusercontent.com. A CDN mirror of the same folder works too, e.g. https://cdn.jsdelivr.net/gh/owner/repo@main/uploads — set it to that folder's URL, without a trailing slash.">
+                      <input type="url" className="input" value={settings.storage_github_base_url} onChange={(e) => update("storage_github_base_url", e.target.value)} placeholder="https://cdn.jsdelivr.net/gh/owner/repo@main/uploads" autoComplete="off" />
+                    </StorageField>
+                  </>
+                )}
+
+                <div className="flex items-center gap-3 pt-1">
+                  <button type="button" onClick={runStorageTest} disabled={storageTest.kind === "busy"} className="btn-secondary inline-flex items-center gap-2">
+                    {storageTest.kind === "busy" ? <Loader2 size={15} className="animate-spin" /> : null}
+                    Test connection
+                  </button>
+                  {storageTest.kind === "ok" && <p className="text-xs text-emerald-600">{storageTest.message}</p>}
+                  {storageTest.kind === "fail" && <p className="text-xs text-red-600">{storageTest.message}</p>}
+                  {storageTest.kind === "idle" && (
+                    <p className="text-xs text-slate-400">Writes a one-line test file with the values above — saved or not — and removes it.</p>
+                  )}
+                </div>
+              </div>
 
               {saveButton}
             </div>
