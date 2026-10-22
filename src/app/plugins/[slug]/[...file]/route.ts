@@ -52,6 +52,9 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
         // Scripts are versioned by ?v= on their URL, so a day is safe.
         "Cache-Control": "public, max-age=86400",
         "X-Content-Type-Options": "nosniff",
+        // A plugin's SVG is a document that can carry script; it is served
+        // inert, the same policy the uploads route sets (SEC-001).
+        ...(type === "image/svg+xml" ? { "Content-Security-Policy": "script-src 'none'; sandbox" } : {}),
       },
     });
   } catch {

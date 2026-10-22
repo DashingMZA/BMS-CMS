@@ -125,6 +125,15 @@ export const HTACCESS_FILE_RULES = String.raw`# ── How long a browser keeps 
     Header set Cache-Control "public, max-age=31536000, immutable"
   </FilesMatch>
 
+  # An SVG is a document, not a picture, and on this host uploads are
+  # served straight from disk — the Content-Security-Policy the uploads
+  # route sets in Node never applies to them (SEC-001). The same policy,
+  # at the layer that actually serves the file: an uploaded SVG renders
+  # as an image and runs nothing.
+  <FilesMatch "\.svg$">
+    Header set Content-Security-Policy "script-src 'none'; sandbox"
+  </FilesMatch>
+
   # The plugin runtime keeps its name across updates, so it cannot be
   # immutable. A day is long enough to be worth caching and short enough
   # that an update reaches everyone without a purge.
