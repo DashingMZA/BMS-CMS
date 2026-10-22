@@ -4,6 +4,7 @@ import { findRedirect, countHit } from "@/lib/redirects";
 import { configuredSiteUrl, languageSet, maintenanceState, type MaintenanceState } from "@/lib/edgeLanguages";
 import { DEBUG_HEADER, LS_CACHE, LS_TAG, NO_CACHE, cacheSettings, hasSessionCookie, pageCacheDecision, purgeAll } from "@/lib/lscache";
 import { crossSiteRequest } from "@/lib/sameOrigin";
+import { bodyLimitForPath } from "@/lib/bodyLimits";
 import { on, pageKind } from "@/lib/speed";
 
 /** Paths that belong to the admin's root layout, not the site's. */
@@ -207,6 +208,15 @@ export default async function proxy(req: NextRequest) {
     // covered by default instead of by someone remembering.
     if (crossSiteRequest(req)) {
       const refused = NextResponse.json({ error: "Cross-site request refused." }, { status: 403 });
+      refused.headers.set(LS_CACHE, NO_CACHE);
+      return refused;
+    }
+    // Body size (ARCH-001): refuse a declared Content-Length over the
+    // route's limit before any route reads the body into memory. The
+    // table and its reasoning live in lib/bodyLimits.ts.
+    const declared = Number(req.headers.get("content-length"));
+    if (Number.isFinite(declared) && declared > bodyLimitForPath(pathname)) {
+      const refused = NextResponse.json({ error: "Request body too large." }, { status: 413 });
       refused.headers.set(LS_CACHE, NO_CACHE);
       return refused;
     }

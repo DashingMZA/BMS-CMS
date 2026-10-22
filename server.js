@@ -548,6 +548,10 @@ const BODY_LIMITS = [
 ];
 const DEFAULT_BODY_LIMIT = 8 * MB; // documents, settings, menus — the admin's own saves
 
+// The proxy enforces the same declared-size limits inside the app
+// (src/lib/bodyLimits.ts, ARCH-001), for hosts that start the app without
+// this supervisor. Keep the two tables in step.
+
 function bodyLimitFor(req) {
   const path = (req.url || "/").split("?")[0];
   for (const [re, limit] of BODY_LIMITS) if (re.test(path)) return limit;
