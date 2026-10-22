@@ -2,11 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { mediaFolders } from "@/lib/db/schema";
 import { auth } from "@/lib/auth";
+import { FORBIDDEN, isAuthor } from "@/lib/authz";
 import { asc, eq } from "drizzle-orm";
 
 /**
  * Media folders: list (GET) and create (POST).
- * Admin-only — every caller is an admin screen.
+ * Listing is any signed-in user — an author files their own uploads. The
+ * structure itself is shared, so creating, renaming, moving and deleting
+ * folders is admin/editor work (SEC-003): until this gate existed, any
+ * author could delete a folder together with every file in it.
  */
 export async function GET() {
   try {
@@ -26,6 +30,7 @@ export async function POST(req: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (isAuthor(session)) return NextResponse.json(FORBIDDEN, { status: 403 });
 
     const body = await req.json();
     const name = typeof body.name === "string" ? body.name.trim().slice(0, 100) : "";

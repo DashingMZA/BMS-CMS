@@ -2,19 +2,26 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { media, mediaFolders } from "@/lib/db/schema";
 import { auth } from "@/lib/auth";
+import { FORBIDDEN, isAuthor } from "@/lib/authz";
 import { eq } from "drizzle-orm";
 import { deleteMediaRow } from "@/lib/mediaDelete";
 
 /**
  * Rename/move (PATCH) or delete (DELETE) a media folder.
  * Deleting moves contained files to the deleted folder's parent (or root)
- * unless ?mode=delete, which deletes the files too. Child folders always
- * become top-level.
+ * unless ?mode=delete, which deletes the files too — except any file that
+ * is in use, which refuses exactly as it does from the media grid and is
+ * moved to the parent instead, with the count reported to the caller.
+ * Child folders always become top-level.
+ *
+ * Both verbs change the library's shared structure, so both are
+ * admin/editor only (SEC-003).
  */
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await auth();
     if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (isAuthor(session)) return NextResponse.json(FORBIDDEN, { status: 403 });
 
     const { id } = await params;
     const folderId = parseInt(id, 10);
@@ -73,6 +80,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   try {
     const session = await auth();
     if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (isAuthor(session)) return NextResponse.json(FORBIDDEN, { status: 403 });
 
     const { id } = await params;
     const folderId = parseInt(id, 10);
@@ -84,12 +92,24 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     // ?mode=delete also deletes the folder's files; default moves them to the
     // deleted folder's parent (or root) so nothing is lost by accident.
     const mode = req.nextUrl.searchParams.get("mode");
+    let keptFiles = 0;
     if (mode === "delete") {
       const rows = await db.query.media.findMany({
         where: eq(media.folderId, folderId),
         columns: { id: true },
       });
-      for (const r of rows) await deleteMediaRow(r.id, { force: true });
+      for (const r of rows) {
+        // No implicit force (SEC-003): this used to pass { force: true },
+        // which deleted files other people's published posts were using,
+        // with no warning. A file deleteMediaRow refuses — in use, or its
+        // storage unreachable — survives, and is moved to the parent with
+        // the default-mode files below; the count goes back to the caller.
+        const res = await deleteMediaRow(r.id);
+        if (!res.ok) keptFiles++;
+      }
+      if (keptFiles > 0) {
+        await db.update(media).set({ folderId: folder.parentId }).where(eq(media.folderId, folderId));
+      }
     } else {
       await db.update(media).set({ folderId: folder.parentId }).where(eq(media.folderId, folderId));
     }
@@ -97,7 +117,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     await db.update(mediaFolders).set({ parentId: null }).where(eq(mediaFolders.parentId, folderId));
     await db.delete(mediaFolders).where(eq(mediaFolders.id, folderId));
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, ...(mode === "delete" ? { keptFiles } : {}) });
   } catch {
     return NextResponse.json({ error: "Failed to delete folder" }, { status: 500 });
   }

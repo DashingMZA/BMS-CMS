@@ -169,10 +169,20 @@ export default function MediaLibraryClient({
   async function deleteFolder(id: number, mode: "move" | "delete") {
     const res = await fetch(`/api/media/folders/${id}?mode=${mode}`, { method: "DELETE" });
     if (res.ok) {
+      const data = (await res.json().catch(() => ({}))) as { keptFiles?: number };
       setFolders((f) => f.filter((x) => x.id !== id));
       if (activeFolder === id) setActiveFolder("all");
       setDeletingFolder(null);
       fetchMedia();
+      // Files a post is using refuse deletion (the route no longer forces
+      // them); they were moved to the parent folder instead — say so,
+      // rather than letting the empty folder imply they are gone.
+      if (data.keptFiles) {
+        window.alert(
+          `${data.keptFiles} file${data.keptFiles === 1 ? " is" : "s are"} in use and could not be deleted. ` +
+            "They were moved to the parent folder instead."
+        );
+      }
     } else {
       window.alert("Could not delete the folder.");
     }
