@@ -25,3 +25,8 @@ catalogs:
 overrides:
   "next-auth>nodemailer": "catalog:default"
   "next>postcss": "catalog:default"
+  # GHSA-67mh-4wv8-2f99: esbuild <=0.24.2 lets any website read the dev
+  # server's responses. It reaches the tree only through drizzle-kit's
+  # @esbuild-kit chain (dev tooling, never shipped), and drizzle-kit has
+  # not moved — the override forces the patched line (DEP-001).
+  "esbuild": "^0.25.0"
