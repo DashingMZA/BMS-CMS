@@ -71,12 +71,15 @@ export const MAX_FIELD_LENGTH = 5000;
 /**
  * How many fields one submission may carry.
  *
- * The submit endpoint reads the form's field list out of the *request body* —
- * the browser sends the block's own definition along with the answers — so the
- * allowlist it filters against is supplied by whoever is posting. A crafted
- * request can therefore declare its own fields and have them stored. Until the
- * definition is resolved server-side (see AUDIT.md), this caps the blast radius
- * to something a rate-limited attacker cannot turn into bulk storage.
+ * The form's definition is resolved on the server (lib/formLookup.ts): the
+ * browser sends only the block's id, never the field list, so a crafted
+ * request cannot declare its own fields any more. This cap is the second
+ * line, not the first — it bounds what a *saved* definition can ask the
+ * submit endpoint to store, so a form pasted together with hundreds of
+ * fields cannot turn one submission into bulk storage. (An earlier
+ * comment here described the request-body definition as current; it had
+ * already been fixed, and the stale text made this constant look like
+ * the primary control — DOC-001.)
  *
  * Comfortably above any real form: the built-in one has four fields.
  */

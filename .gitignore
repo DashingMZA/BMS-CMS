@@ -54,3 +54,7 @@ next-env.d.ts
 
 # Font files: Google copies made at run time and fonts uploaded in the Customizer. Site data.
 /fonts/
+
+# The custom server's boot log (server.js). Runtime output, not source —
+# it was committed once and kept arriving in diffs (OPS-001).
+/startup.log
