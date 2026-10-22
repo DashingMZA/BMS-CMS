@@ -244,11 +244,19 @@ export async function importSite(
       // `password` is absent from every export, so an imported account cannot
       // sign in until someone sets one. That is the correct default: a backup
       // must not be a way to create a working login.
+      //
+      // `role` is stripped for the same reason (SEC-009): it used to flow
+      // through from the file, so a crafted export named its own admins. It
+      // was not exploitable — no password is imported, and a reset link is
+      // only sent to accounts that have one — but that was a guard nobody
+      // chose. Imported accounts are editors, like every account the Users
+      // screen creates; an administrator promotes them afterwards.
       await db.insert(users).values({
-        ...(reviveDates(withoutKeys(u, ["id", "password", "totpSecret", "slug"])) as Row),
+        ...(reviveDates(withoutKeys(u, ["id", "password", "totpSecret", "slug", "role"])) as Row),
         id,
         email,
         slug,
+        role: "editor",
       } as never);
     }
     userIds.set(String(u.id), id);
