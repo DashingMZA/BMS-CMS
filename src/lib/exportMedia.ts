@@ -171,7 +171,10 @@ export async function bundleMediaStreaming(zip: JSZip, urls: string[]): Promise<
  *
  * The same list the uploader accepts, for the same reasons.
  */
-const RESTORABLE = new Set([".jpg", ".jpeg", ".png", ".gif", ".webp", ".avif", ".svg", ".json", ".ico"]);
+// Exported for lib/wpMediaPull.ts: files fetched from a WordPress export's
+// URLs get exactly the same allowlist as files restored from an archive —
+// they are the same trust problem (SEC-004).
+export const RESTORABLE = new Set([".jpg", ".jpeg", ".png", ".gif", ".webp", ".avif", ".svg", ".json", ".ico"]);
 
 export async function restoreMedia(zip: JSZip): Promise<{ written: number; skipped: number }> {
   const dir = path.join(process.cwd(), "public", "uploads");
