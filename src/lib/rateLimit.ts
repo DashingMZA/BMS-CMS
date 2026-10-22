@@ -59,12 +59,13 @@ export function rateLimited(name: string, key: string, { max, windowMs }: RateLi
  * is believed only when the connection's last hop is that CDN, or when
  * the operator asserts a trusted proxy with TRUST_PROXY_HEADERS=1.
  */
-const CF_V4: ReadonlyArray<readonly [number, number]> = [
+const CF_V4_CIDRS: ReadonlyArray<readonly [string, number]> = [
   ["173.245.48.0", 20], ["103.21.244.0", 22], ["103.22.200.0", 22], ["103.31.4.0", 22],
   ["141.101.64.0", 18], ["108.162.192.0", 18], ["190.93.240.0", 20], ["188.114.96.0", 20],
   ["197.234.240.0", 22], ["198.41.128.0", 17], ["162.158.0.0", 15], ["104.16.0.0", 13],
   ["104.24.0.0", 14], ["172.64.0.0", 13], ["131.0.72.0", 22],
-].map(([base, bits]) => {
+];
+const CF_V4: ReadonlyArray<readonly [number, number]> = CF_V4_CIDRS.map(([base, bits]) => {
   const n = base.split(".").reduce((acc, octet) => acc * 256 + Number(octet), 0);
   const mask = bits === 0 ? 0 : (0xffffffff << (32 - bits)) >>> 0;
   return [n, mask] as const;
